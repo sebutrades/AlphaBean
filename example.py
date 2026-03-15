@@ -1,7 +1,11 @@
 from massive import RESTClient
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
+import os
 
-API_KEY = "aWSRunm_mk2xkVZa2zH4o7INmF8gdQC4"
+load_dotenv()
+
+API_KEY = api_key = os.getenv("MASSIVE_API_KEY")
 client = RESTClient(api_key=API_KEY)
 
 TICKER = "QQQ"

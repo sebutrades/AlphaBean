@@ -1,1 +1,11 @@
 requests==2.28.1
+massive
+fastapi
+uvicorn[standard]
+pydantic
+python-dotenv
+httpx
+numpy
+pandas
+anthropic
+pytest
