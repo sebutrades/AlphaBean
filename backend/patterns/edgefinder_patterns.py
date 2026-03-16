@@ -892,10 +892,10 @@ class FashionablyLateScalp(PatternDetector):
         
         # Check that EMA hasn't been flat for 15+ min before entry
         if cross_idx >= 15:
-            ema_range = max(ema9[cross_idx-15:cross_idx]) - min(
-                e for e in ema9[cross_idx-15:cross_idx] if e is not None)
-            if ema_range < b[cross_idx].close * 0.001:
+            ema_slice = [e for e in ema9[cross_idx-15:cross_idx] if e is not None]
+            if len(ema_slice) < 2:
                 return None  # Too flat — avoid per cheat sheet
+            ema_range = max(ema_slice) - min(ema_slice)
         
         cross_price = vwap_vals[cross_idx]
         measured_move = cross_price - day_low
