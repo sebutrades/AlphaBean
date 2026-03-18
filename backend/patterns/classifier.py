@@ -1,22 +1,25 @@
 """
-patterns/classifier.py — Structure-first pattern classification.
+patterns/classifier.py — Structure-first pattern classification (47 detectors).
 
-Pipeline:
-  BarSeries → extract structures → geometric matching → TradeSetup
+Pipeline: BarSeries → extract_structures() → classify_all() → list[TradeSetup]
 
-This replaces the old edgefinder_patterns.py. Instead of 21 separate
-detector classes with duplicated logic, we:
-  1. Extract structures ONCE (zigzag, trendlines, S/R, indicators)
-  2. Run geometric pattern rules against those structures
-  3. Each pattern is a function, not a class
-
-Patterns implemented:
-  Classical (12): H&S, Inv H&S, Double Top/Bottom, Asc/Desc/Sym Triangle,
-                  Bull/Bear Flag, Cup & Handle, Rising/Falling Wedge
+Categories:
+  Classical Structural (16): H&S, Inv H&S, Double/Triple Top/Bottom,
+    Asc/Desc/Sym Triangle, Bull/Bear Flag, Pennant, Cup&Handle,
+    Rectangle, Rising/Falling Wedge
+  Candlestick (10): Bullish/Bearish Engulfing, Morning/Evening Star,
+    Hammer, Shooting Star, Doji, Dragonfly Doji, 3 White Soldiers, 3 Black Crows
   SMB Scalps (11): RubberBand, HitchHiker, ORB 15/30, Second Chance,
-                   BackSide, Fashionably Late, Spencer, Gap Give & Go,
-                   Tidal Wave, Breaking News
-  Quant (2): Momentum Breakout, Vol Compression Breakout
+    BackSide, Fashionably Late, Spencer, Gap G&G, Tidal Wave, Breaking News
+  Quant Strategies (10): Momentum Breakout, Vol Compression, Mean Reversion,
+    Trend Pullback, Gap Fade, Relative Strength, Range Expansion,
+    Volume Breakout, VWAP Reversion, Donchian Breakout
+
+Candlestick math follows Steve Nison's conventions:
+  body = |close - open|
+  upper_shadow = high - max(open, close)
+  lower_shadow = min(open, close) - low
+  range = high - low
 """
 from datetime import datetime, time, timedelta
 from typing import Optional
@@ -31,33 +34,24 @@ from backend.structures.swings import (
 )
 from backend.structures.trendlines import (
     fit_trendline, detect_channel, is_flat_line, slopes_same_sign,
-    compression_ratio,
 )
-from backend.structures.support_resistance import (
-    cluster_levels, detect_breakouts, nearest_level, neckline_from_swings,
-)
-from backend.structures.indicators import (
-    true_range, wilder_atr, atr_ratio, sma, ema, ema_last,
-)
-from backend.patterns.registry import (
-    TradeSetup, Bias, PatternCategory, PATTERN_META,
-)
+from backend.structures.support_resistance import cluster_levels, nearest_level
+from backend.structures.indicators import wilder_atr, atr_ratio, ema, ema_last
+from backend.patterns.registry import TradeSetup, Bias, PatternCategory, PATTERN_META
 
 
 # ==============================================================================
-# STRUCTURE EXTRACTION (run once per scan)
+# STRUCTURE EXTRACTION
 # ==============================================================================
 
 class ExtractedStructures:
-    """All structural primitives extracted from a BarSeries."""
+    """All structural primitives extracted from a BarSeries (computed once)."""
     def __init__(self, bars: BarSeries):
         b = bars.bars
         self.bars = b
         self.n = len(b)
         self.symbol = bars.symbol
         self.timeframe = bars.timeframe
-
-        # NumPy arrays
         self.closes = np.array([x.close for x in b], dtype=np.float64)
         self.highs = np.array([x.high for x in b], dtype=np.float64)
         self.lows = np.array([x.low for x in b], dtype=np.float64)
@@ -65,39 +59,28 @@ class ExtractedStructures:
         self.volumes = np.array([x.volume for x in b], dtype=np.float64)
         self.timestamps = [x.timestamp for x in b]
 
-        # Zigzag swings
         threshold = adaptive_zigzag_threshold(bars.timeframe)
-        self.zz_swings = zigzag(
-            self.highs, self.lows, threshold,
-            timestamps=self.timestamps, volumes=self.volumes,
-        )
+        self.zz_swings = zigzag(self.highs, self.lows, threshold,
+                                timestamps=self.timestamps, volumes=self.volumes)
         self.zz_highs = swing_highs_from_zigzag(self.zz_swings)
         self.zz_lows = swing_lows_from_zigzag(self.zz_swings)
 
-        # Order-based swings
         order = adaptive_order(bars.timeframe)
         self.sw_high_idx = find_swing_highs(self.highs, order=order)
         self.sw_low_idx = find_swing_lows(self.lows, order=order)
-
-        # S/R levels
         self.sr_levels = cluster_levels(self.zz_swings, tolerance_pct=0.8, min_touches=2)
 
-        # ATR
         self.atr_series = wilder_atr(self.highs, self.lows, self.closes, period=14)
         self.current_atr = float(self.atr_series[-1]) if not np.isnan(self.atr_series[-1]) else 0
 
-        # Intraday helpers
         self.day_open_idx = self._find_day_open()
 
     def _find_day_open(self) -> int:
-        """Find the index of today's market open bar (9:30 ET)."""
-        if self.n == 0:
-            return 0
+        if self.n == 0: return 0
         today = self.timestamps[-1].date()
         for i, ts in enumerate(self.timestamps):
             if ts.date() == today and ts.time() >= time(9, 30):
                 return i
-        # Fallback: most recent day's first bar
         for i, ts in enumerate(self.timestamps):
             if ts.date() == today:
                 return i
@@ -105,908 +88,942 @@ class ExtractedStructures:
 
 
 def extract_structures(bars: BarSeries) -> ExtractedStructures:
-    """Extract all structural primitives from bar data."""
     return ExtractedStructures(bars)
 
 
 # ==============================================================================
-# MAIN CLASSIFIER
+# HELPERS
 # ==============================================================================
 
-def classify_all(bars: BarSeries) -> list[TradeSetup]:
-    """
-    Run ALL pattern detectors on a BarSeries.
-    Returns list of detected TradeSetups sorted by confidence.
-    """
-    if len(bars.bars) < 15:
-        return []
-
-    s = extract_structures(bars)
-    setups: list[TradeSetup] = []
-
-    # Classical patterns (from zigzag structures)
-    for fn in [
-        _detect_head_and_shoulders, _detect_inverse_hs,
-        _detect_double_top, _detect_double_bottom,
-        _detect_ascending_triangle, _detect_descending_triangle,
-        _detect_symmetrical_triangle,
-        _detect_bull_flag, _detect_bear_flag,
-        _detect_cup_and_handle,
-        _detect_rising_wedge, _detect_falling_wedge,
-    ]:
-        try:
-            result = fn(s)
-            if result is not None:
-                setups.append(result)
-        except Exception:
-            continue
-
-    # SMB Scalp patterns (with time-of-day logic)
-    for fn in [
-        _detect_rubberband, _detect_hitchhiker,
-        lambda st: _detect_orb(st, minutes=15),
-        lambda st: _detect_orb(st, minutes=30),
-        _detect_second_chance, _detect_backside,
-        _detect_fashionably_late, _detect_spencer,
-        _detect_gap_give_and_go, _detect_tidal_wave,
-        _detect_breaking_news,
-    ]:
-        try:
-            result = fn(s)
-            if result is not None:
-                setups.append(result)
-        except Exception:
-            continue
-
-    # Quant patterns
-    for fn in [_detect_momentum_breakout, _detect_vol_compression_breakout]:
-        try:
-            result = fn(s)
-            if result is not None:
-                setups.append(result)
-        except Exception:
-            continue
-
-    setups.sort(key=lambda x: x.confidence, reverse=True)
-    return setups
-
-
-# ==============================================================================
-# HELPER
-# ==============================================================================
-
-def _make_setup(s: ExtractedStructures, name: str, bias: Bias,
-                entry: float, stop: float, target: float,
-                confidence: float, desc: str, **kw) -> TradeSetup:
-    """Convenience constructor with auto risk/reward and metadata."""
+def _make(s, name, bias, entry, stop, target, conf, desc, **kw):
     risk = abs(entry - stop)
-    if risk <= 0:
-        return None
-    reward = abs(target - entry)
-    rr = round(reward / risk, 2)
+    if risk <= 0: return None
+    rr = round(abs(target - entry) / risk, 2)
     meta = PATTERN_META.get(name, {})
     return TradeSetup(
         pattern_name=name, category=meta.get("cat", PatternCategory.CLASSICAL),
         symbol=s.symbol, bias=bias,
         entry_price=round(entry, 2), stop_loss=round(stop, 2),
         target_price=round(target, 2), risk_reward_ratio=rr,
-        confidence=round(min(0.95, confidence), 2),
-        detected_at=s.timestamps[-1], description=desc,
-        strategy_type=meta.get("type", "breakout"),
-        win_rate=meta.get("wr", 0.5),
-        timeframe_detected=s.timeframe,
-        **kw,
-    )
+        confidence=round(min(0.95, conf), 2), detected_at=s.timestamps[-1],
+        description=desc, strategy_type=meta.get("type", "breakout"),
+        win_rate=meta.get("wr", 0.5), timeframe_detected=s.timeframe, **kw)
 
+def _in_time(ts, sh, sm, eh, em):
+    return time(sh, sm) <= ts.time() <= time(eh, em)
 
-def _is_in_time(ts: datetime, sh: int, sm: int, eh: int, em: int) -> bool:
-    """Check if timestamp is within a time window (ET assumed)."""
-    t = ts.time()
-    return time(sh, sm) <= t <= time(eh, em)
+def _body(bar): return abs(bar.close - bar.open)
+def _upper_shadow(bar): return bar.high - max(bar.open, bar.close)
+def _lower_shadow(bar): return min(bar.open, bar.close) - bar.low
+def _range(bar): return bar.high - bar.low
+def _is_green(bar): return bar.close > bar.open
+def _is_red(bar): return bar.close < bar.open
 
 
 # ==============================================================================
-# CLASSICAL PATTERNS (structure-first)
+# CLASSICAL STRUCTURAL PATTERNS (16)
 # ==============================================================================
 
-def _detect_head_and_shoulders(s: ExtractedStructures) -> Optional[TradeSetup]:
-    """H&S: 3 swing highs — middle highest, shoulders within tolerance, neckline break."""
-    if len(s.zz_highs) < 3 or len(s.zz_lows) < 2:
-        return None
+def _detect_head_and_shoulders(s):
+    if len(s.zz_highs) < 3 or len(s.zz_lows) < 2: return None
     for i in range(len(s.zz_highs) - 2):
-        ls, head, rs = s.zz_highs[i], s.zz_highs[i + 1], s.zz_highs[i + 2]
-        if not (head.price > ls.price and head.price > rs.price):
-            continue
-        if abs(ls.price - rs.price) / ls.price > 0.03:
-            continue
-        # Neckline from lows between shoulders
-        between_lows = [l for l in s.zz_lows if ls.index < l.index < rs.index]
-        if not between_lows:
-            continue
-        neckline = min(l.price for l in between_lows)
-        if s.closes[-1] >= neckline:
-            continue
-        entry = round(neckline - 0.02, 2)
-        stop = round(rs.price + 0.02, 2)
-        target = round(entry - (head.price - neckline), 2)
-        conf = 0.60
-        sym = 1 - abs(ls.price - rs.price) / ls.price
-        conf += sym * 0.15
-        return _make_setup(s, "Head & Shoulders", Bias.SHORT, entry, stop, target, conf,
-                           f"H&S: head@{head.price:.2f}, neckline@{neckline:.2f}",
-                           key_levels={"left_shoulder": ls.price, "head": head.price,
-                                       "right_shoulder": rs.price, "neckline": neckline})
+        ls, hd, rs = s.zz_highs[i], s.zz_highs[i+1], s.zz_highs[i+2]
+        if not (hd.price > ls.price and hd.price > rs.price): continue
+        if abs(ls.price - rs.price) / ls.price > 0.03: continue
+        lows_between = [l for l in s.zz_lows if ls.index < l.index < rs.index]
+        if not lows_between: continue
+        neckline = min(l.price for l in lows_between)
+        if s.closes[-1] >= neckline: continue
+        conf = 0.60 + (1 - abs(ls.price - rs.price)/ls.price) * 0.15
+        return _make(s, "Head & Shoulders", Bias.SHORT,
+                     neckline - 0.02, rs.price + 0.02, neckline - 0.02 - (hd.price - neckline), conf,
+                     f"H&S: head@{hd.price:.2f}, neckline@{neckline:.2f}",
+                     key_levels={"left_shoulder": ls.price, "head": hd.price,
+                                 "right_shoulder": rs.price, "neckline": neckline})
     return None
 
-
-def _detect_inverse_hs(s: ExtractedStructures) -> Optional[TradeSetup]:
-    """Inverse H&S: 3 swing lows — middle lowest, neckline break above."""
-    if len(s.zz_lows) < 3 or len(s.zz_highs) < 2:
-        return None
+def _detect_inverse_hs(s):
+    if len(s.zz_lows) < 3 or len(s.zz_highs) < 2: return None
     for i in range(len(s.zz_lows) - 2):
-        ls, head, rs = s.zz_lows[i], s.zz_lows[i + 1], s.zz_lows[i + 2]
-        if not (head.price < ls.price and head.price < rs.price):
-            continue
-        if abs(ls.price - rs.price) / ls.price > 0.03:
-            continue
-        between_highs = [h for h in s.zz_highs if ls.index < h.index < rs.index]
-        if not between_highs:
-            continue
-        neckline = max(h.price for h in between_highs)
-        if s.closes[-1] <= neckline:
-            continue
-        entry = round(neckline + 0.02, 2)
-        stop = round(rs.price - 0.02, 2)
-        target = round(entry + (neckline - head.price), 2)
-        conf = 0.60
-        sym = 1 - abs(ls.price - rs.price) / ls.price
-        conf += sym * 0.15
-        return _make_setup(s, "Inverse H&S", Bias.LONG, entry, stop, target, conf,
-                           f"Inv H&S: head@{head.price:.2f}, neckline@{neckline:.2f}",
-                           key_levels={"head": head.price, "neckline": neckline})
+        ls, hd, rs = s.zz_lows[i], s.zz_lows[i+1], s.zz_lows[i+2]
+        if not (hd.price < ls.price and hd.price < rs.price): continue
+        if abs(ls.price - rs.price) / ls.price > 0.03: continue
+        highs_between = [h for h in s.zz_highs if ls.index < h.index < rs.index]
+        if not highs_between: continue
+        neckline = max(h.price for h in highs_between)
+        if s.closes[-1] <= neckline: continue
+        conf = 0.60 + (1 - abs(ls.price - rs.price)/ls.price) * 0.15
+        return _make(s, "Inverse H&S", Bias.LONG,
+                     neckline + 0.02, rs.price - 0.02, neckline + 0.02 + (neckline - hd.price), conf,
+                     f"Inv H&S: head@{hd.price:.2f}, neckline@{neckline:.2f}",
+                     key_levels={"head": hd.price, "neckline": neckline})
     return None
 
-
-def _detect_double_top(s: ExtractedStructures) -> Optional[TradeSetup]:
-    """Double Top: 2 swing highs within tolerance, valley break below."""
-    if len(s.zz_highs) < 2:
-        return None
+def _detect_double_top(s):
+    if len(s.zz_highs) < 2: return None
     h1, h2 = s.zz_highs[-2], s.zz_highs[-1]
-    if abs(h1.price - h2.price) / h1.price > 0.015:
-        return None
-    if h2.index - h1.index < 5:
-        return None
-    valley = min(s.lows[h1.index:h2.index + 1])
-    if s.closes[-1] > valley:
-        return None
-    entry = round(valley - 0.02, 2)
-    stop = round(max(h1.price, h2.price) + 0.02, 2)
-    target = round(entry - (max(h1.price, h2.price) - valley), 2)
-    return _make_setup(s, "Double Top", Bias.SHORT, entry, stop, target, 0.63,
-                       f"Double Top at {max(h1.price, h2.price):.2f}",
-                       key_levels={"top1": h1.price, "top2": h2.price, "valley": valley})
+    if abs(h1.price - h2.price)/h1.price > 0.015 or h2.index - h1.index < 5: return None
+    valley = min(s.lows[h1.index:h2.index+1])
+    if s.closes[-1] > valley: return None
+    top = max(h1.price, h2.price)
+    return _make(s, "Double Top", Bias.SHORT, valley-0.02, top+0.02,
+                 valley-0.02-(top-valley), 0.63, f"Double Top at {top:.2f}",
+                 key_levels={"top1": h1.price, "top2": h2.price, "valley": valley})
 
-
-def _detect_double_bottom(s: ExtractedStructures) -> Optional[TradeSetup]:
-    """Double Bottom: 2 swing lows within tolerance, peak break above."""
-    if len(s.zz_lows) < 2:
-        return None
+def _detect_double_bottom(s):
+    if len(s.zz_lows) < 2: return None
     l1, l2 = s.zz_lows[-2], s.zz_lows[-1]
-    if abs(l1.price - l2.price) / l1.price > 0.015:
-        return None
-    if l2.index - l1.index < 5:
-        return None
-    peak = max(s.highs[l1.index:l2.index + 1])
-    if s.closes[-1] < peak:
-        return None
-    entry = round(peak + 0.02, 2)
-    stop = round(min(l1.price, l2.price) - 0.02, 2)
-    target = round(entry + (peak - min(l1.price, l2.price)), 2)
-    return _make_setup(s, "Double Bottom", Bias.LONG, entry, stop, target, 0.65,
-                       f"Double Bottom at {min(l1.price, l2.price):.2f}",
-                       key_levels={"bottom1": l1.price, "bottom2": l2.price, "peak": peak})
+    if abs(l1.price - l2.price)/l1.price > 0.015 or l2.index - l1.index < 5: return None
+    peak = max(s.highs[l1.index:l2.index+1])
+    if s.closes[-1] < peak: return None
+    bot = min(l1.price, l2.price)
+    return _make(s, "Double Bottom", Bias.LONG, peak+0.02, bot-0.02,
+                 peak+0.02+(peak-bot), 0.65, f"Double Bottom at {bot:.2f}",
+                 key_levels={"bottom1": l1.price, "bottom2": l2.price, "peak": peak})
 
+def _detect_triple_top(s):
+    if len(s.zz_highs) < 3: return None
+    h1, h2, h3 = s.zz_highs[-3], s.zz_highs[-2], s.zz_highs[-1]
+    prices = [h1.price, h2.price, h3.price]
+    avg = np.mean(prices)
+    if max(abs(p - avg)/avg for p in prices) > 0.015: return None
+    valley = min(s.lows[h1.index:h3.index+1])
+    if s.closes[-1] > valley: return None
+    return _make(s, "Triple Top", Bias.SHORT, valley-0.02, max(prices)+0.02,
+                 valley-0.02-(max(prices)-valley), 0.66, f"Triple Top at {avg:.2f}",
+                 key_levels={"resistance": avg, "valley": valley})
 
-def _detect_ascending_triangle(s: ExtractedStructures) -> Optional[TradeSetup]:
-    """Ascending Triangle: flat resistance + rising support, breakout above."""
-    if len(s.zz_highs) < 2 or len(s.zz_lows) < 2:
-        return None
-    upper_tl = fit_trendline(s.zz_highs[-3:] if len(s.zz_highs) >= 3 else s.zz_highs[-2:])
-    lower_tl = fit_trendline(s.zz_lows[-3:] if len(s.zz_lows) >= 3 else s.zz_lows[-2:])
-    if upper_tl is None or lower_tl is None:
-        return None
-    if not is_flat_line(upper_tl, tolerance_pct=0.15):
-        return None
-    if lower_tl.slope <= 0:
-        return None
-    resistance = upper_tl.price_at(upper_tl.end_index)
-    if s.closes[-1] < resistance:
-        return None
-    support = s.zz_lows[-1].price
-    entry = round(resistance + 0.02, 2)
-    stop = round(support - 0.02, 2)
-    target = round(entry + (resistance - support), 2)
-    return _make_setup(s, "Ascending Triangle", Bias.LONG, entry, stop, target, 0.62,
-                       f"Asc Triangle: flat top {resistance:.2f}, rising lows",
-                       key_levels={"resistance": resistance, "support": support})
+def _detect_triple_bottom(s):
+    if len(s.zz_lows) < 3: return None
+    l1, l2, l3 = s.zz_lows[-3], s.zz_lows[-2], s.zz_lows[-1]
+    prices = [l1.price, l2.price, l3.price]
+    avg = np.mean(prices)
+    if max(abs(p - avg)/avg for p in prices) > 0.015: return None
+    peak = max(s.highs[l1.index:l3.index+1])
+    if s.closes[-1] < peak: return None
+    return _make(s, "Triple Bottom", Bias.LONG, peak+0.02, min(prices)-0.02,
+                 peak+0.02+(peak-min(prices)), 0.68, f"Triple Bottom at {avg:.2f}",
+                 key_levels={"support": avg, "peak": peak})
 
+def _detect_ascending_triangle(s):
+    if len(s.zz_highs) < 2 or len(s.zz_lows) < 2: return None
+    utl = fit_trendline(s.zz_highs[-3:] if len(s.zz_highs)>=3 else s.zz_highs[-2:])
+    ltl = fit_trendline(s.zz_lows[-3:] if len(s.zz_lows)>=3 else s.zz_lows[-2:])
+    if utl is None or ltl is None: return None
+    if not is_flat_line(utl, 0.15) or ltl.slope <= 0: return None
+    res = utl.price_at(utl.end_index)
+    if s.closes[-1] < res: return None
+    sup = s.zz_lows[-1].price
+    return _make(s, "Ascending Triangle", Bias.LONG, res+0.02, sup-0.02,
+                 res+0.02+(res-sup), 0.62, f"Asc Triangle: flat top {res:.2f}",
+                 key_levels={"resistance": res, "support": sup})
 
-def _detect_descending_triangle(s: ExtractedStructures) -> Optional[TradeSetup]:
-    """Descending Triangle: flat support + falling resistance, breakdown below."""
-    if len(s.zz_highs) < 2 or len(s.zz_lows) < 2:
-        return None
-    lower_tl = fit_trendline(s.zz_lows[-3:] if len(s.zz_lows) >= 3 else s.zz_lows[-2:])
-    upper_tl = fit_trendline(s.zz_highs[-3:] if len(s.zz_highs) >= 3 else s.zz_highs[-2:])
-    if upper_tl is None or lower_tl is None:
-        return None
-    if not is_flat_line(lower_tl, tolerance_pct=0.15):
-        return None
-    if upper_tl.slope >= 0:
-        return None
-    support = lower_tl.price_at(lower_tl.end_index)
-    if s.closes[-1] > support:
-        return None
-    resistance = s.zz_highs[-1].price
-    entry = round(support - 0.02, 2)
-    stop = round(resistance + 0.02, 2)
-    target = round(entry - (resistance - support), 2)
-    return _make_setup(s, "Descending Triangle", Bias.SHORT, entry, stop, target, 0.60,
-                       f"Desc Triangle: flat bottom {support:.2f}, falling highs",
-                       key_levels={"support": support, "resistance": resistance})
+def _detect_descending_triangle(s):
+    if len(s.zz_highs) < 2 or len(s.zz_lows) < 2: return None
+    ltl = fit_trendline(s.zz_lows[-3:] if len(s.zz_lows)>=3 else s.zz_lows[-2:])
+    utl = fit_trendline(s.zz_highs[-3:] if len(s.zz_highs)>=3 else s.zz_highs[-2:])
+    if utl is None or ltl is None: return None
+    if not is_flat_line(ltl, 0.15) or utl.slope >= 0: return None
+    sup = ltl.price_at(ltl.end_index)
+    if s.closes[-1] > sup: return None
+    res = s.zz_highs[-1].price
+    return _make(s, "Descending Triangle", Bias.SHORT, sup-0.02, res+0.02,
+                 sup-0.02-(res-sup), 0.60, f"Desc Triangle: flat bottom {sup:.2f}",
+                 key_levels={"support": sup, "resistance": res})
 
+def _detect_symmetrical_triangle(s):
+    if len(s.zz_highs) < 2 or len(s.zz_lows) < 2: return None
+    utl = fit_trendline(s.zz_highs[-3:] if len(s.zz_highs)>=3 else s.zz_highs[-2:])
+    ltl = fit_trendline(s.zz_lows[-3:] if len(s.zz_lows)>=3 else s.zz_lows[-2:])
+    if utl is None or ltl is None: return None
+    if utl.slope >= 0 or ltl.slope <= 0: return None
+    up = utl.price_at(s.n-1); lo = ltl.price_at(s.n-1)
+    if up <= lo: return None
+    rng = up - lo; cur = s.closes[-1]
+    if cur > up:
+        return _make(s, "Symmetrical Triangle", Bias.LONG, up+0.02, lo-0.02, up+0.02+rng, 0.58,
+                     "Sym Triangle breakout above", key_levels={"upper": up, "lower": lo})
+    elif cur < lo:
+        return _make(s, "Symmetrical Triangle", Bias.SHORT, lo-0.02, up+0.02, lo-0.02-rng, 0.58,
+                     "Sym Triangle breakdown below", key_levels={"upper": up, "lower": lo})
+    return None
 
-def _detect_symmetrical_triangle(s: ExtractedStructures) -> Optional[TradeSetup]:
-    """Symmetrical Triangle: converging trendlines, breakout either direction."""
-    if len(s.zz_highs) < 2 or len(s.zz_lows) < 2:
-        return None
-    upper_tl = fit_trendline(s.zz_highs[-3:] if len(s.zz_highs) >= 3 else s.zz_highs[-2:])
-    lower_tl = fit_trendline(s.zz_lows[-3:] if len(s.zz_lows) >= 3 else s.zz_lows[-2:])
-    if upper_tl is None or lower_tl is None:
-        return None
-    if upper_tl.slope >= 0 or lower_tl.slope <= 0:
-        return None  # Need falling highs and rising lows
-    upper_price = upper_tl.price_at(s.n - 1)
-    lower_price = lower_tl.price_at(s.n - 1)
-    if upper_price <= lower_price:
-        return None
-    current = s.closes[-1]
-    tri_range = upper_price - lower_price
-    if current > upper_price:
-        entry = round(upper_price + 0.02, 2)
-        stop = round(lower_price - 0.02, 2)
-        target = round(entry + tri_range, 2)
-        bias = Bias.LONG
-        desc = "Sym Triangle breakout above"
-    elif current < lower_price:
-        entry = round(lower_price - 0.02, 2)
-        stop = round(upper_price + 0.02, 2)
-        target = round(entry - tri_range, 2)
-        bias = Bias.SHORT
-        desc = "Sym Triangle breakdown below"
-    else:
-        return None
-    return _make_setup(s, "Symmetrical Triangle", bias, entry, stop, target, 0.58, desc,
-                       key_levels={"upper": upper_price, "lower": lower_price})
-
-
-def _detect_bull_flag(s: ExtractedStructures) -> Optional[TradeSetup]:
-    """Bull Flag: impulse up + downward-sloping consolidation + breakout."""
-    if len(s.zz_lows) < 1 or len(s.zz_highs) < 1:
-        return None
-    # Find pole: a swing low followed by swing high with >2% gain
+def _detect_bull_flag(s):
+    if len(s.zz_lows) < 1 or len(s.zz_highs) < 1: return None
     for li in range(len(s.zz_lows)):
-        pole_lo = s.zz_lows[li]
-        post_highs = [h for h in s.zz_highs if h.index > pole_lo.index]
-        if not post_highs:
-            continue
-        pole_hi = post_highs[0]
-        pole_pct = (pole_hi.price - pole_lo.price) / pole_lo.price
-        if pole_pct < 0.02:
-            continue
-        # Flag: bars after pole high
-        flag_start = pole_hi.index
-        if flag_start >= s.n - 3:
-            continue
-        flag_bars = s.bars[flag_start:]
-        if len(flag_bars) < 3 or len(flag_bars) > 30:
-            continue
-        flag_low = min(b.low for b in flag_bars)
-        retrace = (pole_hi.price - flag_low) / (pole_hi.price - pole_lo.price)
-        if retrace > 0.50:
-            continue
-        if s.closes[-1] <= pole_hi.price:
-            continue  # Need breakout above flag high
-        entry = round(pole_hi.price * 1.001, 2)
-        stop = round(flag_low * 0.998, 2)
-        target = round(entry + (pole_hi.price - pole_lo.price), 2)
-        return _make_setup(s, "Bull Flag", Bias.LONG, entry, stop, target, 0.60,
-                           f"Bull Flag: {pole_pct:.1%} pole, {len(flag_bars)}-bar flag",
-                           key_levels={"pole_hi": pole_hi.price, "pole_lo": pole_lo.price,
-                                       "flag_low": flag_low})
+        lo = s.zz_lows[li]
+        post = [h for h in s.zz_highs if h.index > lo.index]
+        if not post: continue
+        hi = post[0]
+        pct = (hi.price - lo.price) / lo.price
+        if pct < 0.02: continue
+        fs = hi.index
+        if fs >= s.n - 3: continue
+        flag = s.bars[fs:]
+        if len(flag) < 3 or len(flag) > 30: continue
+        fl = min(b.low for b in flag)
+        if (hi.price - fl) / (hi.price - lo.price) > 0.50: continue
+        if s.closes[-1] <= hi.price: continue
+        return _make(s, "Bull Flag", Bias.LONG, hi.price*1.001, fl*0.998,
+                     hi.price*1.001+(hi.price-lo.price), 0.60,
+                     f"Bull Flag: {pct:.1%} pole, {len(flag)}-bar flag",
+                     key_levels={"pole_hi": hi.price, "pole_lo": lo.price, "flag_low": fl})
     return None
 
-
-def _detect_bear_flag(s: ExtractedStructures) -> Optional[TradeSetup]:
-    """Bear Flag: impulse down + upward-sloping consolidation + breakdown."""
-    if len(s.zz_highs) < 1 or len(s.zz_lows) < 1:
-        return None
-    for hi in range(len(s.zz_highs)):
-        pole_hi = s.zz_highs[hi]
-        post_lows = [l for l in s.zz_lows if l.index > pole_hi.index]
-        if not post_lows:
-            continue
-        pole_lo = post_lows[0]
-        pole_pct = (pole_hi.price - pole_lo.price) / pole_hi.price
-        if pole_pct < 0.02:
-            continue
-        flag_start = pole_lo.index
-        if flag_start >= s.n - 3:
-            continue
-        flag_bars = s.bars[flag_start:]
-        if len(flag_bars) < 3 or len(flag_bars) > 30:
-            continue
-        flag_high = max(b.high for b in flag_bars)
-        retrace = (flag_high - pole_lo.price) / (pole_hi.price - pole_lo.price)
-        if retrace > 0.50:
-            continue
-        if s.closes[-1] >= pole_lo.price:
-            continue
-        entry = round(pole_lo.price * 0.999, 2)
-        stop = round(flag_high * 1.002, 2)
-        target = round(entry - (pole_hi.price - pole_lo.price), 2)
-        return _make_setup(s, "Bear Flag", Bias.SHORT, entry, stop, target, 0.58,
-                           f"Bear Flag: {pole_pct:.1%} pole",
-                           key_levels={"pole_hi": pole_hi.price, "pole_lo": pole_lo.price,
-                                       "flag_high": flag_high})
+def _detect_bear_flag(s):
+    if len(s.zz_highs) < 1 or len(s.zz_lows) < 1: return None
+    for hi_idx in range(len(s.zz_highs)):
+        hi = s.zz_highs[hi_idx]
+        post = [l for l in s.zz_lows if l.index > hi.index]
+        if not post: continue
+        lo = post[0]
+        pct = (hi.price - lo.price) / hi.price
+        if pct < 0.02: continue
+        fs = lo.index
+        if fs >= s.n - 3: continue
+        flag = s.bars[fs:]
+        if len(flag) < 3 or len(flag) > 30: continue
+        fh = max(b.high for b in flag)
+        if (fh - lo.price) / (hi.price - lo.price) > 0.50: continue
+        if s.closes[-1] >= lo.price: continue
+        return _make(s, "Bear Flag", Bias.SHORT, lo.price*0.999, fh*1.002,
+                     lo.price*0.999-(hi.price-lo.price), 0.58,
+                     f"Bear Flag: {pct:.1%} pole", key_levels={"pole_hi": hi.price, "flag_high": fh})
     return None
 
+def _detect_pennant(s):
+    """Pennant: impulse + short symmetrical triangle (3-15 bars)."""
+    if len(s.zz_lows) < 1 or len(s.zz_highs) < 1 or s.n < 20: return None
+    # Find impulse (pole)
+    for li in range(len(s.zz_lows)):
+        lo = s.zz_lows[li]
+        post = [h for h in s.zz_highs if h.index > lo.index]
+        if not post: continue
+        hi = post[0]
+        pct = (hi.price - lo.price) / lo.price
+        if pct < 0.03: continue
+        # Pennant: 3-15 bars after pole, converging highs and lows
+        fs = hi.index
+        if fs >= s.n - 4: continue
+        pn_bars = s.bars[fs:min(fs+15, s.n)]
+        if len(pn_bars) < 3: continue
+        pn_highs = [b.high for b in pn_bars]
+        pn_lows = [b.low for b in pn_bars]
+        # Check converging: highs falling, lows rising
+        h_slope = (pn_highs[-1] - pn_highs[0]) / len(pn_highs) if len(pn_highs) > 1 else 0
+        l_slope = (pn_lows[-1] - pn_lows[0]) / len(pn_lows) if len(pn_lows) > 1 else 0
+        if h_slope >= 0 or l_slope <= 0: continue
+        if s.closes[-1] <= max(pn_highs): continue  # Need breakout
+        return _make(s, "Pennant", Bias.LONG, max(pn_highs)+0.02, min(pn_lows)-0.02,
+                     max(pn_highs)+0.02+(hi.price-lo.price), 0.53,
+                     f"Pennant: {pct:.1%} pole, converging consolidation",
+                     key_levels={"pole_hi": hi.price})
+    return None
 
-def _detect_cup_and_handle(s: ExtractedStructures) -> Optional[TradeSetup]:
-    """Cup & Handle: U-shaped low + shallow handle retrace + breakout."""
-    if len(s.zz_lows) < 1 or s.n < 40:
-        return None
-    cup_low = s.zz_lows[-1]
-    left_rim = max(s.highs[:cup_low.index]) if cup_low.index > 5 else None
-    right_rim = max(s.highs[cup_low.index:]) if cup_low.index < s.n - 5 else None
-    if left_rim is None or right_rim is None:
-        return None
-    rim = min(left_rim, right_rim)
-    cup_depth = rim - cup_low.price
-    if cup_depth <= 0:
-        return None
-    handle = s.bars[-min(10, s.n):]
-    handle_low = min(b.low for b in handle)
-    retrace = (rim - handle_low) / cup_depth
-    if retrace > 0.50 or retrace < 0.10:
-        return None
-    if s.closes[-1] < rim:
-        return None
-    entry = round(rim + 0.02, 2)
-    stop = round(handle_low - 0.02, 2)
-    target = round(entry + cup_depth, 2)
-    return _make_setup(s, "Cup & Handle", Bias.LONG, entry, stop, target, 0.63,
-                       f"Cup & Handle: rim {rim:.2f}, depth {cup_depth:.2f}",
-                       key_levels={"rim": rim, "cup_low": cup_low.price, "handle_low": handle_low})
+def _detect_cup_and_handle(s):
+    if len(s.zz_lows) < 1 or s.n < 40: return None
+    cl = s.zz_lows[-1]
+    lr = max(s.highs[:cl.index]) if cl.index > 5 else None
+    rr = max(s.highs[cl.index:]) if cl.index < s.n-5 else None
+    if lr is None or rr is None: return None
+    rim = min(lr, rr); depth = rim - cl.price
+    if depth <= 0: return None
+    handle = s.bars[-min(10,s.n):]
+    hl = min(b.low for b in handle)
+    ret = (rim - hl) / depth
+    if ret > 0.50 or ret < 0.10 or s.closes[-1] < rim: return None
+    return _make(s, "Cup & Handle", Bias.LONG, rim+0.02, hl-0.02, rim+0.02+depth, 0.63,
+                 f"Cup & Handle: rim {rim:.2f}", key_levels={"rim": rim, "cup_low": cl.price})
 
+def _detect_rectangle(s):
+    """Rectangle: horizontal S/R levels with breakout."""
+    if s.n < 20 or len(s.sr_levels) < 2: return None
+    # Find strongest resistance and support
+    res_levels = [l for l in s.sr_levels if l.level_type in ("resistance", "both")]
+    sup_levels = [l for l in s.sr_levels if l.level_type in ("support", "both")]
+    if not res_levels or not sup_levels: return None
+    res = res_levels[0].price
+    sup = sup_levels[0].price
+    if res <= sup: return None
+    rng = res - sup
+    cur = s.closes[-1]
+    if cur > res + rng * 0.01:  # Breakout above
+        return _make(s, "Rectangle", Bias.LONG, res+0.02, sup-0.02, res+0.02+rng, 0.58,
+                     f"Rectangle breakout above {res:.2f}",
+                     key_levels={"resistance": res, "support": sup})
+    elif cur < sup - rng * 0.01:  # Breakdown below
+        return _make(s, "Rectangle", Bias.SHORT, sup-0.02, res+0.02, sup-0.02-rng, 0.58,
+                     f"Rectangle breakdown below {sup:.2f}",
+                     key_levels={"resistance": res, "support": sup})
+    return None
 
-def _detect_rising_wedge(s: ExtractedStructures) -> Optional[TradeSetup]:
-    """Rising Wedge: both trendlines sloping up, converging. Bearish breakdown."""
-    if len(s.zz_highs) < 2 or len(s.zz_lows) < 2:
-        return None
-    upper = fit_trendline(s.zz_highs[-3:] if len(s.zz_highs) >= 3 else s.zz_highs[-2:])
-    lower = fit_trendline(s.zz_lows[-3:] if len(s.zz_lows) >= 3 else s.zz_lows[-2:])
-    if upper is None or lower is None:
-        return None
-    if not (upper.slope > 0 and lower.slope > 0):
-        return None
-    if upper.slope >= lower.slope:
-        return None  # Must be converging (upper slope < lower slope)
-    lower_price = lower.price_at(s.n - 1)
-    if s.closes[-1] > lower_price:
-        return None
-    upper_price = upper.price_at(s.n - 1)
-    entry = round(lower_price - 0.02, 2)
-    stop = round(upper_price + 0.02, 2)
-    wedge_height = upper_price - lower_price
-    target = round(entry - wedge_height, 2)
-    return _make_setup(s, "Rising Wedge", Bias.SHORT, entry, stop, target, 0.62,
-                       f"Rising Wedge breakdown",
-                       key_levels={"upper": upper_price, "lower": lower_price})
+def _detect_rising_wedge(s):
+    if len(s.zz_highs) < 2 or len(s.zz_lows) < 2: return None
+    u = fit_trendline(s.zz_highs[-3:] if len(s.zz_highs)>=3 else s.zz_highs[-2:])
+    l = fit_trendline(s.zz_lows[-3:] if len(s.zz_lows)>=3 else s.zz_lows[-2:])
+    if u is None or l is None: return None
+    if not (u.slope > 0 and l.slope > 0 and u.slope < l.slope): return None
+    lp = l.price_at(s.n-1); up = u.price_at(s.n-1)
+    if s.closes[-1] > lp: return None
+    return _make(s, "Rising Wedge", Bias.SHORT, lp-0.02, up+0.02, lp-0.02-(up-lp), 0.62,
+                 "Rising Wedge breakdown", key_levels={"upper": up, "lower": lp})
 
-
-def _detect_falling_wedge(s: ExtractedStructures) -> Optional[TradeSetup]:
-    """Falling Wedge: both trendlines sloping down, converging. Bullish breakout."""
-    if len(s.zz_highs) < 2 or len(s.zz_lows) < 2:
-        return None
-    upper = fit_trendline(s.zz_highs[-3:] if len(s.zz_highs) >= 3 else s.zz_highs[-2:])
-    lower = fit_trendline(s.zz_lows[-3:] if len(s.zz_lows) >= 3 else s.zz_lows[-2:])
-    if upper is None or lower is None:
-        return None
-    if not (upper.slope < 0 and lower.slope < 0):
-        return None
-    if upper.slope <= lower.slope:
-        return None  # Must converge (upper slope > lower slope, both negative)
-    upper_price = upper.price_at(s.n - 1)
-    if s.closes[-1] < upper_price:
-        return None
-    lower_price = lower.price_at(s.n - 1)
-    entry = round(upper_price + 0.02, 2)
-    stop = round(lower_price - 0.02, 2)
-    target = round(entry + (upper_price - lower_price), 2)
-    return _make_setup(s, "Falling Wedge", Bias.LONG, entry, stop, target, 0.62,
-                       f"Falling Wedge breakout",
-                       key_levels={"upper": upper_price, "lower": lower_price})
+def _detect_falling_wedge(s):
+    if len(s.zz_highs) < 2 or len(s.zz_lows) < 2: return None
+    u = fit_trendline(s.zz_highs[-3:] if len(s.zz_highs)>=3 else s.zz_highs[-2:])
+    l = fit_trendline(s.zz_lows[-3:] if len(s.zz_lows)>=3 else s.zz_lows[-2:])
+    if u is None or l is None: return None
+    if not (u.slope < 0 and l.slope < 0 and u.slope > l.slope): return None
+    up = u.price_at(s.n-1); lp = l.price_at(s.n-1)
+    if s.closes[-1] < up: return None
+    return _make(s, "Falling Wedge", Bias.LONG, up+0.02, lp-0.02, up+0.02+(up-lp), 0.62,
+                 "Falling Wedge breakout", key_levels={"upper": up, "lower": lp})
 
 
 # ==============================================================================
-# SMB SCALP PATTERNS (time-of-day logic preserved)
+# CANDLESTICK PATTERNS (10)
+# Math: Steve Nison's Japanese Candlestick Charting Techniques (1991)
 # ==============================================================================
 
-def _detect_rubberband(s: ExtractedStructures) -> Optional[TradeSetup]:
-    """RubberBand: Extended move + acceleration + snapback. Intraday."""
-    if s.n < 20 or s.current_atr <= 0:
-        return None
+def _detect_bullish_engulfing(s):
+    """Current green body fully engulfs prior red body. Bullish reversal."""
+    if s.n < 5: return None
+    prev, cur = s.bars[-2], s.bars[-1]
+    if not (_is_red(prev) and _is_green(cur)): return None
+    if not (cur.open <= prev.close and cur.close >= prev.open): return None
+    if _body(cur) <= _body(prev) * 1.1: return None  # Must be meaningfully larger
+    # Confirm near recent lows (reversal context)
+    recent_low = float(np.min(s.lows[-10:]))
+    if prev.low > recent_low + (s.highs[-10:].max() - recent_low) * 0.3: return None
+    entry = round(cur.close, 2)
+    stop = round(min(prev.low, cur.low) - 0.02, 2)
+    risk = entry - stop
+    if risk <= 0: return None
+    return _make(s, "Bullish Engulfing", Bias.LONG, entry, stop, entry + risk*2, 0.58,
+                 "Bullish Engulfing: green body engulfs prior red at lows")
+
+def _detect_bearish_engulfing(s):
+    """Current red body fully engulfs prior green body. Bearish reversal."""
+    if s.n < 5: return None
+    prev, cur = s.bars[-2], s.bars[-1]
+    if not (_is_green(prev) and _is_red(cur)): return None
+    if not (cur.open >= prev.close and cur.close <= prev.open): return None
+    if _body(cur) <= _body(prev) * 1.1: return None
+    recent_high = float(np.max(s.highs[-10:]))
+    if prev.high < recent_high - (recent_high - s.lows[-10:].min()) * 0.3: return None
+    entry = round(cur.close, 2)
+    stop = round(max(prev.high, cur.high) + 0.02, 2)
+    risk = stop - entry
+    if risk <= 0: return None
+    return _make(s, "Bearish Engulfing", Bias.SHORT, entry, stop, entry - risk*2, 0.58,
+                 "Bearish Engulfing: red body engulfs prior green at highs")
+
+def _detect_morning_star(s):
+    """3-bar reversal: big red → small body (star) → big green. Bullish."""
+    if s.n < 5: return None
+    b1, b2, b3 = s.bars[-3], s.bars[-2], s.bars[-1]
+    if not _is_red(b1) or not _is_green(b3): return None
+    if _body(b2) >= _body(b1) * 0.3: return None  # Star must be small
+    if _body(b3) < _body(b1) * 0.5: return None   # Recovery must be strong
+    # Star should gap down or be near b1's close
+    if b2.high > b1.open: return None  # Star shouldn't exceed b1 open
+    entry = round(b3.close, 2)
+    stop = round(min(b1.low, b2.low, b3.low) - 0.02, 2)
+    risk = entry - stop
+    if risk <= 0: return None
+    return _make(s, "Morning Star", Bias.LONG, entry, stop, entry + risk*2, 0.60,
+                 "Morning Star: 3-bar bullish reversal")
+
+def _detect_evening_star(s):
+    """3-bar reversal: big green → small body → big red. Bearish."""
+    if s.n < 5: return None
+    b1, b2, b3 = s.bars[-3], s.bars[-2], s.bars[-1]
+    if not _is_green(b1) or not _is_red(b3): return None
+    if _body(b2) >= _body(b1) * 0.3: return None
+    if _body(b3) < _body(b1) * 0.5: return None
+    if b2.low < b1.close: return None  # Star shouldn't drop below b1 close area
+    entry = round(b3.close, 2)
+    stop = round(max(b1.high, b2.high, b3.high) + 0.02, 2)
+    risk = stop - entry
+    if risk <= 0: return None
+    return _make(s, "Evening Star", Bias.SHORT, entry, stop, entry - risk*2, 0.60,
+                 "Evening Star: 3-bar bearish reversal")
+
+def _detect_hammer(s):
+    """Hammer: small body at top, lower shadow >= 2x body, at lows. Bullish."""
+    if s.n < 10: return None
+    bar = s.bars[-1]
+    body = _body(bar); ls = _lower_shadow(bar); us = _upper_shadow(bar); rng = _range(bar)
+    if rng == 0 or body == 0: return None
+    if ls < body * 2: return None       # Lower shadow must be >= 2x body
+    if us > body * 0.5: return None     # Upper shadow must be small
+    # Must be near recent lows
+    recent_low = float(np.min(s.lows[-10:]))
+    if bar.low > recent_low * 1.01: return None
+    entry = round(bar.close, 2)
+    stop = round(bar.low - 0.02, 2)
+    risk = entry - stop
+    if risk <= 0: return None
+    return _make(s, "Hammer", Bias.LONG, entry, stop, entry + risk*2, 0.55,
+                 f"Hammer at lows (shadow/body={ls/body:.1f}x)")
+
+def _detect_shooting_star(s):
+    """Shooting Star: small body at bottom, upper shadow >= 2x body, at highs."""
+    if s.n < 10: return None
+    bar = s.bars[-1]
+    body = _body(bar); us = _upper_shadow(bar); ls = _lower_shadow(bar); rng = _range(bar)
+    if rng == 0 or body == 0: return None
+    if us < body * 2: return None
+    if ls > body * 0.5: return None
+    recent_high = float(np.max(s.highs[-10:]))
+    if bar.high < recent_high * 0.99: return None
+    entry = round(bar.close, 2)
+    stop = round(bar.high + 0.02, 2)
+    risk = stop - entry
+    if risk <= 0: return None
+    return _make(s, "Shooting Star", Bias.SHORT, entry, stop, entry - risk*2, 0.55,
+                 f"Shooting Star at highs (shadow/body={us/body:.1f}x)")
+
+def _detect_doji(s):
+    """Doji: body < 10% of range. Indecision / potential reversal."""
+    if s.n < 10: return None
+    bar = s.bars[-1]
+    body = _body(bar); rng = _range(bar)
+    if rng == 0: return None
+    if body / rng > 0.10: return None  # Body must be < 10% of range
+    # Direction based on context: near highs = bearish doji, near lows = bullish
+    recent_high = float(np.max(s.highs[-10:]))
+    recent_low = float(np.min(s.lows[-10:]))
+    mid = (recent_high + recent_low) / 2
+    if bar.close > mid:  # Near highs → bearish
+        stop = round(bar.high + 0.02, 2); entry = round(bar.close, 2)
+        risk = stop - entry
+        if risk <= 0: return None
+        return _make(s, "Doji", Bias.SHORT, entry, stop, entry - risk*1.5, 0.48,
+                     "Doji at highs: potential bearish reversal")
+    else:  # Near lows → bullish
+        stop = round(bar.low - 0.02, 2); entry = round(bar.close, 2)
+        risk = entry - stop
+        if risk <= 0: return None
+        return _make(s, "Doji", Bias.LONG, entry, stop, entry + risk*1.5, 0.48,
+                     "Doji at lows: potential bullish reversal")
+
+def _detect_dragonfly_doji(s):
+    """Dragonfly Doji: open ≈ close ≈ high, long lower shadow. Bullish."""
+    if s.n < 10: return None
+    bar = s.bars[-1]
+    body = _body(bar); rng = _range(bar); ls = _lower_shadow(bar); us = _upper_shadow(bar)
+    if rng == 0: return None
+    if body / rng > 0.10: return None       # Doji body
+    if us > rng * 0.10: return None         # Open/close near high
+    if ls < rng * 0.65: return None         # Long lower shadow
+    entry = round(bar.close, 2)
+    stop = round(bar.low - 0.02, 2)
+    risk = entry - stop
+    if risk <= 0: return None
+    return _make(s, "Dragonfly Doji", Bias.LONG, entry, stop, entry + risk*2, 0.52,
+                 "Dragonfly Doji: rejection of lower prices")
+
+def _detect_three_white_soldiers(s):
+    """Three White Soldiers: 3 consecutive green bars, each closing higher."""
+    if s.n < 5: return None
+    b1, b2, b3 = s.bars[-3], s.bars[-2], s.bars[-1]
+    if not (_is_green(b1) and _is_green(b2) and _is_green(b3)): return None
+    if not (b2.close > b1.close and b3.close > b2.close): return None
+    # Each opens within prior body
+    if b2.open < b1.open or b2.open > b1.close: return None
+    if b3.open < b2.open or b3.open > b2.close: return None
+    # Minimal upper shadows (strong closes)
+    for b in [b1, b2, b3]:
+        if _upper_shadow(b) > _body(b) * 0.5: return None
+    entry = round(b3.close, 2)
+    stop = round(b1.low - 0.02, 2)
+    risk = entry - stop
+    if risk <= 0: return None
+    return _make(s, "Three White Soldiers", Bias.LONG, entry, stop, entry + risk*1.5, 0.58,
+                 "Three White Soldiers: strong bullish momentum")
+
+def _detect_three_black_crows(s):
+    """Three Black Crows: 3 consecutive red bars, each closing lower."""
+    if s.n < 5: return None
+    b1, b2, b3 = s.bars[-3], s.bars[-2], s.bars[-1]
+    if not (_is_red(b1) and _is_red(b2) and _is_red(b3)): return None
+    if not (b2.close < b1.close and b3.close < b2.close): return None
+    if b2.open > b1.open or b2.open < b1.close: return None
+    if b3.open > b2.open or b3.open < b2.close: return None
+    for b in [b1, b2, b3]:
+        if _lower_shadow(b) > _body(b) * 0.5: return None
+    entry = round(b3.close, 2)
+    stop = round(b1.high + 0.02, 2)
+    risk = stop - entry
+    if risk <= 0: return None
+    return _make(s, "Three Black Crows", Bias.SHORT, entry, stop, entry - risk*1.5, 0.58,
+                 "Three Black Crows: strong bearish momentum")
+
+
+# ==============================================================================
+# SMB SCALP PATTERNS (11) — time-of-day logic preserved
+# ==============================================================================
+
+def _detect_rubberband(s):
+    if s.n < 20 or s.current_atr <= 0: return None
     oi = s.day_open_idx
-    if oi >= s.n - 5:
-        return None
-    open_price = s.bars[oi].open
-    day_bars = s.bars[oi:]
-    day_low = min(b.low for b in day_bars)
-    day_low_idx = oi + min(range(len(day_bars)), key=lambda i: day_bars[i].low)
-    extension = open_price - day_low
-    atrs = extension / s.current_atr if s.current_atr > 0 else 0
-    if atrs < 1.0 or day_low_idx - oi < 5:
-        return None
-    # Check acceleration
-    mid = (oi + day_low_idx) // 2
-    first_ranges = [s.bars[i].high - s.bars[i].low for i in range(oi, mid)] if mid > oi else [0]
-    second_ranges = [s.bars[i].high - s.bars[i].low for i in range(mid, day_low_idx)] if day_low_idx > mid else [0]
-    if np.mean(second_ranges) < np.mean(first_ranges) * 1.2:
-        return None
-    # Check snapback
-    for i in range(day_low_idx + 1, min(day_low_idx + 10, s.n)):
+    if oi >= s.n - 5: return None
+    op = s.bars[oi].open; db = s.bars[oi:]
+    dl = min(b.low for b in db)
+    dli = oi + min(range(len(db)), key=lambda i: db[i].low)
+    atrs = (op - dl) / s.current_atr
+    if atrs < 1.0 or dli - oi < 5: return None
+    mid = (oi + dli) // 2
+    r1 = [s.bars[i].high - s.bars[i].low for i in range(oi, mid)] if mid > oi else [0]
+    r2 = [s.bars[i].high - s.bars[i].low for i in range(mid, dli)] if dli > mid else [0]
+    if np.mean(r2) < np.mean(r1) * 1.2: return None
+    for i in range(dli+1, min(dli+10, s.n)):
         if s.bars[i].close > s.bars[i].open:
-            cleared = sum(1 for j in range(max(day_low_idx, i - 5), i) if s.bars[i].high > s.bars[j].high)
-            if cleared >= 2:
-                entry = round(s.bars[i].high + 0.02, 2)
-                stop = round(day_low - 0.02, 2)
-                risk = entry - stop
-                if risk <= 0: continue
-                target = round(entry + 2 * risk, 2)
-                conf = 0.45
-                if atrs >= 3: conf += 0.15
-                if _is_in_time(s.bars[i].timestamp, 10, 0, 10, 45): conf += 0.10
-                return _make_setup(s, "RubberBand Scalp", Bias.LONG, entry, stop, target, conf,
-                                   f"RubberBand: {atrs:.1f} ATR extension, snapback",
-                                   max_attempts=2, exit_strategy="1/3 at 1:1, 1/3 at 2:1, 1/3 into VWAP",
-                                   ideal_time="10:00-10:45 AM ET",
-                                   key_levels={"day_low": day_low})
+            if sum(1 for j in range(max(dli,i-5),i) if s.bars[i].high > s.bars[j].high) >= 2:
+                e = round(s.bars[i].high+0.02,2); st = round(dl-0.02,2)
+                r = e-st
+                if r <= 0: continue
+                c = 0.45 + (0.15 if atrs>=3 else 0) + (0.10 if _in_time(s.bars[i].timestamp,10,0,10,45) else 0)
+                return _make(s,"RubberBand Scalp",Bias.LONG,e,st,round(e+2*r,2),c,
+                             f"RubberBand: {atrs:.1f} ATR ext",max_attempts=2,
+                             exit_strategy="1/3 at 1:1, 1/3 at 2:1, 1/3 VWAP",
+                             ideal_time="10:00-10:45 AM ET",key_levels={"day_low":dl})
     return None
 
-
-def _detect_hitchhiker(s: ExtractedStructures) -> Optional[TradeSetup]:
-    """HitchHiker: Drive off open + consolidation in upper 1/3 + breakout."""
-    if s.n < 15:
-        return None
+def _detect_hitchhiker(s):
+    if s.n < 15: return None
     oi = s.day_open_idx
-    if s.n - oi < 10:
-        return None
-    # Check for drive off open
-    drive_end = None
-    for i in range(oi + 3, min(oi + 10, s.n)):
-        if s.bars[i].close > s.bars[oi].open * 1.005:
-            drive_end = i
-            break
-    if drive_end is None:
-        return None
-    day_high = max(b.high for b in s.bars[oi:])
-    day_low = min(b.low for b in s.bars[oi:])
-    day_range = day_high - day_low
-    if day_range <= 0:
-        return None
-    upper_third = day_low + day_range * (2 / 3)
-    # Look for consolidation in upper third
-    for c_start in range(drive_end + 1, min(drive_end + 16, s.n - 5)):
-        c_end = min(c_start + 8, s.n - 1)
-        c_bars = s.bars[c_start:c_end]
-        c_high = max(b.high for b in c_bars)
-        c_low = min(b.low for b in c_bars)
-        if c_low < upper_third or (c_high - c_low) > day_range * 0.40:
-            continue
-        if c_end + 1 >= s.n:
-            continue
-        if s.bars[c_end + 1].high > c_high:
-            entry = round(c_high + 0.02, 2)
-            stop = round(c_low - 0.02, 2)
-            risk = entry - stop
-            if risk <= 0: continue
-            target = round(entry + risk * 1.9, 2)
-            conf = 0.50
-            if _is_in_time(s.bars[c_end + 1].timestamp, 9, 30, 9, 59): conf += 0.10
-            return _make_setup(s, "HitchHiker Scalp", Bias.LONG, entry, stop, target, conf,
-                               f"HitchHiker: consol in upper 1/3, breakout",
-                               max_attempts=1, exit_strategy="1/2 first wave, 1/2 second wave",
-                               ideal_time="9:30-9:59 AM ET",
-                               key_levels={"consol_high": c_high, "consol_low": c_low})
+    if s.n - oi < 10: return None
+    de = None
+    for i in range(oi+3, min(oi+10,s.n)):
+        if s.bars[i].close > s.bars[oi].open*1.005: de = i; break
+    if de is None: return None
+    dh = max(b.high for b in s.bars[oi:]); dl = min(b.low for b in s.bars[oi:])
+    dr = dh - dl
+    if dr <= 0: return None
+    ut = dl + dr * (2/3)
+    for cs in range(de+1, min(de+16,s.n-5)):
+        ce = min(cs+8, s.n-1)
+        cb = s.bars[cs:ce]; ch = max(b.high for b in cb); cl = min(b.low for b in cb)
+        if cl < ut or (ch-cl) > dr*0.40: continue
+        if ce+1 >= s.n or s.bars[ce+1].high <= ch: continue
+        e = round(ch+0.02,2); st = round(cl-0.02,2); r = e-st
+        if r <= 0: continue
+        c = 0.50 + (0.10 if _in_time(s.bars[ce+1].timestamp,9,30,9,59) else 0)
+        return _make(s,"HitchHiker Scalp",Bias.LONG,e,st,round(e+r*1.9,2),c,
+                     "HitchHiker: consol upper 1/3",max_attempts=1,ideal_time="9:30-9:59 AM ET")
     return None
 
-
-def _detect_orb(s: ExtractedStructures, minutes: int = 15) -> Optional[TradeSetup]:
-    """ORB: Time-based opening range, breakout/breakdown."""
-    if s.n < 10:
-        return None
+def _detect_orb(s, minutes=15):
+    if s.n < 10: return None
     oi = s.day_open_idx
-    if oi >= s.n - 5:
-        return None
-    open_time = s.timestamps[oi]
-    cutoff = open_time + timedelta(minutes=minutes)
-    orb_end = oi
+    if oi >= s.n-5: return None
+    ot = s.timestamps[oi]; cut = ot + timedelta(minutes=minutes)
+    oe = oi
     for i in range(oi, s.n):
-        if s.timestamps[i] <= cutoff:
-            orb_end = i
-        else:
-            break
-    if orb_end <= oi:
-        return None
-    orb_bars = s.bars[oi:orb_end + 1]
-    orb_high = max(b.high for b in orb_bars)
-    orb_low = min(b.low for b in orb_bars)
-    orb_range = orb_high - orb_low
-    if orb_range <= 0:
-        return None
-    name = f"ORB {minutes}min"
-    for i in range(orb_end + 1, min(orb_end + 30, s.n)):
-        if s.bars[i].close > orb_high:
-            entry = round(orb_high + 0.02, 2)
-            stop = round(s.bars[i].low - 0.02, 2)
-            risk = entry - stop
-            if risk <= 0 or risk > orb_range: continue
-            target = round(entry + 2 * orb_range, 2)
-            conf = 0.50
-            orb_avg_vol = np.mean([b.volume for b in orb_bars])
-            if s.bars[i].volume > orb_avg_vol * 1.5: conf += 0.15
-            return _make_setup(s, name, Bias.LONG, entry, stop, target, conf,
-                               f"ORB {minutes}min breakout above {orb_high:.2f}",
-                               max_attempts=2, ideal_time=f"After {minutes}min ORB",
-                               key_levels={"orb_high": orb_high, "orb_low": orb_low})
-        if s.bars[i].close < orb_low:
-            entry = round(orb_low - 0.02, 2)
-            stop = round(s.bars[i].high + 0.02, 2)
-            risk = stop - entry
-            if risk <= 0 or risk > orb_range: continue
-            target = round(entry - 2 * orb_range, 2)
-            return _make_setup(s, name, Bias.SHORT, entry, stop, target, 0.55,
-                               f"ORB {minutes}min breakdown below {orb_low:.2f}",
-                               max_attempts=2, ideal_time=f"After {minutes}min ORB",
-                               key_levels={"orb_high": orb_high, "orb_low": orb_low})
+        if s.timestamps[i] <= cut: oe = i
+        else: break
+    if oe <= oi: return None
+    ob = s.bars[oi:oe+1]; oh = max(b.high for b in ob); ol = min(b.low for b in ob); orng = oh-ol
+    if orng <= 0: return None
+    nm = f"ORB {minutes}min"
+    for i in range(oe+1, min(oe+30,s.n)):
+        if s.bars[i].close > oh:
+            e=round(oh+0.02,2); st=round(s.bars[i].low-0.02,2); r=e-st
+            if r<=0 or r>orng: continue
+            c = 0.50 + (0.15 if s.bars[i].volume > np.mean([b.volume for b in ob])*1.5 else 0)
+            return _make(s,nm,Bias.LONG,e,st,round(e+2*orng,2),c,
+                         f"ORB {minutes}min above {oh:.2f}",max_attempts=2,
+                         key_levels={"orb_high":oh,"orb_low":ol})
+        if s.bars[i].close < ol:
+            e=round(ol-0.02,2); st=round(s.bars[i].high+0.02,2); r=st-e
+            if r<=0 or r>orng: continue
+            return _make(s,nm,Bias.SHORT,e,st,round(e-2*orng,2),0.55,
+                         f"ORB {minutes}min below {ol:.2f}",max_attempts=2,
+                         key_levels={"orb_high":oh,"orb_low":ol})
     return None
 
-
-def _detect_second_chance(s: ExtractedStructures) -> Optional[TradeSetup]:
-    """Second Chance: Resistance break + pullback to support + bounce."""
-    if s.n < 30 or len(s.sw_high_idx) < 2:
-        return None
-    # Find resistance cluster
-    for i in range(len(s.sw_high_idx) - 1):
-        level = s.highs[s.sw_high_idx[i]]
-        tol = level * 0.003
+def _detect_second_chance(s):
+    if s.n < 30 or len(s.sw_high_idx) < 2: return None
+    for i in range(len(s.sw_high_idx)-1):
+        lev = s.highs[s.sw_high_idx[i]]; tol = lev*0.003
         touches = [s.sw_high_idx[i]]
-        for j in range(i + 1, len(s.sw_high_idx)):
-            if abs(s.highs[s.sw_high_idx[j]] - level) < tol:
-                touches.append(s.sw_high_idx[j])
-        if len(touches) < 2:
-            continue
-        resistance = float(np.mean([s.highs[idx] for idx in touches]))
-        # Look for breakout then pullback
+        for j in range(i+1, len(s.sw_high_idx)):
+            if abs(s.highs[s.sw_high_idx[j]]-lev) < tol: touches.append(s.sw_high_idx[j])
+        if len(touches) < 2: continue
+        res = float(np.mean([s.highs[idx] for idx in touches]))
         last = touches[-1]
-        for k in range(last + 1, min(last + 20, s.n)):
-            if s.closes[k] > resistance * 1.002:
-                # Found breakout, now look for pullback
-                for p in range(k + 1, min(k + 15, s.n)):
-                    if s.lows[p] <= resistance * 1.003:
-                        if p + 1 < s.n and s.closes[p + 1] > s.bars[p].high:
-                            entry = round(s.closes[p + 1], 2)
-                            stop = round(s.bars[p].low - 0.02, 2)
-                            risk = entry - stop
-                            if risk <= 0: continue
-                            target = round(max(s.highs[k:p + 1]) , 2)
-                            rr = (target - entry) / risk
-                            if rr < 1.0: continue
-                            conf = 0.45
-                            if s.bars[k].volume > s.bars[p].volume * 1.3: conf += 0.15
-                            return _make_setup(s, "Second Chance Scalp", Bias.LONG,
-                                               entry, stop, target, conf,
-                                               f"Second Chance: retest {resistance:.2f} held",
-                                               max_attempts=2,
-                                               ideal_time="9:59-10:44, 10:45-1:29 ET",
-                                               key_levels={"resistance": resistance})
+        for k in range(last+1, min(last+20,s.n)):
+            if s.closes[k] > res*1.002:
+                for p in range(k+1, min(k+15,s.n)):
+                    if s.lows[p] <= res*1.003 and p+1 < s.n and s.closes[p+1] > s.bars[p].high:
+                        e=round(s.closes[p+1],2); st=round(s.bars[p].low-0.02,2); r=e-st
+                        if r<=0: continue
+                        t=round(max(s.highs[k:p+1]),2)
+                        if (t-e)/r < 1: continue
+                        c = 0.45 + (0.15 if s.bars[k].volume > s.bars[p].volume*1.3 else 0)
+                        return _make(s,"Second Chance Scalp",Bias.LONG,e,st,t,c,
+                                     f"Second Chance: retest {res:.2f}",max_attempts=2)
                 break
     return None
 
-
-def _detect_backside(s: ExtractedStructures) -> Optional[TradeSetup]:
-    """BackSide: Below VWAP, HH+HL forming, EMA rising, targeting VWAP."""
-    if s.n < 25:
-        return None
+def _detect_backside(s):
+    if s.n < 25: return None
     oi = s.day_open_idx
-    if s.n - oi < 15:
-        return None
-    # Simple VWAP proxy: cumulative TP*V / cumV for today
-    cum_vol = 0.0
-    cum_tpv = 0.0
-    vwap_val = s.closes[-1]
-    for i in range(oi, s.n):
-        tp = (s.highs[i] + s.lows[i] + s.closes[i]) / 3
-        cum_vol += s.volumes[i]
-        cum_tpv += tp * s.volumes[i]
-        if cum_vol > 0:
-            vwap_val = cum_tpv / cum_vol
-    ema9 = ema_last(s.closes, 9)
-    if s.closes[-1] >= vwap_val or s.closes[-1] < ema9:
-        return None
-    if s.n >= 12 and ema_last(s.closes, 9) <= ema_last(s.closes[:-3], 9):
-        return None  # EMA not rising
-    entry = round(s.highs[-1] + 0.02, 2)
-    recent_lows = s.lows[-8:]
-    hl = float(np.sort(recent_lows)[-2]) if len(recent_lows) >= 2 else s.lows[-1]
-    stop = round(hl - 0.02, 2)
-    target = round(vwap_val, 2)
-    risk = entry - stop
-    if risk <= 0 or target <= entry:
-        return None
-    conf = 0.48
-    if _is_in_time(s.timestamps[-1], 10, 0, 10, 45): conf += 0.10
-    return _make_setup(s, "BackSide Scalp", Bias.LONG, entry, stop, target, conf,
-                       f"BackSide: HH+HL above 9 EMA, targeting VWAP {vwap_val:.2f}",
-                       exit_strategy="Full exit at VWAP",
-                       ideal_time="10:00-10:45, 10:46-1:30 ET",
-                       key_levels={"vwap": round(vwap_val, 2)})
+    if s.n - oi < 15: return None
+    cv, ctv = 0.0, 0.0
+    for i in range(oi,s.n):
+        tp = (s.highs[i]+s.lows[i]+s.closes[i])/3; cv += s.volumes[i]; ctv += tp*s.volumes[i]
+    vwap = ctv/cv if cv > 0 else s.closes[-1]
+    e9 = ema_last(s.closes, 9)
+    if s.closes[-1] >= vwap or s.closes[-1] < e9: return None
+    if s.n >= 12 and ema_last(s.closes,9) <= ema_last(s.closes[:-3],9): return None
+    e=round(s.highs[-1]+0.02,2); rl = s.lows[-8:]
+    hl = float(np.sort(rl)[-2]) if len(rl)>=2 else s.lows[-1]
+    st=round(hl-0.02,2); t=round(vwap,2); r=e-st
+    if r<=0 or t<=e: return None
+    c = 0.48 + (0.10 if _in_time(s.timestamps[-1],10,0,10,45) else 0)
+    return _make(s,"BackSide Scalp",Bias.LONG,e,st,t,c,f"BackSide: VWAP {vwap:.2f}",
+                 ideal_time="10:00-10:45 ET",key_levels={"vwap":round(vwap,2)})
 
-
-def _detect_fashionably_late(s: ExtractedStructures) -> Optional[TradeSetup]:
-    """Fashionably Late: 9 EMA crosses VWAP after extended move, measured move target."""
-    if s.n < 30:
-        return None
+def _detect_fashionably_late(s):
+    if s.n < 30: return None
     oi = s.day_open_idx
-    if s.n - oi < 20:
-        return None
-    # Compute VWAP and 9 EMA
-    ema9_series = ema(s.closes, 9)
-    cum_vol = 0.0; cum_tpv = 0.0
-    vwap_series = np.zeros(s.n)
-    for i in range(oi, s.n):
-        tp = (s.highs[i] + s.lows[i] + s.closes[i]) / 3
-        cum_vol += s.volumes[i]
-        cum_tpv += tp * s.volumes[i]
-        vwap_series[i] = cum_tpv / cum_vol if cum_vol > 0 else tp
-    day_low = float(np.min(s.lows[oi:]))
-    # Find EMA cross above VWAP
-    for i in range(oi + 10, s.n):
-        if np.isnan(ema9_series[i]) or np.isnan(ema9_series[i - 1]):
-            continue
-        if vwap_series[i] == 0 or vwap_series[i - 1] == 0:
-            continue
-        if ema9_series[i - 1] < vwap_series[i - 1] and ema9_series[i] >= vwap_series[i]:
-            cross_price = vwap_series[i]
-            measured = cross_price - day_low
-            if measured <= 0:
-                continue
-            entry = round(cross_price, 2)
-            stop = round(cross_price - measured / 3, 2)
-            target = round(cross_price + measured, 2)
-            conf = 0.55
-            if _is_in_time(s.timestamps[i], 10, 0, 10, 45): conf += 0.10
-            return _make_setup(s, "Fashionably Late", Bias.LONG, entry, stop, target, conf,
-                               f"Fashionably Late: 9 EMA crossed VWAP, measured ${measured:.2f}",
-                               ideal_time="10:00-10:45, 10:46-1:30 ET",
-                               key_levels={"cross": round(cross_price, 2), "day_low": day_low})
+    if s.n - oi < 20: return None
+    e9s = ema(s.closes, 9); cv, ctv = 0.0, 0.0
+    vs = np.zeros(s.n)
+    for i in range(oi,s.n):
+        tp=(s.highs[i]+s.lows[i]+s.closes[i])/3; cv+=s.volumes[i]; ctv+=tp*s.volumes[i]
+        vs[i] = ctv/cv if cv > 0 else tp
+    dl = float(np.min(s.lows[oi:]))
+    for i in range(oi+10, s.n):
+        if np.isnan(e9s[i]) or np.isnan(e9s[i-1]) or vs[i]==0 or vs[i-1]==0: continue
+        if e9s[i-1] < vs[i-1] and e9s[i] >= vs[i]:
+            cp = vs[i]; mm = cp - dl
+            if mm <= 0: continue
+            c = 0.55 + (0.10 if _in_time(s.timestamps[i],10,0,10,45) else 0)
+            return _make(s,"Fashionably Late",Bias.LONG,round(cp,2),round(cp-mm/3,2),
+                         round(cp+mm,2),c,f"Fashionably Late: measured ${mm:.2f}",
+                         ideal_time="10:00-10:45 ET",key_levels={"cross":round(cp,2)})
     return None
 
-
-def _detect_spencer(s: ExtractedStructures) -> Optional[TradeSetup]:
-    """Spencer: Tight consolidation near HOD + breakout."""
-    if s.n < 30:
-        return None
+def _detect_spencer(s):
+    if s.n < 30: return None
     oi = s.day_open_idx
-    if s.n - oi < 25:
-        return None
-    day_high = max(b.high for b in s.bars[oi:])
-    day_low = min(b.low for b in s.bars[oi:])
-    day_range = day_high - day_low
-    if day_range <= 0:
-        return None
-    upper_third = day_low + day_range * (2 / 3)
-    for start in range(oi + 5, s.n - 10):
-        window = s.bars[start:start + 10]
-        c_high = max(b.high for b in window)
-        c_low = min(b.low for b in window)
-        c_range = c_high - c_low
-        if c_low < upper_third or c_range > day_range * 0.35:
-            continue
-        break_idx = start + 10
-        if break_idx >= s.n:
-            continue
-        if s.bars[break_idx].high > c_high:
-            entry = round(c_high + 0.02, 2)
-            stop = round(c_low - 0.02, 2)
-            risk = entry - stop
-            if risk <= 0: continue
-            target = round(entry + 2 * c_range, 2)
-            return _make_setup(s, "Spencer Scalp", Bias.LONG, entry, stop, target, 0.52,
-                               f"Spencer: tight consol near HOD, breakout",
-                               exit_strategy="1/4 at 1:1, 1/2 at 2:1, 1/4 at 3:1",
-                               key_levels={"consol_high": c_high, "consol_low": c_low})
+    if s.n-oi < 25: return None
+    dh=max(b.high for b in s.bars[oi:]); dl=min(b.low for b in s.bars[oi:]); dr=dh-dl
+    if dr<=0: return None
+    ut = dl + dr*(2/3)
+    for st in range(oi+5, s.n-10):
+        w=s.bars[st:st+10]; ch=max(b.high for b in w); cl=min(b.low for b in w)
+        if cl<ut or (ch-cl)>dr*0.35: continue
+        bi=st+10
+        if bi>=s.n or s.bars[bi].high<=ch: continue
+        e=round(ch+0.02,2); stp=round(cl-0.02,2); r=e-stp
+        if r<=0: continue
+        return _make(s,"Spencer Scalp",Bias.LONG,e,stp,round(e+2*(ch-cl),2),0.52,
+                     "Spencer: tight consol near HOD",key_levels={"consol_high":ch})
     return None
 
-
-def _detect_gap_give_and_go(s: ExtractedStructures) -> Optional[TradeSetup]:
-    """Gap Give & Go: Gap up + initial drop + consolidation + break to fill gap."""
-    if s.n < 15:
-        return None
+def _detect_gap_give_and_go(s):
+    if s.n < 15: return None
     oi = s.day_open_idx
-    if oi == 0 or s.n - oi < 10:
-        return None
-    prev_close = s.bars[oi - 1].close
-    open_price = s.bars[oi].open
-    gap_pct = (open_price - prev_close) / prev_close * 100
-    if gap_pct < 0.5:
-        return None
-    # Initial drop
-    drop_end = None
-    for i in range(oi + 1, min(oi + 6, s.n)):
-        if s.bars[i].low < open_price * 0.995:
-            drop_end = i
-    if drop_end is None:
-        return None
-    # Consolidation
-    for c_len in range(3, 8):
-        c_end = drop_end + c_len
-        if c_end >= s.n - 1:
-            continue
-        c_bars = s.bars[drop_end:c_end]
-        c_high = max(b.high for b in c_bars)
-        c_low = min(b.low for b in c_bars)
-        if (c_high - c_low) > (open_price - c_low) * 0.50:
-            continue
-        if s.bars[c_end].high > c_high:
-            entry = round(c_high + 0.02, 2)
-            stop = round(c_low - 0.02, 2)
-            risk = entry - stop
-            if risk <= 0: continue
-            target = round(open_price, 2)
-            if (target - entry) / risk < 1.0: continue
-            conf = 0.50
-            if _is_in_time(s.timestamps[c_end], 9, 30, 9, 45): conf += 0.10
-            return _make_setup(s, "Gap Give & Go", Bias.LONG, entry, stop, target, conf,
-                               f"Gap G&G: {gap_pct:.1f}% gap, {c_len}-bar consol",
-                               max_attempts=2, ideal_time="9:30-9:45 AM ET",
-                               key_levels={"gap_open": open_price, "consol_low": c_low})
+    if oi==0 or s.n-oi < 10: return None
+    pc = s.bars[oi-1].close; op = s.bars[oi].open
+    gp = (op-pc)/pc*100
+    if gp < 0.5: return None
+    de = None
+    for i in range(oi+1, min(oi+6,s.n)):
+        if s.bars[i].low < op*0.995: de=i
+    if de is None: return None
+    for cl in range(3,8):
+        ce = de+cl
+        if ce >= s.n-1: continue
+        cb = s.bars[de:ce]; ch=max(b.high for b in cb); clo=min(b.low for b in cb)
+        if (ch-clo) > (op-clo)*0.50: continue
+        if s.bars[ce].high > ch:
+            e=round(ch+0.02,2); st=round(clo-0.02,2); r=e-st
+            if r<=0: continue
+            t=round(op,2)
+            if (t-e)/r < 1: continue
+            c = 0.50 + (0.10 if _in_time(s.timestamps[ce],9,30,9,45) else 0)
+            return _make(s,"Gap Give & Go",Bias.LONG,e,st,t,c,
+                         f"Gap G&G: {gp:.1f}%",max_attempts=2,ideal_time="9:30-9:45 AM ET")
     return None
 
-
-def _detect_tidal_wave(s: ExtractedStructures) -> Optional[TradeSetup]:
-    """Tidal Wave: Multiple touches of support with diminishing bounces + breakdown."""
-    if s.n < 30 or len(s.sw_low_idx) < 2:
-        return None
-    order = adaptive_order(s.timeframe)
+def _detect_tidal_wave(s):
+    if s.n < 30 or len(s.sw_low_idx) < 2: return None
     for i in range(len(s.sw_low_idx)):
-        support = s.lows[s.sw_low_idx[i]]
-        tol = support * 0.003
+        sup = s.lows[s.sw_low_idx[i]]; tol = sup*0.003
         touches = [s.sw_low_idx[i]]
-        for j in range(i + 1, len(s.sw_low_idx)):
-            if abs(s.lows[s.sw_low_idx[j]] - support) < tol:
-                touches.append(s.sw_low_idx[j])
-        if len(touches) < 2:
-            continue
-        # Check diminishing bounces
-        bounce_highs = []
-        for t in range(len(touches) - 1):
-            between = s.highs[touches[t]:touches[t + 1]]
-            if len(between) > 0:
-                bounce_highs.append(float(np.max(between)))
-        if len(bounce_highs) < 2:
-            continue
-        if not all(bounce_highs[k] > bounce_highs[k + 1] for k in range(len(bounce_highs) - 1)):
-            continue
-        # Check breakdown
-        if s.closes[-1] >= support:
-            continue
-        entry = round(support - 0.02, 2)
-        stop = round(bounce_highs[-1] + 0.02, 2)
-        risk = stop - entry
-        if risk <= 0: continue
-        target = round(entry - 2 * risk, 2)
-        return _make_setup(s, "Tidal Wave", Bias.SHORT, entry, stop, target, 0.55,
-                           f"Tidal Wave: {len(touches)} touches, diminishing bounces",
-                           exit_strategy="1/2 at 2x, hold rest",
-                           key_levels={"support": support, "last_bounce": bounce_highs[-1]})
+        for j in range(i+1, len(s.sw_low_idx)):
+            if abs(s.lows[s.sw_low_idx[j]]-sup) < tol: touches.append(s.sw_low_idx[j])
+        if len(touches) < 2: continue
+        bh = []
+        for t in range(len(touches)-1):
+            btw = s.highs[touches[t]:touches[t+1]]
+            if len(btw)>0: bh.append(float(np.max(btw)))
+        if len(bh)<2 or not all(bh[k]>bh[k+1] for k in range(len(bh)-1)): continue
+        if s.closes[-1] >= sup: continue
+        e=round(sup-0.02,2); st=round(bh[-1]+0.02,2); r=st-e
+        if r<=0: continue
+        return _make(s,"Tidal Wave",Bias.SHORT,e,st,round(e-2*r,2),0.55,
+                     f"Tidal Wave: {len(touches)} touches, diminishing bounces",
+                     key_levels={"support":sup})
     return None
 
-
-def _detect_breaking_news(s: ExtractedStructures) -> Optional[TradeSetup]:
-    """Breaking News: Volume spike (3x+) with range expansion (2x+)."""
-    if s.n < 12:
-        return None
-    avg_vol = float(np.mean(s.volumes[-12:-2]))
-    avg_range = float(np.mean(s.highs[-12:-2] - s.lows[-12:-2]))
-    cur_vol = s.volumes[-1]
-    cur_range = s.highs[-1] - s.lows[-1]
-    if avg_vol == 0 or cur_vol < avg_vol * 3:
-        return None
-    if avg_range == 0 or cur_range < avg_range * 2:
-        return None
-    is_bullish = s.closes[-1] > s.opens[-1]
-    if is_bullish:
-        entry = round(s.closes[-1], 2)
-        stop = round(s.lows[-1] - 0.02, 2)
-        risk = entry - stop
-        if risk <= 0: return None
-        target = round(entry + risk * 2, 2)
-        bias = Bias.LONG
+def _detect_breaking_news(s):
+    if s.n < 12: return None
+    av = float(np.mean(s.volumes[-12:-2])); ar = float(np.mean(s.highs[-12:-2]-s.lows[-12:-2]))
+    cv = s.volumes[-1]; cr = s.highs[-1]-s.lows[-1]
+    if av==0 or cv<av*3 or ar==0 or cr<ar*2: return None
+    vx = cv/av
+    if _is_green(s.bars[-1]):
+        e=round(s.closes[-1],2); st=round(s.lows[-1]-0.02,2); r=e-st
+        if r<=0: return None
+        c = 0.45+(0.15 if vx>5 else 0)+(0.10 if cr>ar*3 else 0)
+        return _make(s,"Breaking News",Bias.LONG,e,st,round(e+r*2,2),c,
+                     f"Breaking News: {vx:.0f}x vol",max_attempts=2)
     else:
-        entry = round(s.closes[-1], 2)
-        stop = round(s.highs[-1] + 0.02, 2)
-        risk = stop - entry
-        if risk <= 0: return None
-        target = round(entry - risk * 2, 2)
-        bias = Bias.SHORT
-    vol_x = cur_vol / avg_vol
-    conf = 0.45
-    if vol_x > 5: conf += 0.15
-    if cur_range > avg_range * 3: conf += 0.10
-    return _make_setup(s, "Breaking News", bias, entry, stop, target, conf,
-                       f"Breaking News: {vol_x:.0f}x vol, {cur_range / avg_range:.1f}x range",
-                       max_attempts=2, key_levels={"vol_multiple": round(vol_x, 1)})
+        e=round(s.closes[-1],2); st=round(s.highs[-1]+0.02,2); r=st-e
+        if r<=0: return None
+        c = 0.45+(0.15 if vx>5 else 0)+(0.10 if cr>ar*3 else 0)
+        return _make(s,"Breaking News",Bias.SHORT,e,st,round(e-r*2,2),c,
+                     f"Breaking News: {vx:.0f}x vol",max_attempts=2)
 
 
 # ==============================================================================
-# QUANT PATTERNS
+# QUANT STRATEGY PATTERNS (10)
 # ==============================================================================
 
-def _detect_momentum_breakout(s: ExtractedStructures) -> Optional[TradeSetup]:
-    """Momentum Breakout: Price > 20-bar high. Core trend-following signal."""
-    if s.n < 25:
-        return None
-    high_20 = float(np.max(s.highs[-21:-1]))  # Exclude current bar
-    if s.closes[-1] <= high_20:
-        return None
-    low_20 = float(np.min(s.lows[-20:]))
-    entry = round(s.closes[-1], 2)
-    stop = round(low_20, 2)
-    risk = entry - stop
-    if risk <= 0:
-        return None
-    target = round(entry + (high_20 - low_20), 2)
-    return _make_setup(s, "Momentum Breakout", Bias.LONG, entry, stop, target, 0.55,
-                       f"20-bar high breakout at {s.closes[-1]:.2f}",
-                       key_levels={"20d_high": high_20, "20d_low": low_20})
+def _detect_momentum_breakout(s):
+    """Price > 20-bar high. Core trend-following signal."""
+    if s.n < 25: return None
+    h20 = float(np.max(s.highs[-21:-1])); l20 = float(np.min(s.lows[-20:]))
+    if s.closes[-1] <= h20: return None
+    e=round(s.closes[-1],2); st=round(l20,2); r=e-st
+    if r<=0: return None
+    return _make(s,"Momentum Breakout",Bias.LONG,e,st,round(e+(h20-l20),2),0.55,
+                 f"20-bar high breakout",key_levels={"20d_high":h20,"20d_low":l20})
 
-
-def _detect_vol_compression_breakout(s: ExtractedStructures) -> Optional[TradeSetup]:
-    """Vol Compression Breakout: Bollinger squeeze → expansion."""
-    if s.n < 30:
-        return None
-    ratio = atr_ratio(s.highs, s.lows, s.closes, atr_period=14, baseline_lookback=40)
-    if ratio > 0.6:
-        return None  # Not compressed enough
-    # Breakout direction from last bar
+def _detect_vol_compression_breakout(s):
+    """Bollinger squeeze → expansion."""
+    if s.n < 30: return None
+    r = atr_ratio(s.highs, s.lows, s.closes, atr_period=14, baseline_lookback=40)
+    if r > 0.6: return None
     sma20 = float(np.mean(s.closes[-20:]))
     if s.closes[-1] > sma20:
-        entry = round(s.closes[-1], 2)
-        stop = round(sma20 - s.current_atr, 2)
-        risk = entry - stop
-        if risk <= 0: return None
-        target = round(entry + 2 * risk, 2)
-        bias = Bias.LONG
-        desc = "Vol squeeze breakout above 20 SMA"
+        e=round(s.closes[-1],2); st=round(sma20-s.current_atr,2); risk=e-st
+        if risk<=0: return None
+        return _make(s,"Vol Compression Breakout",Bias.LONG,e,st,round(e+2*risk,2),0.58,
+                     f"Vol squeeze breakout (ATR ratio {r:.2f})",key_levels={"sma20":round(sma20,2)})
     else:
-        entry = round(s.closes[-1], 2)
-        stop = round(sma20 + s.current_atr, 2)
-        risk = stop - entry
-        if risk <= 0: return None
-        target = round(entry - 2 * risk, 2)
-        bias = Bias.SHORT
-        desc = "Vol squeeze breakdown below 20 SMA"
-    return _make_setup(s, "Vol Compression Breakout", bias, entry, stop, target, 0.58,
-                       f"{desc} (ATR ratio {ratio:.2f})",
-                       key_levels={"sma20": round(sma20, 2), "atr_ratio": round(ratio, 2)})
+        e=round(s.closes[-1],2); st=round(sma20+s.current_atr,2); risk=st-e
+        if risk<=0: return None
+        return _make(s,"Vol Compression Breakout",Bias.SHORT,e,st,round(e-2*risk,2),0.58,
+                     f"Vol squeeze breakdown (ATR ratio {r:.2f})")
+
+def _detect_mean_reversion(s):
+    """Z-score extreme: buy at z < -2, sell at z > 2."""
+    if s.n < 25: return None
+    ma = float(np.mean(s.closes[-20:])); std = float(np.std(s.closes[-20:]))
+    if std == 0: return None
+    z = (s.closes[-1] - ma) / std
+    if abs(z) < 2.0: return None
+    if z < -2:
+        e=round(s.closes[-1],2); st=round(s.closes[-1]-s.current_atr*1.5,2); r=e-st
+        if r<=0: return None
+        return _make(s,"Mean Reversion",Bias.LONG,e,st,round(ma,2),0.55,
+                     f"Mean Reversion: z={z:.2f}, target MA {ma:.2f}")
+    else:
+        e=round(s.closes[-1],2); st=round(s.closes[-1]+s.current_atr*1.5,2); r=st-e
+        if r<=0: return None
+        return _make(s,"Mean Reversion",Bias.SHORT,e,st,round(ma,2),0.55,
+                     f"Mean Reversion: z={z:.2f}, target MA {ma:.2f}")
+
+def _detect_trend_pullback(s):
+    """Above 50 SMA + price pulled back near 21 EMA. Trend continuation."""
+    if s.n < 55: return None
+    sma50 = float(np.mean(s.closes[-50:])); e21 = ema_last(s.closes, 21)
+    cur = s.closes[-1]
+    if cur < sma50: return None  # Must be in uptrend
+    # Price should be near 21 EMA (within 1 ATR)
+    if s.current_atr == 0: return None
+    dist = abs(cur - e21) / s.current_atr
+    if dist > 1.5 or cur > e21 * 1.005: return None  # Must be pulling back TO ema, not above
+    # Check recent bar is bouncing (green after touching EMA)
+    if not _is_green(s.bars[-1]): return None
+    e=round(cur,2); st=round(e21 - s.current_atr,2); r=e-st
+    if r<=0: return None
+    return _make(s,"Trend Pullback",Bias.LONG,e,st,round(e+2*r,2),0.58,
+                 f"Trend Pullback: above 50 SMA, bounce off 21 EMA",
+                 key_levels={"sma50":round(sma50,2),"ema21":round(e21,2)})
+
+def _detect_gap_fade(s):
+    """Large gap (>2%) that's likely to retrace. Fade direction."""
+    if s.n < 5: return None
+    oi = s.day_open_idx
+    if oi == 0: return None
+    pc = s.bars[oi-1].close; op = s.bars[oi].open
+    gap_pct = (op - pc) / pc * 100
+    if abs(gap_pct) < 2.0: return None
+    if gap_pct > 2.0:  # Gap up → short fade
+        e=round(s.closes[-1],2); st=round(s.highs[oi]+0.02,2); r=st-e
+        if r<=0: return None
+        t=round(pc,2)  # Target: fill gap
+        if (e-t)/r < 0.5: return None
+        return _make(s,"Gap Fade",Bias.SHORT,e,st,t,0.52,
+                     f"Gap Fade: {gap_pct:.1f}% gap up, target fill",
+                     key_levels={"prev_close":pc,"gap_open":op})
+    else:  # Gap down → long fade
+        e=round(s.closes[-1],2); st=round(s.lows[oi]-0.02,2); r=e-st
+        if r<=0: return None
+        t=round(pc,2)
+        if (t-e)/r < 0.5: return None
+        return _make(s,"Gap Fade",Bias.LONG,e,st,t,0.52,
+                     f"Gap Fade: {gap_pct:.1f}% gap down, target fill",
+                     key_levels={"prev_close":pc,"gap_open":op})
+
+def _detect_relative_strength_break(s):
+    """Stock making 50-bar high while within 5% of 20-bar high. Strength signal."""
+    if s.n < 55: return None
+    h50 = float(np.max(s.highs[-51:-1])); h20 = float(np.max(s.highs[-21:-1]))
+    cur = s.closes[-1]
+    if cur <= h50: return None
+    # Additional: volume confirmation
+    avg_vol = float(np.mean(s.volumes[-20:]))
+    if s.volumes[-1] < avg_vol * 1.2: return None
+    l20 = float(np.min(s.lows[-20:]))
+    e=round(cur,2); st=round(l20,2); r=e-st
+    if r<=0: return None
+    return _make(s,"Relative Strength Break",Bias.LONG,e,st,round(e+r*1.5,2),0.55,
+                 f"50-bar high breakout with volume",key_levels={"50d_high":h50})
+
+def _detect_range_expansion(s):
+    """Today's range > 2x average range. Directional move starting."""
+    if s.n < 15: return None
+    avg_r = float(np.mean(s.highs[-15:-1] - s.lows[-15:-1]))
+    if avg_r == 0: return None
+    cur_r = s.highs[-1] - s.lows[-1]
+    if cur_r < avg_r * 2: return None
+    rx = cur_r / avg_r
+    if _is_green(s.bars[-1]):
+        e=round(s.closes[-1],2); st=round(s.lows[-1]-0.02,2); r=e-st
+        if r<=0: return None
+        return _make(s,"Range Expansion",Bias.LONG,e,st,round(e+r*1.5,2),0.52,
+                     f"Range Expansion: {rx:.1f}x avg range (bullish)")
+    else:
+        e=round(s.closes[-1],2); st=round(s.highs[-1]+0.02,2); r=st-e
+        if r<=0: return None
+        return _make(s,"Range Expansion",Bias.SHORT,e,st,round(e-r*1.5,2),0.52,
+                     f"Range Expansion: {rx:.1f}x avg range (bearish)")
+
+def _detect_volume_breakout(s):
+    """Volume > 3x average + directional close beyond recent range."""
+    if s.n < 20: return None
+    avg_v = float(np.mean(s.volumes[-20:-1]))
+    if avg_v == 0 or s.volumes[-1] < avg_v * 3: return None
+    h10 = float(np.max(s.highs[-11:-1])); l10 = float(np.min(s.lows[-11:-1]))
+    cur = s.closes[-1]; vx = s.volumes[-1] / avg_v
+    if cur > h10:
+        e=round(cur,2); st=round(l10,2); r=e-st
+        if r<=0: return None
+        return _make(s,"Volume Breakout",Bias.LONG,e,st,round(e+r,2),0.55,
+                     f"Volume Breakout: {vx:.0f}x vol, above 10-bar high")
+    elif cur < l10:
+        e=round(cur,2); st=round(h10,2); r=st-e
+        if r<=0: return None
+        return _make(s,"Volume Breakout",Bias.SHORT,e,st,round(e-r,2),0.55,
+                     f"Volume Breakout: {vx:.0f}x vol, below 10-bar low")
+    return None
+
+def _detect_vwap_reversion(s):
+    """Price far from intraday VWAP → fade back toward VWAP."""
+    if s.n < 20: return None
+    oi = s.day_open_idx
+    if s.n - oi < 10: return None
+    cv, ctv = 0.0, 0.0
+    for i in range(oi, s.n):
+        tp = (s.highs[i]+s.lows[i]+s.closes[i])/3; cv += s.volumes[i]; ctv += tp*s.volumes[i]
+    vwap = ctv/cv if cv > 0 else s.closes[-1]
+    if s.current_atr == 0: return None
+    dist = (s.closes[-1] - vwap) / s.current_atr
+    if abs(dist) < 1.5: return None  # Must be >1.5 ATR from VWAP
+    if dist > 1.5:  # Too far above → short back to VWAP
+        e=round(s.closes[-1],2); st=round(s.closes[-1]+s.current_atr,2); r=st-e
+        if r<=0: return None
+        return _make(s,"VWAP Reversion",Bias.SHORT,e,st,round(vwap,2),0.55,
+                     f"VWAP Reversion: {dist:.1f} ATR above VWAP",key_levels={"vwap":round(vwap,2)})
+    else:  # Too far below → long back to VWAP
+        e=round(s.closes[-1],2); st=round(s.closes[-1]-s.current_atr,2); r=e-st
+        if r<=0: return None
+        return _make(s,"VWAP Reversion",Bias.LONG,e,st,round(vwap,2),0.55,
+                     f"VWAP Reversion: {abs(dist):.1f} ATR below VWAP",key_levels={"vwap":round(vwap,2)})
+
+def _detect_donchian_breakout(s):
+    """Donchian Channel: close > highest high of last 50 bars. Trend-following."""
+    if s.n < 55: return None
+    h50 = float(np.max(s.highs[-51:-1])); l50 = float(np.min(s.lows[-51:-1]))
+    cur = s.closes[-1]
+    if cur > h50:
+        mid = (h50+l50)/2; e=round(cur,2); st=round(mid,2); r=e-st
+        if r<=0: return None
+        return _make(s,"Donchian Breakout",Bias.LONG,e,st,round(e+r,2),0.53,
+                     f"Donchian 50-bar high breakout",key_levels={"50_high":h50,"50_low":l50})
+    elif cur < l50:
+        mid = (h50+l50)/2; e=round(cur,2); st=round(mid,2); r=st-e
+        if r<=0: return None
+        return _make(s,"Donchian Breakout",Bias.SHORT,e,st,round(e-r,2),0.53,
+                     f"Donchian 50-bar low breakdown",key_levels={"50_high":h50,"50_low":l50})
+    return None
+
+
+# ==============================================================================
+# MAIN CLASSIFIER
+# ==============================================================================
+
+_ALL_DETECTORS = [
+    # Classical (16)
+    _detect_head_and_shoulders, _detect_inverse_hs,
+    _detect_double_top, _detect_double_bottom,
+    _detect_triple_top, _detect_triple_bottom,
+    _detect_ascending_triangle, _detect_descending_triangle, _detect_symmetrical_triangle,
+    _detect_bull_flag, _detect_bear_flag, _detect_pennant,
+    _detect_cup_and_handle, _detect_rectangle,
+    _detect_rising_wedge, _detect_falling_wedge,
+    # Candlestick (10)
+    _detect_bullish_engulfing, _detect_bearish_engulfing,
+    _detect_morning_star, _detect_evening_star,
+    _detect_hammer, _detect_shooting_star,
+    _detect_doji, _detect_dragonfly_doji,
+    _detect_three_white_soldiers, _detect_three_black_crows,
+    # SMB Scalps (11)
+    _detect_rubberband, _detect_hitchhiker,
+    lambda s: _detect_orb(s, 15), lambda s: _detect_orb(s, 30),
+    _detect_second_chance, _detect_backside,
+    _detect_fashionably_late, _detect_spencer,
+    _detect_gap_give_and_go, _detect_tidal_wave, _detect_breaking_news,
+    # Quant (10)
+    _detect_momentum_breakout, _detect_vol_compression_breakout,
+    _detect_mean_reversion, _detect_trend_pullback, _detect_gap_fade,
+    _detect_relative_strength_break, _detect_range_expansion,
+    _detect_volume_breakout, _detect_vwap_reversion, _detect_donchian_breakout,
+]
+
+
+def classify_all(bars: BarSeries) -> list[TradeSetup]:
+    """Run ALL 47 pattern detectors. Returns setups sorted by confidence."""
+    if len(bars.bars) < 15:
+        return []
+    s = extract_structures(bars)
+    setups = []
+    for fn in _ALL_DETECTORS:
+        try:
+            result = fn(s)
+            if result is not None:
+                setups.append(result)
+        except Exception:
+            continue
+    setups.sort(key=lambda x: x.confidence, reverse=True)
+    return setups

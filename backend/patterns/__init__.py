@@ -1,4 +1,4 @@
-"""patterns/ — Structure-first pattern classification."""
+"""patterns/ — Structure-first pattern classification (47 detectors)."""
 from backend.patterns.registry import (
     TradeSetup, Bias, PatternCategory, PATTERN_META, get_all_pattern_names,
 )
