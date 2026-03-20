@@ -1,0 +1,77 @@
+{
+  "completed": [
+    "AMZN",
+    "NVDA",
+    "AVGO",
+    "ORCL",
+    "AAPL",
+    "TSLA",
+    "GOOGL",
+    "MSFT",
+    "META",
+    "GOOG"
+  ],
+  "symbol_stats": {
+    "AAPL": {
+      "total_signals": 5484,
+      "wins": 2545,
+      "win_rate": 46.4,
+      "time_seconds": 85.0
+    },
+    "MSFT": {
+      "total_signals": 5996,
+      "wins": 2750,
+      "win_rate": 45.9,
+      "time_seconds": 57.3
+    },
+    "NVDA": {
+      "total_signals": 5915,
+      "wins": 2692,
+      "win_rate": 45.5,
+      "time_seconds": 124.4
+    },
+    "GOOGL": {
+      "total_signals": 5478,
+      "wins": 2630,
+      "win_rate": 48.0,
+      "time_seconds": 91.2
+    },
+    "GOOG": {
+      "total_signals": 5529,
+      "wins": 2739,
+      "win_rate": 49.5,
+      "time_seconds": 84.3
+    },
+    "AMZN": {
+      "total_signals": 6296,
+      "wins": 3193,
+      "win_rate": 50.7,
+      "time_seconds": 82.1
+    },
+    "META": {
+      "total_signals": 5905,
+      "wins": 2846,
+      "win_rate": 48.2,
+      "time_seconds": 97.4
+    },
+    "TSLA": {
+      "total_signals": 6554,
+      "wins": 3224,
+      "win_rate": 49.2,
+      "time_seconds": 49.8
+    },
+    "AVGO": {
+      "total_signals": 6366,
+      "wins": 3071,
+      "win_rate": 48.2,
+      "time_seconds": 108.3
+    },
+    "ORCL": {
+      "total_signals": 6768,
+      "wins": 3481,
+      "win_rate": 51.4,
+      "time_seconds": 100.2
+    }
+  },
+  "saved_at": "2026-03-20T15:39:03.337298"
+}
