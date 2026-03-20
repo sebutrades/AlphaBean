@@ -1,0 +1,75 @@
+"""
+engine.py — Scanner that connects data → patterns → results.
+v2: Added pattern names endpoint, improved logging.
+"""
+from backend.data.massive_client import fetch_bars
+from backend.patterns.edgefinder_patterns import (
+    get_all_detectors, get_all_pattern_names, TradeSetup
+)
+
+
+def scan_symbol(symbol: str, timeframe: str = "1d", days_back: int = 30) -> list[dict]:
+    try:
+        bars = fetch_bars(symbol, timeframe=timeframe, days_back=days_back)
+    except Exception as e:
+        print(f"  [ERROR] Fetch {symbol} {timeframe}: {e}")
+        return []
+
+    if len(bars.bars) < 10:
+        print(f"  [SKIP] {symbol} {timeframe}: only {len(bars.bars)} bars")
+        return []
+
+    print(f"  [OK] {symbol} {timeframe}: {len(bars.bars)} bars")
+
+    detectors = get_all_detectors()
+    setups = []
+    for det in detectors:
+        try:
+            result = det.detect(bars)
+            if result is not None:
+                print(f"  [FOUND] {det.name} on {symbol}")
+                setups.append(_setup_to_dict(result))
+        except Exception as e:
+            print(f"  [WARN] {det.name} on {symbol}: {e}")
+            continue
+
+    setups.sort(key=lambda s: s["confidence"], reverse=True)
+    return setups
+
+
+def scan_multiple(symbols: list[str], timeframes: list[str] = None,
+                  days_back: int = 30) -> list[dict]:
+    if timeframes is None:
+        timeframes = ["1d"]
+    all_setups = []
+    total = len(symbols) * len(timeframes)
+    done = 0
+    for symbol in symbols:
+        for tf in timeframes:
+            done += 1
+            print(f"[{done}/{total}] Scanning {symbol} on {tf}...")
+            results = scan_symbol(symbol, timeframe=tf, days_back=days_back)
+            all_setups.extend(results)
+    all_setups.sort(key=lambda s: s["confidence"], reverse=True)
+    return all_setups
+
+
+def _setup_to_dict(setup: TradeSetup) -> dict:
+    return {
+        "pattern_name": setup.pattern_name,
+        "symbol": setup.symbol,
+        "bias": setup.bias.value if hasattr(setup.bias, 'value') else str(setup.bias),
+        "timeframe": setup.timeframe.value if hasattr(setup.timeframe, 'value') else str(setup.timeframe),
+        "entry_price": setup.entry_price,
+        "stop_loss": setup.stop_loss,
+        "target_price": setup.target_price,
+        "risk_reward_ratio": setup.risk_reward_ratio,
+        "confidence": setup.confidence,
+        "detected_at": setup.detected_at.isoformat(),
+        "description": setup.description,
+        "win_rate": setup.win_rate,
+        "max_attempts": setup.max_attempts,
+        "exit_strategy": setup.exit_strategy,
+        "key_levels": setup.key_levels,
+        "ideal_time": getattr(setup, 'ideal_time', ''),
+    }

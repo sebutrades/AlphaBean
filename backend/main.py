@@ -1,20 +1,34 @@
 """
-main.py — AlphaBean API Server v2.1 (Phase 2: Backtesting)
+main.py — AlphaBean API Server v3.0
 
 Start: uvicorn backend.main:app --reload --port 8000
-"""
-from fastapi import FastAPI, Query, BackgroundTasks
-from fastapi.middleware.cors import CORSMiddleware
-from backend.scanner.engine import scan_symbol, scan_multiple
-from backend.patterns.edgefinder_patterns import get_all_pattern_names
-from backend.backtest.engine import (
-    run_full_backtest, get_backtest_results, get_pattern_stats, get_pattern_score,
-)
-from backend.backtest.data_fetcher import fetch_all_data, get_cache_stats
-from backend.backtest.universe import get_universe
-from backend.backtest.metrics import get_market_regime, get_relative_strength, get_momentum_score
 
-app = FastAPI(title="AlphaBean API", version="2.1.0")
+Endpoints:
+  GET  /api/health              → status
+  GET  /api/patterns            → all 47 pattern names
+  GET  /api/scan                → scan symbol (5m+15m, scored)
+  GET  /api/scan-multiple       → scan multiple symbols
+  GET  /api/chart/{symbol}      → candlestick data for frontend
+  GET  /api/regime              → current market regime
+  GET  /api/hot-strategies      → top performing strategies
+  GET  /api/backtest/results    → cached backtest results
+"""
+import json
+from pathlib import Path
+
+from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
+
+from backend.scanner.engine import scan_symbol, scan_multiple
+from backend.patterns.registry import get_all_pattern_names, PATTERN_META
+from backend.data.massive_client import fetch_chart_bars, fetch_bars
+from backend.regime.detector import detect_regime, MarketRegime, StrategyType
+from backend.strategies.evaluator import StrategyEvaluator
+from backend.features.engine import compute_features
+
+import numpy as np
+
+app = FastAPI(title="AlphaBean API", version="3.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,178 +37,149 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Global evaluator instance (loaded once at startup)
+_evaluator = StrategyEvaluator()
+_evaluator.load()
 
-# ── Core Endpoints (from Phase 1) ───────────────────────────
+BACKTEST_RESULTS = Path("cache/backtest_results.json")
+
+
+# ── Core ─────────────────────────────────────────────────────
 
 @app.get("/api/health")
 async def health():
-    return {"status": "ok", "app": "AlphaBean", "version": "2.1.0"}
+    return {"status": "ok", "app": "AlphaBean", "version": "3.0.0",
+            "patterns": len(get_all_pattern_names()),
+            "strategies_tracked": _evaluator.stats_summary()["strategies_tracked"]}
 
 
 @app.get("/api/patterns")
 async def list_patterns():
-    return {"patterns": get_all_pattern_names()}
+    """All 47 pattern names with metadata."""
+    patterns = []
+    for name in get_all_pattern_names():
+        meta = PATTERN_META.get(name, {})
+        patterns.append({
+            "name": name,
+            "category": meta.get("cat", "").value if hasattr(meta.get("cat", ""), "value") else "",
+            "strategy_type": meta.get("type", ""),
+            "win_rate": meta.get("wr", 0),
+        })
+    return {"count": len(patterns), "patterns": patterns}
 
+
+# ── Scanner ──────────────────────────────────────────────────
 
 @app.get("/api/scan")
 async def scan(
-    symbol: str = Query(...),
-    timeframe: str = Query("1d"),
-    days_back: int = Query(30),
+    symbol: str = Query(..., description="Ticker, e.g. AAPL"),
+    mode: str = Query("today", description="'today' or 'active'"),
 ):
-    if timeframe not in ("15min", "1h", "1d"):
-        return {"error": f"Invalid timeframe '{timeframe}'. Use: 15min, 1h, 1d"}
+    """
+    Scan a symbol on BOTH 5min + 15min simultaneously.
+    Returns multi-factor scored setups sorted by composite score.
+    """
+    if mode not in ("today", "active"):
+        return {"error": "mode must be 'today' or 'active'"}
 
-    print(f"\n{'=' * 50}")
-    print(f"SCAN: {symbol.upper()} | {timeframe} | {days_back}d")
-    print(f"{'=' * 50}")
+    print(f"\n{'=' * 55}")
+    print(f"  SCAN: {symbol.upper()} | mode={mode} | 5min + 15min | 47 patterns")
+    print(f"{'=' * 55}")
 
-    setups = scan_symbol(symbol.upper(), timeframe, days_back)
+    setups = scan_symbol(symbol.upper(), mode=mode, evaluator=_evaluator)
 
-    # Enrich each setup with backtest score if available
-    for s in setups:
-        s["backtest_score"] = get_pattern_score(s["pattern_name"], timeframe)
+    print(f"  RESULT: {len(setups)} scored setups")
+    for s in setups[:5]:
+        print(f"    {s['pattern_name']:<25} composite={s.get('composite_score', 0):.0f}  "
+              f"conf={s['confidence']:.0%}")
 
-    print(f"RESULT: {len(setups)} setups\n")
     return {
-        "symbol": symbol.upper(), "timeframe": timeframe,
-        "days_back": days_back, "count": len(setups), "setups": setups,
+        "symbol": symbol.upper(), "mode": mode,
+        "count": len(setups), "setups": setups,
     }
 
 
 @app.get("/api/scan-multiple")
 async def scan_multi(
-    symbols: str = Query(...),
-    timeframes: str = Query("1d"),
-    days_back: int = Query(30),
+    symbols: str = Query(..., description="Comma-separated: AAPL,NVDA,TSLA"),
+    mode: str = Query("today"),
 ):
     symbol_list = [s.strip().upper() for s in symbols.split(",") if s.strip()]
-    tf_list = [t.strip() for t in timeframes.split(",") if t.strip()]
-    for tf in tf_list:
-        if tf not in ("15min", "1h", "1d"):
-            return {"error": f"Invalid timeframe '{tf}'."}
-
-    setups = scan_multiple(symbol_list, tf_list, days_back)
-    return {
-        "symbols": symbol_list, "timeframes": tf_list,
-        "days_back": days_back, "count": len(setups), "setups": setups,
-    }
+    setups = scan_multiple(symbol_list, mode=mode, evaluator=_evaluator)
+    return {"symbols": symbol_list, "mode": mode, "count": len(setups), "setups": setups}
 
 
-# ── Backtest Endpoints (Phase 2) ────────────────────────────
+# ── Chart ────────────────────────────────────────────────────
 
-@app.get("/api/backtest/status")
-async def backtest_status():
-    """Check if backtest results exist and what data is cached."""
-    results = get_backtest_results()
-    cache_stats = get_cache_stats()
-    return {
-        "has_results": results is not None,
-        "generated": results.get("generated") if results else None,
-        "quarter": results.get("quarter") if results else None,
-        "total_signals": results.get("total_signals") if results else 0,
-        "patterns_tested": len(results.get("patterns", {})) if results else 0,
-        "cache": cache_stats,
-    }
-
-
-@app.post("/api/backtest/fetch-data")
-async def backtest_fetch_data(
-    background_tasks: BackgroundTasks,
-    symbols_count: int = Query(50, description="How many top symbols (max 300)"),
+@app.get("/api/chart/{symbol}")
+async def chart_data(
+    symbol: str,
+    timeframe: str = Query("5min"),
+    days_back: int = Query(5),
 ):
-    """
-    Step 1 of backtesting: Fetch and cache bar data.
-    Runs in background so the API doesn't time out.
-    """
-    count = min(symbols_count, 300)
-    symbols = get_universe()[:count]
+    """Candlestick data for Lightweight Charts."""
+    if timeframe not in ("5min", "15min", "1h", "1d"):
+        return {"error": f"Invalid timeframe: {timeframe}"}
+    try:
+        bars = fetch_chart_bars(symbol.upper(), timeframe, days_back)
+        return {"symbol": symbol.upper(), "timeframe": timeframe, "bars": bars}
+    except Exception as e:
+        return {"error": str(e)}
 
-    def do_fetch():
-        fetch_all_data(symbols=symbols, timeframes=["15min", "1h", "1d"])
 
-    background_tasks.add_task(do_fetch)
+# ── Regime ───────────────────────────────────────────────────
 
+@app.get("/api/regime")
+async def get_regime():
+    """Current market regime based on SPY data."""
+    try:
+        spy_bars = fetch_bars("SPY", timeframe="1d", days_back=250)
+        closes = np.array([b.close for b in spy_bars.bars], dtype=np.float64)
+        highs = np.array([b.high for b in spy_bars.bars], dtype=np.float64)
+        lows = np.array([b.low for b in spy_bars.bars], dtype=np.float64)
+        regime = detect_regime(closes, highs, lows, is_spy=True)
+        return regime.to_dict()
+    except Exception as e:
+        return {"error": str(e), "regime": "unknown"}
+
+
+# ── Hot Strategies ───────────────────────────────────────────
+
+@app.get("/api/hot-strategies")
+async def hot_strategies(top_n: int = Query(5)):
+    """Top performing strategies based on rolling evaluation."""
+    hot = _evaluator.get_hot_strategies(top_n=top_n)
     return {
-        "status": "started",
-        "message": f"Fetching data for {count} symbols × 3 timeframes in background",
-        "symbols_count": count,
+        "count": len(hot),
+        "strategies": [m.to_dict() for m in hot],
+        "hot_types": _evaluator.get_hot_strategy_types(top_n=3),
     }
 
 
-@app.post("/api/backtest/run")
-async def backtest_run(
-    background_tasks: BackgroundTasks,
-    symbols_count: int = Query(50, description="How many symbols to backtest"),
-    force: bool = Query(False, description="Force re-run even if cached"),
-):
-    """
-    Step 2 of backtesting: Run pattern detection on all cached data.
-    This is the heavy computation — runs in background.
-    """
-    symbols = get_universe()[:min(symbols_count, 300)]
+@app.get("/api/strategy/{pattern_name}")
+async def strategy_detail(pattern_name: str):
+    """Detailed performance for a specific pattern/strategy."""
+    return _evaluator.get_pattern_summary(pattern_name)
 
-    def do_backtest():
-        run_full_backtest(symbols=symbols, force=force)
 
-    background_tasks.add_task(do_backtest)
-
-    return {
-        "status": "started",
-        "message": f"Running backtest on {len(symbols)} symbols",
-        "check_status_at": "/api/backtest/status",
-    }
-
+# ── Backtest Results ─────────────────────────────────────────
 
 @app.get("/api/backtest/results")
 async def backtest_results():
-    """Get the cached backtest results summary."""
-    results = get_backtest_results()
-    if results is None:
-        return {
-            "error": "No backtest results found. Run /api/backtest/fetch-data first, then /api/backtest/run.",
-            "has_results": False,
-        }
-    return results
+    """Cached backtest results from run_backtest.py."""
+    if not BACKTEST_RESULTS.exists():
+        return {"has_results": False, "message": "Run: python run_backtest.py"}
+    try:
+        data = json.loads(BACKTEST_RESULTS.read_text())
+        return {"has_results": True, **data}
+    except (json.JSONDecodeError, KeyError):
+        return {"has_results": False, "message": "Cache corrupt"}
 
 
-@app.get("/api/backtest/pattern/{pattern_name}")
-async def backtest_pattern(pattern_name: str):
-    """Get detailed backtest stats for a specific pattern."""
-    stats = get_pattern_stats(pattern_name)
-    if stats is None:
-        return {"error": f"No backtest data for pattern '{pattern_name}'", "pattern": pattern_name}
-    return {"pattern": pattern_name, "stats": stats}
+# ── Reload ───────────────────────────────────────────────────
 
-
-@app.get("/api/backtest/score/{pattern_name}/{timeframe}")
-async def backtest_score(pattern_name: str, timeframe: str):
-    """Get the 0-100 backtest quality score for a pattern+timeframe."""
-    score = get_pattern_score(pattern_name, timeframe)
-    return {"pattern": pattern_name, "timeframe": timeframe, "score": score}
-
-
-# ── Market Metrics Endpoints (Phase 2) ──────────────────────
-
-@app.get("/api/metrics/regime")
-async def market_regime():
-    """Get current market regime (bull/bear based on SPY vs 200 SMA)."""
-    return get_market_regime()
-
-
-@app.get("/api/metrics/rs/{symbol}")
-async def relative_strength(symbol: str):
-    """Get relative strength of a stock vs SPY."""
-    rs = get_relative_strength(symbol.upper())
-    if rs is None:
-        return {"error": f"No cached data for {symbol.upper()}. Run backtest data fetch first."}
-    return rs
-
-
-@app.get("/api/metrics/momentum/{symbol}")
-async def momentum(symbol: str):
-    """Get momentum score (0-100) for a stock."""
-    m = get_momentum_score(symbol.upper())
-    if m is None:
-        return {"error": f"No cached data for {symbol.upper()}."}
-    return m
+@app.post("/api/reload-evaluator")
+async def reload_evaluator():
+    """Reload strategy evaluator from cache (after running backtest)."""
+    _evaluator.load()
+    return {"status": "reloaded", **_evaluator.stats_summary()}

@@ -1,75 +1,179 @@
 """
-engine.py — Scanner that connects data → patterns → results.
-v2: Added pattern names endpoint, improved logging.
+scanner/engine.py — The orchestrator. Connects all 6 phases into one scan.
+
+Pipeline per symbol:
+  1. Fetch 5min + 15min bars from Massive.com
+  2. Extract structural primitives (swings, trendlines, S/R)
+  3. Compute 8 statistical features (vectorized)
+  4. Run 47 pattern classifiers
+  5. Detect market regime
+  6. Score everything with multi-factor system
+  7. Merge multi-TF detections
+  8. Return ranked ScoredSetups
+
+Modes:
+  "today"  — Only setups from today's session
+  "active" — Setups from last 7 days still valid
 """
-from backend.data.massive_client import fetch_bars
-from backend.patterns.edgefinder_patterns import (
-    get_all_detectors, get_all_pattern_names, TradeSetup
-)
+import json
+from collections import defaultdict
+from datetime import datetime, timedelta, time
+from pathlib import Path
+from typing import Optional
+
+import numpy as np
+
+from backend.data.massive_client import fetch_bars, SCANNER_TIMEFRAMES
+from backend.data.schemas import BarSeries
+from backend.patterns.classifier import classify_all
+from backend.patterns.registry import TradeSetup
+from backend.features.engine import compute_features, FeatureResult
+from backend.regime.detector import detect_regime, RegimeResult
+from backend.scoring.multi_factor import score_setup, score_setups_batch, ScoredSetup
+from backend.strategies.evaluator import StrategyEvaluator
+
+BACKTEST_CACHE = Path("cache/backtest_results.json")
 
 
-def scan_symbol(symbol: str, timeframe: str = "1d", days_back: int = 30) -> list[dict]:
-    try:
-        bars = fetch_bars(symbol, timeframe=timeframe, days_back=days_back)
-    except Exception as e:
-        print(f"  [ERROR] Fetch {symbol} {timeframe}: {e}")
-        return []
+def scan_symbol(
+    symbol: str,
+    mode: str = "today",
+    evaluator: Optional[StrategyEvaluator] = None,
+    spy_closes: Optional[np.ndarray] = None,
+) -> list[dict]:
+    """
+    Full scan of a symbol on BOTH 5min and 15min simultaneously.
 
-    if len(bars.bars) < 10:
-        print(f"  [SKIP] {symbol} {timeframe}: only {len(bars.bars)} bars")
-        return []
+    Returns list of scored setup dicts, sorted by composite score.
+    """
+    days_back = 3 if mode == "today" else 10
+    all_scored: list[ScoredSetup] = []
 
-    print(f"  [OK] {symbol} {timeframe}: {len(bars.bars)} bars")
+    # Track multi-TF merges: (pattern_name, bias, price_bucket) → list of scored
+    tf_hits = defaultdict(list)
 
-    detectors = get_all_detectors()
-    setups = []
-    for det in detectors:
+    # Load backtest scores if available
+    bt_scores = _load_backtest_scores()
+
+    for tf in SCANNER_TIMEFRAMES:
         try:
-            result = det.detect(bars)
-            if result is not None:
-                print(f"  [FOUND] {det.name} on {symbol}")
-                setups.append(_setup_to_dict(result))
+            bars = fetch_bars(symbol, timeframe=tf, days_back=days_back)
         except Exception as e:
-            print(f"  [WARN] {det.name} on {symbol}: {e}")
+            print(f"  [{symbol}] {tf} FETCH ERROR: {e}")
             continue
 
-    setups.sort(key=lambda s: s["confidence"], reverse=True)
-    return setups
+        if len(bars.bars) < 20:
+            print(f"  [{symbol}] {tf} SKIP ({len(bars.bars)} bars)")
+            continue
+
+        print(f"  [{symbol}] {tf} OK — {len(bars.bars)} bars")
+
+        # --- Phase 2: Features ---
+        closes = np.array([b.close for b in bars.bars], dtype=np.float64)
+        highs = np.array([b.high for b in bars.bars], dtype=np.float64)
+        lows = np.array([b.low for b in bars.bars], dtype=np.float64)
+        volumes = np.array([b.volume for b in bars.bars], dtype=np.float64)
+        features = compute_features(closes, highs, lows, volumes, spy_closes)
+
+        # --- Phase 3: Regime ---
+        regime = detect_regime(closes, highs, lows, is_spy=False)
+
+        # --- Phase 4: Patterns ---
+        setups = classify_all(bars)
+
+        if not setups:
+            print(f"  [{symbol}] {tf} — 0 patterns")
+            continue
+
+        # Apply mode filter
+        if mode == "today":
+            setups = [s for s in setups if _is_today(s.detected_at)]
+
+        print(f"  [{symbol}] {tf} — {len(setups)} patterns after filter")
+
+        # --- Phase 6: Score ---
+        for setup in setups:
+            bt = bt_scores.get(setup.pattern_name, 50.0)
+            scored = score_setup(setup, features, regime, evaluator, bt)
+            scored.setup.timeframe_detected = _tf_label(tf)
+
+            # Track for multi-TF merge
+            price_bucket = round(setup.entry_price, -1 if setup.entry_price > 50 else 0)
+            merge_key = (setup.pattern_name, setup.bias.value, price_bucket)
+            tf_hits[merge_key].append((tf, scored))
+
+    # --- Merge multi-TF detections ---
+    for key, hits in tf_hits.items():
+        tfs = sorted(set(tf for tf, _ in hits))
+        if len(tfs) > 1:
+            # Same pattern on both TFs — use best scoring one, mark as multi-TF
+            best = max(hits, key=lambda x: x[1].composite_score)[1]
+            best.setup.timeframe_detected = "5m & 15m"
+            best.setup.multi_tf = True
+            # Boost composite by 5 points for multi-TF confirmation
+            best.composite_score = min(100, best.composite_score + 5.0)
+            best.setup.confidence = min(0.95, best.setup.confidence + 0.10)
+            best.setup.description = f"[5m & 15m] {best.setup.description}"
+            all_scored.append(best)
+        else:
+            best = max(hits, key=lambda x: x[1].composite_score)[1]
+            best.setup.timeframe_detected = _tf_label(tfs[0])
+            all_scored.append(best)
+
+    # Sort by composite score
+    all_scored.sort(key=lambda s: s.composite_score, reverse=True)
+
+    return [s.to_dict() for s in all_scored]
 
 
-def scan_multiple(symbols: list[str], timeframes: list[str] = None,
-                  days_back: int = 30) -> list[dict]:
-    if timeframes is None:
-        timeframes = ["1d"]
-    all_setups = []
-    total = len(symbols) * len(timeframes)
-    done = 0
-    for symbol in symbols:
-        for tf in timeframes:
-            done += 1
-            print(f"[{done}/{total}] Scanning {symbol} on {tf}...")
-            results = scan_symbol(symbol, timeframe=tf, days_back=days_back)
-            all_setups.extend(results)
-    all_setups.sort(key=lambda s: s["confidence"], reverse=True)
-    return all_setups
+def scan_multiple(
+    symbols: list[str],
+    mode: str = "today",
+    evaluator: Optional[StrategyEvaluator] = None,
+) -> list[dict]:
+    """Scan multiple symbols, return merged results."""
+    all_results = []
+    total = len(symbols)
+    for i, sym in enumerate(symbols):
+        print(f"\n[{i+1}/{total}] Scanning {sym}...")
+        results = scan_symbol(sym, mode=mode, evaluator=evaluator)
+        all_results.extend(results)
+
+    all_results.sort(key=lambda s: s.get("composite_score", 0), reverse=True)
+    return all_results
 
 
-def _setup_to_dict(setup: TradeSetup) -> dict:
-    return {
-        "pattern_name": setup.pattern_name,
-        "symbol": setup.symbol,
-        "bias": setup.bias.value if hasattr(setup.bias, 'value') else str(setup.bias),
-        "timeframe": setup.timeframe.value if hasattr(setup.timeframe, 'value') else str(setup.timeframe),
-        "entry_price": setup.entry_price,
-        "stop_loss": setup.stop_loss,
-        "target_price": setup.target_price,
-        "risk_reward_ratio": setup.risk_reward_ratio,
-        "confidence": setup.confidence,
-        "detected_at": setup.detected_at.isoformat(),
-        "description": setup.description,
-        "win_rate": setup.win_rate,
-        "max_attempts": setup.max_attempts,
-        "exit_strategy": setup.exit_strategy,
-        "key_levels": setup.key_levels,
-        "ideal_time": getattr(setup, 'ideal_time', ''),
-    }
+# ==============================================================================
+# HELPERS
+# ==============================================================================
+
+def _is_today(ts: datetime) -> bool:
+    today = datetime.now().date()
+    yesterday = today - timedelta(days=1)
+    if ts.date() == today:
+        return True
+    if ts.date() == yesterday and ts.time() >= time(15, 30):
+        return True
+    return False
+
+
+def _tf_label(tf: str) -> str:
+    return {"5min": "5m", "15min": "15m", "1h": "1h", "1d": "1d"}.get(tf, tf)
+
+
+def _load_backtest_scores() -> dict[str, float]:
+    """Load pattern scores from backtest cache if available."""
+    if not BACKTEST_CACHE.exists():
+        return {}
+    try:
+        data = json.loads(BACKTEST_CACHE.read_text())
+        patterns = data.get("patterns", {})
+        scores = {}
+        for name, tf_data in patterns.items():
+            # Average edge score across timeframes
+            tf_scores = [s.get("edge_score", 50) for s in tf_data.values() if isinstance(s, dict)]
+            if tf_scores:
+                scores[name] = float(np.mean(tf_scores))
+        return scores
+    except (json.JSONDecodeError, KeyError):
+        return {}
