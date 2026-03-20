@@ -17,3 +17,7 @@ pytz
 tqdm
 orjson
 pytest
+requests 
+feedparser 
+yfinance
+beautifulsoup4

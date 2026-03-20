@@ -1,0 +1,71 @@
+{
+  "cached_at": 1774046759.459005,
+  "stocks": [
+    {
+      "symbol": "PLAB",
+      "reason": "Record revenue and upbeat guidance",
+      "catalyst": "earnings",
+      "expected_direction": "bullish",
+      "priority": 1
+    },
+    {
+      "symbol": "NVDA",
+      "reason": "Upbeat earnings report",
+      "catalyst": "earnings",
+      "expected_direction": "bullish",
+      "priority": 2
+    },
+    {
+      "symbol": "MU",
+      "reason": "Upbeat earnings report",
+      "catalyst": "earnings",
+      "expected_direction": "bullish",
+      "priority": 3
+    },
+    {
+      "symbol": "HON",
+      "reason": "Upgrade by analyst",
+      "catalyst": "upgrade",
+      "expected_direction": "bullish",
+      "priority": 4
+    },
+    {
+      "symbol": "WBD",
+      "reason": "Deal payout for CEOs",
+      "catalyst": "news",
+      "expected_direction": "volatile",
+      "priority": 5
+    },
+    {
+      "symbol": "AAPL",
+      "reason": "Neutral on AI leader, but Jim Cramer's comments may impact sentiment",
+      "catalyst": "sector/upgrade/downgrade",
+      "expected_direction": "neutral",
+      "priority": 6
+    },
+    {
+      "symbol": "SPY",
+      "reason": "Market volatility driven by Iran war tensions and oil price swings",
+      "catalyst": "macro",
+      "expected_direction": "volatile",
+      "priority": 7
+    },
+    {
+      "symbol": "QQQ",
+      "reason": "Market volatility driven by Iran war tensions and oil price swings",
+      "catalyst": "macro",
+      "expected_direction": "volatile",
+      "priority": 8
+    },
+    {
+      "symbol": "TSLA",
+      "reason": "Neutral on AI leader, but Jim Cramer's comments may impact sentiment",
+      "catalyst": "sector/upgrade/downgrade",
+      "expected_direction": "neutral",
+      "priority": 9
+    }
+  ],
+  "market_summary": "Market volatility driven by Iran war tensions and oil price swings",
+  "generated_at": "2026-03-20T17:45:59.458836",
+  "source": "ollama"
+}

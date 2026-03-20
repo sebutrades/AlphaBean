@@ -1,0 +1,95 @@
+{
+  "cached_at": 1774046778.8466816,
+  "items": [
+    {
+      "headline": "Stock Market Review: SPY, QQQ Tumble on Rate Hike Scenario as U.S.-Iran War Reaches 3-Week Mark",
+      "source": "TipRanks",
+      "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxQZEFSM0V0YkNOcmk0bU5RWFdWVThjTElIRmU1LS1OVFhpcjRTVjM1RTFrWnNqVzhZUDJpaHJKaUVNeTlzX0xNSVJxRkhhVXVZdk9BRk9VejhEbkNYZTNCbkRCZUZsS2Z2bXlfdnQwbHBfS0MxTnpvWnIyVTg3aHZ0X0ZUdGRWbUNmdDJIVi1ONHNWb3B1a3dzZXZMdDVJeVVFWGdtNHQwdjc2V3JVSVREaUlBaDlJMU5KNWNlUnJIYw?oc=5",
+      "published": "2026-03-20T20:22:12",
+      "symbol": "SPY",
+      "provider": "google_news",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "SPY is down 1.0% today, on MU stock price movement",
+      "source": "Quiver Quantitative",
+      "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxNaEtheThVdjAxM0VwMHEwM3J5U1I4RHZCVElqYlJCQnJFM0loY1owZzg5Z2RJbnVpci1PSUNwWkx2aFR6VlJFM2pVTG91TkVDZW5MaVNPNi1jaTdvVjBrUDA1SkRoS1lYQUxkV0FuVmZTbmMtU2ZGYVJlSk45VkpDa3RZT0htUXpsSW9UcmRPVG0?oc=5",
+      "published": "2026-03-20T16:15:00",
+      "symbol": "SPY",
+      "provider": "google_news",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "March Madness Sees The S&P 500 Master The Art Of 'The Head Fake'",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=c7de0150637ee91cd276af96f6c071245e2aea2e496e5dc6c054fd12cc832de9",
+      "published": "2026-03-20T16:00:43",
+      "symbol": "SPY",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Build A Passive Income Buffer As Recession Odds Rise",
+      "source": "SeekingAlpha",
+      "url": "https://finnhub.io/api/news?id=876d5823e1a3889d8ce37c80f76f7a3b98a959e24d5251dcb5e4679f6ab88f53",
+      "published": "2026-03-20T13:01:35",
+      "symbol": "SPY",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Accenture Stock Gets 2 Price Target Cuts Today \u2014 Is the AI Revenue Story Falling Apart?",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=91361533436b905cade8b01854071bb39b870df9dd4dee3d11079fb72a69cbd3",
+      "published": "2026-03-20T12:46:53",
+      "symbol": "SPY",
+      "provider": "finnhub",
+      "sentiment_hint": "negative"
+    },
+    {
+      "headline": "Jefferies: Credit Concerns Overshadow Discounted Valuation",
+      "source": "SeekingAlpha",
+      "url": "https://finnhub.io/api/news?id=ffa14aed6e3d2da97787a5cb3676732971f02560f5b5e732e2547f3e03ea94bd",
+      "published": "2026-03-20T11:47:36",
+      "symbol": "SPY",
+      "provider": "finnhub",
+      "sentiment_hint": "negative"
+    },
+    {
+      "headline": "The 'Monetary Truman Show' Is Over: The Fed Is No Longer In Control",
+      "source": "SeekingAlpha",
+      "url": "https://finnhub.io/api/news?id=b6089d80c18f32ad8df36df4da2ac57d8d5f4e3bbc5d700392d9e762e66e0680",
+      "published": "2026-03-20T11:09:58",
+      "symbol": "SPY",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "The Only S&P 500 ETF You Need in 2026 and It\u2019s Not the One You Think",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=3766128d550ea278fd42cf991833bc925df73ad5c0e78ed072d5194a94614f58",
+      "published": "2026-03-20T10:42:03",
+      "symbol": "SPY",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "The Nasdaq Sinks As Super Micro AI Chip Smuggling to China Takes Center Stage | SMCI IXIC",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=4c8c2c649b0387678a88c31a53b1aa1ce58731262f2aa1fbed4c9624e3e9d584",
+      "published": "2026-03-20T10:27:44",
+      "symbol": "SPY",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "The VIX Rips 10% Higher As Oil Punches Through $100 A Barrel and Panic Enters The Arena",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=fce337336a844908477e9ae21179e1a08353e8eba55cd176721f9ced6c5599e6",
+      "published": "2026-03-20T10:27:01",
+      "symbol": "SPY",
+      "provider": "finnhub",
+      "sentiment_hint": "positive"
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "cached_at": 1774046777.7645879,
+  "items": [
+    {
+      "headline": "Warren Buffett Bought 8 Million Shares of This Oil Giant and $100 Oil Proves Him Right",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=d9e71df2a0cc383f6666907fa5590b1f3eefd5794647f880a542c30d4c230f32",
+      "published": "2026-03-20T16:25:00",
+      "symbol": "AAPL",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Market Madness: Palantir, Walmart, & other hot stock picks",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=4f4dda3e6ef85b24ebd5cc975168a638104d4c164ecfbc5a43d963249e807587",
+      "published": "2026-03-20T16:13:31",
+      "symbol": "AAPL",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "The Dealmaking 3: MLB & Adobe Expanding Partnership, AI in Pickleball, Apple TV\u2019s Deal with F1",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=7081c3ff70de7921210685383056788af76934ea7036c605bace789ed4e92b30",
+      "published": "2026-03-20T16:02:32",
+      "symbol": "AAPL",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Here\u2019s Why Apple (AAPL) Could Be The Best Tech Stock to Buy Now According to Warren Buffett",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=5265008b93597df2b213486691b19e974dd185c6d8a7a4453c38a208da3a6bc4",
+      "published": "2026-03-20T15:16:47",
+      "symbol": "AAPL",
+      "provider": "finnhub",
+      "sentiment_hint": "positive"
+    },
+    {
+      "headline": "Apple stock price forecast: $246.59 support key as AAPL trades down",
+      "source": "Traders Union",
+      "url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxOUW1PRTA0LWpiVDdpZmdVV2M3SkdBUzdESlJSck83NTNxcVpNWE5VOV9UMjBFT2doakNERUZ6YnlfUXZ5NkNZMWNzdXhTWmpod2ZYTXhHWXZ2dGE2TktuM01rNVFNUHEwV0tMZVR0VmxZRFdLbWNlcmdsNHkxZ1BqcGJSdDc5VGpiWndNYk9iemlhY3VXYWc?oc=5",
+      "published": "2026-03-20T15:13:19",
+      "symbol": "AAPL",
+      "provider": "google_news",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Amazon is building a phone again, and this one is different",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=0d2d68f5a80771747bfd4efef86d5d6b56ef1439f740751a12fdc479699535c2",
+      "published": "2026-03-20T15:07:00",
+      "symbol": "AAPL",
+      "provider": "finnhub",
+      "sentiment_hint": "positive"
+    },
+    {
+      "headline": "Curious about the most active S&P500 stocks in today's session?",
+      "source": "ChartMill",
+      "url": "https://finnhub.io/api/news?id=96687ae88728eb154291c4590460714591c495a0dc9778483543e87393f4be2c",
+      "published": "2026-03-20T14:05:02",
+      "symbol": "AAPL",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Coinbase Launches 24/7 Perpetual Futures Trading for Major U.S. Stocks and ETFs",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=c8abdec3e50db611d132409130e2c05b7788775e843c11f1c242e6b1b0bda11d",
+      "published": "2026-03-20T13:52:38",
+      "symbol": "AAPL",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Big Warning Sign? Ancora Advisors Just Dumped $129 Million in Sealed Air Stock",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=ce43ca953dafbd2e36b515cc33a1b219acff274f387c6792454cfe9f7a95e350",
+      "published": "2026-03-20T13:51:28",
+      "symbol": "AAPL",
+      "provider": "finnhub",
+      "sentiment_hint": "negative"
+    },
+    {
+      "headline": "AI sets Apple stock price for Q2 2026",
+      "source": "Finbold",
+      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE9vUVZXWXZ6TVV6cHlVckl2aG9KaTJ2M0tNR3hrclM3WHhsbnJkdEN1dFdVR2QyS2VnUGM0UnJfRWN3Z0J1Q1ppci1qdkpLWHpGclZQMTdndHlwdWRDdm5NZUkyOU1fajUwZ3c?oc=5",
+      "published": "2026-03-20T13:49:33",
+      "symbol": "AAPL",
+      "provider": "google_news",
+      "sentiment_hint": "neutral"
+    }
+  ]
+}
