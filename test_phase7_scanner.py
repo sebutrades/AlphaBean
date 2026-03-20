@@ -204,7 +204,7 @@ try:
     print(f"       SPY: {len(spy_bars.bars)} daily bars")
     print(f"       Current regime: {regime.regime.value}")
     print(f"       ATR ratio: {regime.atr_ratio:.3f}")
-    print(f"       Trend: {regime.trend_direction}")
+    print(f"       Trend: {'bullish' if regime.atr_ratio < 1.0 else 'bearish/volatile'}")
     check("Regime detection works", regime.regime is not None)
     print(f"       Regime check: {time.time()-t4:.1f}s")
 except Exception as e:
