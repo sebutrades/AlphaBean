@@ -162,18 +162,27 @@ def _tf_label(tf: str) -> str:
 
 
 def _load_backtest_scores() -> dict[str, float]:
-    """Load pattern scores from backtest cache if available."""
+    """Load pattern edge scores from backtest cache."""
     if not BACKTEST_CACHE.exists():
         return {}
     try:
         data = json.loads(BACKTEST_CACHE.read_text())
         patterns = data.get("patterns", {})
         scores = {}
-        for name, tf_data in patterns.items():
-            # Average edge score across timeframes
-            tf_scores = [s.get("edge_score", 50) for s in tf_data.values() if isinstance(s, dict)]
-            if tf_scores:
-                scores[name] = float(np.mean(tf_scores))
+        for name, stats in patterns.items():
+            if isinstance(stats, dict):
+                # Flat format: {"edge_score": 72.3, ...}
+                if "edge_score" in stats:
+                    scores[name] = float(stats["edge_score"])
+                else:
+                    # Nested TF format: {"5min": {"edge_score": ...}, ...}
+                    tf_scores = [
+                        s.get("edge_score", 50)
+                        for s in stats.values()
+                        if isinstance(s, dict) and "edge_score" in s
+                    ]
+                    if tf_scores:
+                        scores[name] = float(np.mean(tf_scores))
         return scores
     except (json.JSONDecodeError, KeyError):
         return {}
