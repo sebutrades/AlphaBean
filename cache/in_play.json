@@ -1,358 +1,309 @@
 {
-  "cached_at": 1774056661.1011958,
+  "cached_at": 1774129711.4424984,
   "stocks": [
     {
-      "symbol": "VST",
+      "symbol": "DIS",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 1
     },
     {
-      "symbol": "UAL",
+      "symbol": "MMM",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 2
     },
     {
-      "symbol": "ANNA",
+      "symbol": "GOLD",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 3
     },
     {
-      "symbol": "MGM",
+      "symbol": "O",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 4
     },
     {
-      "symbol": "AGNC",
+      "symbol": "PLTR",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 5
     },
     {
-      "symbol": "NIO",
+      "symbol": "ET",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 6
     },
     {
-      "symbol": "RKT",
+      "symbol": "ARCC",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 7
     },
     {
-      "symbol": "XPEV",
+      "symbol": "PEP",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 8
     },
     {
-      "symbol": "SEDG",
+      "symbol": "MPT",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 9
     },
     {
-      "symbol": "CEG",
+      "symbol": "EPD",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 10
     },
     {
-      "symbol": "WELL",
+      "symbol": "NEE",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 11
     },
     {
-      "symbol": "PSNYW",
+      "symbol": "FIG",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 12
     },
     {
-      "symbol": "LSCC",
+      "symbol": "DAL",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 13
     },
     {
-      "symbol": "MOS",
+      "symbol": "GEV",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 14
     },
     {
-      "symbol": "NEE",
+      "symbol": "UBER",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 15
     },
     {
-      "symbol": "PLTR",
+      "symbol": "KO",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 16
     },
     {
-      "symbol": "NVDA",
+      "symbol": "ABBV",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 17
     },
     {
-      "symbol": "AMC",
+      "symbol": "MA",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 18
     },
     {
-      "symbol": "GOOG",
+      "symbol": "MRVL",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 19
     },
     {
-      "symbol": "NLY",
+      "symbol": "RTX",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 20
     },
     {
-      "symbol": "MSFT",
+      "symbol": "PG",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 21
     },
     {
-      "symbol": "YSS",
+      "symbol": "CRDO",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 22
     },
     {
-      "symbol": "VICI",
+      "symbol": "VRT",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 23
     },
     {
-      "symbol": "SM",
+      "symbol": "WMT",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 24
     },
     {
-      "symbol": "ASML",
+      "symbol": "LMT",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 25
     },
     {
-      "symbol": "TSLA",
+      "symbol": "FNMA",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 26
     },
     {
-      "symbol": "RITM",
+      "symbol": "CCL",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 27
     },
     {
-      "symbol": "ARM",
+      "symbol": "COST",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 28
     },
     {
-      "symbol": "CMCSA",
+      "symbol": "UUUU",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 29
     },
     {
-      "symbol": "META",
+      "symbol": "PL",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 30
     },
     {
-      "symbol": "BURU",
+      "symbol": "PSNYW",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 31
     },
     {
-      "symbol": "COF",
+      "symbol": "YSS",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 32
     },
     {
-      "symbol": "T",
+      "symbol": "LBTYB",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 33
     },
     {
-      "symbol": "SHOP",
+      "symbol": "SEDG",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 34
     },
     {
-      "symbol": "TE",
+      "symbol": "SMCI",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 35
     },
     {
-      "symbol": "O",
+      "symbol": "AAOI",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 36
     },
     {
-      "symbol": "XOM",
+      "symbol": "VICR",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 37
     },
     {
-      "symbol": "SNOW",
+      "symbol": "VST",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 38
     },
     {
-      "symbol": "SPYM",
+      "symbol": "FLOC",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 39
     },
     {
-      "symbol": "CF",
+      "symbol": "CMCSA",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 40
     },
     {
-      "symbol": "NKE",
+      "symbol": "NVDA",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 41
     },
     {
-      "symbol": "MMM",
+      "symbol": "INTC",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 42
     },
     {
-      "symbol": "HOOD",
+      "symbol": "RITM",
       "reason": "Trending on Yahoo Finance",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 43
-    },
-    {
-      "symbol": "PL",
-      "reason": "Trending on Yahoo Finance",
-      "catalyst": "trending",
-      "expected_direction": "volatile",
-      "priority": 44
-    },
-    {
-      "symbol": "LBTYB",
-      "reason": "Trending on Yahoo Finance",
-      "catalyst": "trending",
-      "expected_direction": "volatile",
-      "priority": 45
-    },
-    {
-      "symbol": "SMCI",
-      "reason": "Trending on Yahoo Finance",
-      "catalyst": "trending",
-      "expected_direction": "volatile",
-      "priority": 46
-    },
-    {
-      "symbol": "AAOI",
-      "reason": "Trending on Yahoo Finance",
-      "catalyst": "trending",
-      "expected_direction": "volatile",
-      "priority": 47
-    },
-    {
-      "symbol": "VICR",
-      "reason": "Trending on Yahoo Finance",
-      "catalyst": "trending",
-      "expected_direction": "volatile",
-      "priority": 48
-    },
-    {
-      "symbol": "FLOC",
-      "reason": "Trending on Yahoo Finance",
-      "catalyst": "trending",
-      "expected_direction": "volatile",
-      "priority": 49
-    },
-    {
-      "symbol": "INTC",
-      "reason": "Trending on Yahoo Finance",
-      "catalyst": "trending",
-      "expected_direction": "volatile",
-      "priority": 50
     }
   ],
-  "market_summary": "Top 50 trending stocks from Yahoo Finance",
-  "generated_at": "2026-03-20T20:31:01.101074",
+  "market_summary": "Top 43 trending stocks from Yahoo Finance",
+  "generated_at": "2026-03-21T16:48:31.442353",
   "source": "yahoo_scrape"
 }
