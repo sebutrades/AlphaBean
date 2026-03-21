@@ -1,5 +1,5 @@
 {
-  "cached_at": 1774046779.9357982,
+  "cached_at": 1774057240.7693958,
   "items": [
     {
       "headline": "Stock Market Review: SPY, QQQ Tumble on Rate Hike Scenario as U.S.-Iran War Reaches 3-Week Mark",
@@ -87,6 +87,51 @@
       "source": "SeekingAlpha",
       "url": "https://finnhub.io/api/news?id=28a7a80abe3fe2c208a772da001ac173fe8d1cb20706499371d0a76abe456fbe",
       "published": "2026-03-20T08:37:35",
+      "symbol": "QQQ",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Markets Are Souring On Trump's Iran Strategy",
+      "source": "SeekingAlpha",
+      "url": "https://finnhub.io/api/news?id=c35314c4a61cd81a0a4bf0244d57c3b6d0a45a0201b757b134a9ef414d4a92a2",
+      "published": "2026-03-20T07:55:24",
+      "symbol": "QQQ",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Market Breadth Rebounds, But Conviction Is Still Missing",
+      "source": "ChartMill",
+      "url": "https://finnhub.io/api/news?id=db54b03cce1275b7d4af0c85b24b54676a9b3b9d6b5a42456d0661fe0884da9f",
+      "published": "2026-03-20T07:36:36",
+      "symbol": "QQQ",
+      "provider": "finnhub",
+      "sentiment_hint": "negative"
+    },
+    {
+      "headline": "3 Reasons A Recession Is Likely - 3 Reasons It Isn't",
+      "source": "SeekingAlpha",
+      "url": "https://finnhub.io/api/news?id=c1720860583013a50b2d553023531a24518b39c48f8bd3a85e17bdf45c26ec9c",
+      "published": "2026-03-20T07:36:19",
+      "symbol": "QQQ",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Markets Starting To Price In Stagflation Risk",
+      "source": "SeekingAlpha",
+      "url": "https://finnhub.io/api/news?id=aa8cd038817df497cd064337e751d90847f800ace61cb165098590e06867ed6a",
+      "published": "2026-03-20T07:05:00",
+      "symbol": "QQQ",
+      "provider": "finnhub",
+      "sentiment_hint": "negative"
+    },
+    {
+      "headline": "Federal Reserve Watch: Can We Get Through 2026",
+      "source": "SeekingAlpha",
+      "url": "https://finnhub.io/api/news?id=96d9a571c7f030b3b07d600d49a850fe6001bd343ef2c82ce8d4df7fbc6d45c8",
+      "published": "2026-03-20T06:40:44",
       "symbol": "QQQ",
       "provider": "finnhub",
       "sentiment_hint": "neutral"

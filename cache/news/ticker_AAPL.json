@@ -1,5 +1,5 @@
 {
-  "cached_at": 1774046777.7645879,
+  "cached_at": 1774057191.5272844,
   "items": [
     {
       "headline": "Warren Buffett Bought 8 Million Shares of This Oil Giant and $100 Oil Proves Him Right",
@@ -24,6 +24,15 @@
       "source": "Yahoo",
       "url": "https://finnhub.io/api/news?id=7081c3ff70de7921210685383056788af76934ea7036c605bace789ed4e92b30",
       "published": "2026-03-20T16:02:32",
+      "symbol": "AAPL",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Apple\u2019s Latest Launch Was \u2018Best\u2019 Ever for New Mac Customers. What It Means for the Stock.",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=5de12d65cfdf18952e4c1ff9deaafcacc109af6c17c720f9bbd74ff00031d20b",
+      "published": "2026-03-20T15:32:00",
       "symbol": "AAPL",
       "provider": "finnhub",
       "sentiment_hint": "neutral"
@@ -87,6 +96,42 @@
       "source": "Finbold",
       "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE9vUVZXWXZ6TVV6cHlVckl2aG9KaTJ2M0tNR3hrclM3WHhsbnJkdEN1dFdVR2QyS2VnUGM0UnJfRWN3Z0J1Q1ppci1qdkpLWHpGclZQMTdndHlwdWRDdm5NZUkyOU1fajUwZ3c?oc=5",
       "published": "2026-03-20T13:49:33",
+      "symbol": "AAPL",
+      "provider": "google_news",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Coinbase Global Launches Stock Perpetual Futures Contracts",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=1253574df5f0950c2dacb4b482ab9b489b5bed002db6064a7820cea6fe9041d6",
+      "published": "2026-03-20T13:24:00",
+      "symbol": "AAPL",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Google Quietly Closes Gap In AI App Race",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=65cd2792284aa9647925e62329796d9738a5a5f6ee32251bc06d55696edfa266",
+      "published": "2026-03-20T11:12:12",
+      "symbol": "AAPL",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Apple Wins Initial Ruling in Watch Patent Dispute",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=4f61d44b5e88c54f75f90a354d10f828dcd0e3de78527bb69945cdfc7003cdc4",
+      "published": "2026-03-20T11:09:57",
+      "symbol": "AAPL",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "AAPL Stock Today, March 20: China Memory Spike Lifts iPhone Sales",
+      "source": "Meyka",
+      "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxNRXdId0lIM2FFX2Q4T0ROcEFnVGtoSFRwM2VSVWM4VkJpWFdLTmxoRnFrNlpydFlaRndzakltZmpQbHRwSUJDUUl1alVUVjdXQTdLSDE3bURmZ3JIam54RFlLVDhjMU84ZXR5MF9kMmlEREFUUC1abzFxTzlfS0RHTjc3UHloR3R1Z0UzTFlWTDRrLTI5M0Y0?oc=5",
+      "published": "2026-03-20T10:58:22",
       "symbol": "AAPL",
       "provider": "google_news",
       "sentiment_hint": "neutral"
