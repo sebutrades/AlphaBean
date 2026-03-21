@@ -1,206 +1,185 @@
 """
-features/correlation.py — SPY Correlation Scorer
+features/correlation.py — Live SPY Correlation Scorer
 
-Computes rolling correlation between a stock and SPY using 15min candles.
-Stocks with LOW correlation are more interesting for independent setups.
+Computes LIVE correlation (no caching) between a stock and SPY
+using 15min candles over last 3 days.
 
-Method:
-  - Fetch 15min bars for both the stock and SPY
-  - Compute candle direction (green=1, red=-1) for each bar
-  - Rolling Pearson correlation over last N candles
-  - Also compute return-based correlation for magnitude
+Grades:
+  A = Very independent / Relative strength or weakness to market
+  B = Somewhat independent
+  C = Moderate correlation
+  D = Correlated
+  F = Locked to SPY
 
-Output:
-  correlation_score: 0-100 where:
-    0-30  = Low correlation (independent mover) ★ best for setups
-    30-60 = Moderate correlation
-    60-100 = High correlation (moves with SPY)
-
-  direction_agreement: % of candles where stock and SPY move same direction
+Also detects relative strength/weakness:
+  If stock is UP while SPY is DOWN → "Relative Strength"
+  If stock is DOWN while SPY is UP → "Relative Weakness"
+  If both same direction but stock outperforms → "Outperforming"
+  If both same direction but stock underperforms → "Underperforming"
 """
-import time
-import json
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Optional
-
 import numpy as np
-
-CACHE_DIR = Path("cache/correlation")
-CACHE_TTL = 900  # 15 minutes
 
 
 @dataclass
 class CorrelationResult:
     symbol: str
-    pearson_r: float           # -1 to 1 Pearson correlation of returns
-    direction_agreement: float  # 0-1 % of candles moving same direction as SPY
-    correlation_score: float   # 0-100 (lower = more independent)
-    grade: str                 # A (independent) to F (locked to SPY)
-    sample_bars: int           # How many bars used
-    
+    pearson_r: float            # -1 to 1
+    direction_agreement: float  # 0-1
+    correlation_score: float    # 0-100 (lower = more independent)
+    grade: str                  # A-F
+    label: str                  # "Relative Strength", "Relative Weakness", etc.
+    color: str                  # hex color for UI
+    sample_bars: int
+
     def to_dict(self) -> dict:
         return {
             "symbol": self.symbol,
             "pearson_r": round(self.pearson_r, 3),
-            "direction_agreement": round(self.direction_agreement, 3),
+            "direction_agreement": round(self.direction_agreement * 100, 1),
             "correlation_score": round(self.correlation_score, 1),
             "grade": self.grade,
+            "label": self.label,
+            "color": self.color,
             "sample_bars": self.sample_bars,
         }
 
 
-# Pre-cached SPY bars (fetched once per session)
-_spy_cache: dict = {"bars": None, "fetched_at": 0}
+# SPY bars cached in memory (refreshed per request cycle, not across)
+_spy_cache: dict = {"closes": None, "opens": None, "returns": None}
 
 
-def compute_correlation(
-    stock_closes: np.ndarray,
-    stock_opens: np.ndarray,
-    spy_closes: np.ndarray,
-    spy_opens: np.ndarray,
-    symbol: str = "",
-    window: int = 50,
-) -> CorrelationResult:
+def compute_correlation_live(symbol: str) -> CorrelationResult:
     """
-    Compute correlation between a stock and SPY.
-    
-    Args:
-        stock_closes/opens: Stock 15min OHLC arrays
-        spy_closes/opens: SPY 15min OHLC arrays (same length)
-        window: Rolling window for correlation
+    Fetch LIVE 15min bars for both stock and SPY (last 3 days),
+    compute correlation. No disk caching — always fresh.
     """
-    n = min(len(stock_closes), len(spy_closes))
-    if n < 20:
+    from backend.data.massive_client import fetch_bars
+
+    try:
+        # Fetch SPY (reuse in-memory if recent enough)
+        spy_data = fetch_bars("SPY", "15min", days_back=3)
+        stock_data = fetch_bars(symbol.upper(), "15min", days_back=3)
+
+        spy_closes = np.array([b.close for b in spy_data.bars], dtype=np.float64)
+        spy_opens = np.array([b.open for b in spy_data.bars], dtype=np.float64)
+        stock_closes = np.array([b.close for b in stock_data.bars], dtype=np.float64)
+        stock_opens = np.array([b.open for b in stock_data.bars], dtype=np.float64)
+
+        return _compute(symbol.upper(), stock_closes, stock_opens, spy_closes, spy_opens)
+
+    except Exception as e:
         return CorrelationResult(
-            symbol=symbol, pearson_r=0, direction_agreement=0.5,
-            correlation_score=50, grade="?", sample_bars=n,
+            symbol=symbol.upper(), pearson_r=0, direction_agreement=0.5,
+            correlation_score=50, grade="?", label="Unknown", color="#64748b",
+            sample_bars=0,
         )
-    
-    # Align to same length (trim from front)
+
+
+def _compute(
+    symbol: str,
+    stock_closes: np.ndarray, stock_opens: np.ndarray,
+    spy_closes: np.ndarray, spy_opens: np.ndarray,
+) -> CorrelationResult:
+    """Core correlation computation."""
+    n = min(len(stock_closes), len(spy_closes))
+    if n < 10:
+        return CorrelationResult(symbol=symbol, pearson_r=0, direction_agreement=0.5,
+                                 correlation_score=50, grade="?", label="Insufficient data",
+                                 color="#64748b", sample_bars=n)
+
+    # Align to same length
     sc = stock_closes[-n:]
     so = stock_opens[-n:]
     yc = spy_closes[-n:]
     yo = spy_opens[-n:]
-    
-    # --- Return-based correlation ---
-    stock_returns = np.diff(sc) / sc[:-1]
-    spy_returns = np.diff(yc) / yc[:-1]
-    
-    # Use last `window` bars for rolling correlation
-    w = min(window, len(stock_returns))
-    sr = stock_returns[-w:]
-    yr = spy_returns[-w:]
-    
-    # Handle edge cases
-    if np.std(sr) == 0 or np.std(yr) == 0:
+
+    # --- Pearson correlation of bar-over-bar returns ---
+    stock_ret = np.diff(sc) / sc[:-1]
+    spy_ret = np.diff(yc) / yc[:-1]
+
+    # Clean NaN/Inf
+    mask = np.isfinite(stock_ret) & np.isfinite(spy_ret)
+    sr = stock_ret[mask]
+    yr = spy_ret[mask]
+
+    if len(sr) < 10 or np.std(sr) == 0 or np.std(yr) == 0:
         pearson_r = 0.0
     else:
         pearson_r = float(np.corrcoef(sr, yr)[0, 1])
         if np.isnan(pearson_r):
             pearson_r = 0.0
-    
+
     # --- Direction agreement ---
-    # Green = close > open, Red = close < open
-    stock_dir = np.sign(sc - so)  # 1=green, -1=red, 0=doji
+    stock_dir = np.sign(sc - so)  # 1=green, -1=red
     spy_dir = np.sign(yc - yo)
-    
-    # Only count bars where both have clear direction
-    mask = (stock_dir != 0) & (spy_dir != 0)
-    if mask.sum() > 0:
-        agreement = float(np.mean(stock_dir[mask] == spy_dir[mask]))
-    else:
-        agreement = 0.5
-    
-    # --- Correlation Score (0-100, lower = more independent) ---
-    # Combine Pearson R (magnitude) and direction agreement
+    clear = (stock_dir != 0) & (spy_dir != 0)
+    agreement = float(np.mean(stock_dir[clear] == spy_dir[clear])) if clear.sum() > 0 else 0.5
+
+    # --- Correlation score (0-100, lower = more independent) ---
     abs_r = abs(pearson_r)
-    
-    # Weight: 60% Pearson, 40% direction agreement
-    raw_score = (abs_r * 0.6 + agreement * 0.4) * 100
-    correlation_score = max(0, min(100, raw_score))
-    
-    # Grade
-    if correlation_score <= 25:
-        grade = "A"  # Very independent
-    elif correlation_score <= 40:
-        grade = "B"  # Somewhat independent
-    elif correlation_score <= 55:
-        grade = "C"  # Moderate
-    elif correlation_score <= 70:
-        grade = "D"  # Correlated
+    raw = (abs_r * 0.6 + agreement * 0.4) * 100
+    score = max(0, min(100, raw))
+
+    # --- Grade ---
+    if score <= 25: grade = "A"
+    elif score <= 40: grade = "B"
+    elif score <= 55: grade = "C"
+    elif score <= 70: grade = "D"
+    else: grade = "F"
+
+    # --- Relative Strength / Weakness label ---
+    # Compare recent performance (last 20 bars)
+    recent = min(20, len(sr))
+    stock_perf = float(np.sum(sr[-recent:]))  # Cumulative return
+    spy_perf = float(np.sum(yr[-recent:]))
+
+    stock_up = stock_perf > 0.001
+    stock_dn = stock_perf < -0.001
+    spy_up = spy_perf > 0.001
+    spy_dn = spy_perf < -0.001
+
+    if stock_up and spy_dn:
+        label = "Relative Strength"
+        color = "#10b981"  # green
+    elif stock_dn and spy_up:
+        label = "Relative Weakness"
+        color = "#ef4444"  # red
+    elif stock_up and spy_up:
+        if stock_perf > spy_perf * 1.5:
+            label = "Outperforming"
+            color = "#10b981"
+        elif stock_perf < spy_perf * 0.5:
+            label = "Underperforming"
+            color = "#f59e0b"
+        else:
+            label = "In Line"
+            color = "#64748b"
+    elif stock_dn and spy_dn:
+        if abs(stock_perf) < abs(spy_perf) * 0.5:
+            label = "Holding Up"
+            color = "#10b981"
+        elif abs(stock_perf) > abs(spy_perf) * 1.5:
+            label = "Underperforming"
+            color = "#ef4444"
+        else:
+            label = "In Line"
+            color = "#64748b"
     else:
-        grade = "F"  # Locked to SPY
-    
+        label = "Neutral"
+        color = "#64748b"
+
+    # Override color for highly independent (grade A/B)
+    if grade in ("A", "B"):
+        if label in ("Relative Strength", "Outperforming", "Holding Up"):
+            color = "#10b981"
+        elif label in ("Relative Weakness", "Underperforming"):
+            color = "#ef4444"
+        else:
+            color = "#3b82f6"  # blue for independent
+
     return CorrelationResult(
-        symbol=symbol,
-        pearson_r=pearson_r,
-        direction_agreement=agreement,
-        correlation_score=correlation_score,
-        grade=grade,
+        symbol=symbol, pearson_r=pearson_r, direction_agreement=agreement,
+        correlation_score=score, grade=grade, label=label, color=color,
         sample_bars=n,
     )
-
-
-def fetch_spy_15min_cached() -> tuple[np.ndarray, np.ndarray]:
-    """Fetch SPY 15min bars, cached for 15 minutes."""
-    from backend.data.massive_client import fetch_bars
-    
-    if _spy_cache["bars"] is not None and time.time() - _spy_cache["fetched_at"] < CACHE_TTL:
-        return _spy_cache["bars"]
-    
-    spy_data = fetch_bars("SPY", "15min", days_back=10)
-    closes = np.array([b.close for b in spy_data.bars], dtype=np.float64)
-    opens = np.array([b.open for b in spy_data.bars], dtype=np.float64)
-    _spy_cache["bars"] = (closes, opens)
-    _spy_cache["fetched_at"] = time.time()
-    return closes, opens
-
-
-def compute_correlation_for_symbol(symbol: str) -> CorrelationResult:
-    """
-    High-level: fetch both stock and SPY 15min bars, compute correlation.
-    Uses caching for SPY bars.
-    """
-    from backend.data.massive_client import fetch_bars
-    
-    # Check cache
-    cached = _load_cache(symbol)
-    if cached is not None:
-        return cached
-    
-    try:
-        spy_closes, spy_opens = fetch_spy_15min_cached()
-        stock_data = fetch_bars(symbol, "15min", days_back=10)
-        stock_closes = np.array([b.close for b in stock_data.bars], dtype=np.float64)
-        stock_opens = np.array([b.open for b in stock_data.bars], dtype=np.float64)
-        
-        result = compute_correlation(stock_closes, stock_opens, spy_closes, spy_opens, symbol)
-        _save_cache(symbol, result)
-        return result
-        
-    except Exception as e:
-        return CorrelationResult(
-            symbol=symbol, pearson_r=0, direction_agreement=0.5,
-            correlation_score=50, grade="?", sample_bars=0,
-        )
-
-
-def _load_cache(symbol: str) -> Optional[CorrelationResult]:
-    path = CACHE_DIR / f"{symbol}.json"
-    if not path.exists():
-        return None
-    try:
-        data = json.loads(path.read_text())
-        if time.time() - data.get("cached_at", 0) > CACHE_TTL:
-            return None
-        return CorrelationResult(**{k: v for k, v in data.items() if k != "cached_at"})
-    except (json.JSONDecodeError, KeyError, TypeError):
-        return None
-
-
-def _save_cache(symbol: str, result: CorrelationResult):
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    data = result.to_dict()
-    data["cached_at"] = time.time()
-    (CACHE_DIR / f"{symbol}.json").write_text(json.dumps(data))
