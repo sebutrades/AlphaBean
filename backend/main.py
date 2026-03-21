@@ -131,14 +131,22 @@ async def top_opportunities(ai:bool=Query(True),per_symbol:int=Query(2),max_symb
     capped.sort(key=lambda x: x.get("composite_score",0), reverse=True)
     # Only filter market hours when market is open
     if _mkt_open(): capped = _mkt_hours_filter(capped)
+    # Only AI-evaluate top 50% by composite score — cuts Ollama calls in half
+    cutoff = len(capped) // 2 or len(capped)
+    ai_batch = capped[:cutoff]
+    skip_batch = capped[cutoff:]
+    print(f"  Top 50% filter: {len(ai_batch)} for AI, {len(skip_batch)} skipped")
 
-    # AI evaluate
-    if ai and capped:
+    # AI evaluate only the top half
+    if ai and ai_batch:
         try:
-            syms = list(set(s.get("symbol","") for s in capped))
+            syms = list(set(s.get("symbol","") for s in ai_batch))
             nb = fetch_news_batch(syms); ns = {sym:format_headlines_for_llm(items) for sym,items in nb.items()}
-            capped = evaluate_setups_batch(capped,ns,_regime_str(),top_n=per_symbol)
+            ai_batch = evaluate_setups_batch(ai_batch,ns,_regime_str(),top_n=per_symbol)
         except Exception as e: print(f"  AI error: {e}")
+
+    # Only return AI-evaluated setups (top 50%)
+    capped = ai_batch
 
     # Live correlation per symbol
     corr_map: dict[str, dict] = {}
