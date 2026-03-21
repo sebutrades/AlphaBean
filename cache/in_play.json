@@ -1,71 +1,113 @@
 {
-  "cached_at": 1774046759.459005,
+  "cached_at": 1774054057.005648,
   "stocks": [
     {
-      "symbol": "PLAB",
-      "reason": "Record revenue and upbeat guidance",
-      "catalyst": "earnings",
-      "expected_direction": "bullish",
+      "symbol": "VST",
+      "reason": "Trending on Yahoo Finance",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
       "priority": 1
     },
     {
-      "symbol": "NVDA",
-      "reason": "Upbeat earnings report",
-      "catalyst": "earnings",
-      "expected_direction": "bullish",
+      "symbol": "UAL",
+      "reason": "Trending on Yahoo Finance",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
       "priority": 2
     },
     {
-      "symbol": "MU",
-      "reason": "Upbeat earnings report",
-      "catalyst": "earnings",
-      "expected_direction": "bullish",
+      "symbol": "ANNA",
+      "reason": "Trending on Yahoo Finance",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
       "priority": 3
     },
     {
-      "symbol": "HON",
-      "reason": "Upgrade by analyst",
-      "catalyst": "upgrade",
-      "expected_direction": "bullish",
+      "symbol": "NIO",
+      "reason": "Trending on Yahoo Finance",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
       "priority": 4
     },
     {
-      "symbol": "WBD",
-      "reason": "Deal payout for CEOs",
-      "catalyst": "news",
+      "symbol": "SPY",
+      "reason": "Trending on Yahoo Finance",
+      "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 5
     },
     {
-      "symbol": "AAPL",
-      "reason": "Neutral on AI leader, but Jim Cramer's comments may impact sentiment",
-      "catalyst": "sector/upgrade/downgrade",
-      "expected_direction": "neutral",
+      "symbol": "MGM",
+      "reason": "Trending on Yahoo Finance",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
       "priority": 6
     },
     {
-      "symbol": "SPY",
-      "reason": "Market volatility driven by Iran war tensions and oil price swings",
-      "catalyst": "macro",
+      "symbol": "RKT",
+      "reason": "Trending on Yahoo Finance",
+      "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 7
     },
     {
-      "symbol": "QQQ",
-      "reason": "Market volatility driven by Iran war tensions and oil price swings",
-      "catalyst": "macro",
+      "symbol": "SMCI",
+      "reason": "Trending on Yahoo Finance",
+      "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 8
     },
     {
-      "symbol": "TSLA",
-      "reason": "Neutral on AI leader, but Jim Cramer's comments may impact sentiment",
-      "catalyst": "sector/upgrade/downgrade",
-      "expected_direction": "neutral",
+      "symbol": "XPEV",
+      "reason": "Trending on Yahoo Finance",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
       "priority": 9
+    },
+    {
+      "symbol": "CEG",
+      "reason": "Trending on Yahoo Finance",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 10
+    },
+    {
+      "symbol": "SEDG",
+      "reason": "Trending on Yahoo Finance",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 11
+    },
+    {
+      "symbol": "QQQ",
+      "reason": "Trending on Yahoo Finance",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 12
+    },
+    {
+      "symbol": "WELL",
+      "reason": "Trending on Yahoo Finance",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 13
+    },
+    {
+      "symbol": "VOO",
+      "reason": "Trending on Yahoo Finance",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 14
+    },
+    {
+      "symbol": "NVDA",
+      "reason": "Trending on Yahoo Finance",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 15
     }
   ],
-  "market_summary": "Market volatility driven by Iran war tensions and oil price swings",
-  "generated_at": "2026-03-20T17:45:59.458836",
-  "source": "ollama"
+  "market_summary": "Top 15 trending stocks from Yahoo Finance",
+  "generated_at": "2026-03-20T19:47:37.005507",
+  "source": "yahoo_api"
 }
