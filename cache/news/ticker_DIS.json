@@ -1,0 +1,95 @@
+{
+  "cached_at": 1774134904.9572725,
+  "items": [
+    {
+      "headline": "Is It Time To Reassess Disney (DIS) After Recent Share Price Weakness?",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=b266e0fbea65de5208dcafa6207bc13538f395d16a2e88af8d734ec000141162",
+      "published": "2026-03-21T00:05:08",
+      "symbol": "DIS",
+      "provider": "finnhub",
+      "sentiment_hint": "negative"
+    },
+    {
+      "headline": "Disney (NYSE: DIS) executive details option and RSU holdings",
+      "source": "Stock Titan",
+      "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxOWUswV2xxMFI5ME1RUTl4UURqY0RrT095OWF1NlVGbE8xOUVyZElGeUdHZzBpcWRKNnNJeFVobTFrRWZIcGJRTTlxcTAzNTZGdkZHUG9jNVJ6Wkt1RG92RDlwb2M4ZlRZTHo3RTMzeHJaNmtZa3dtdUVteDcxMlFqQXFoUHFOY3V5aWNPUlRGZnJxdXN1dGRSVEoxMHc2aWxlN05vR3RndzFJQjYyTDRsRTdXekZaVXQxd0NXWEFwcGo0QQ?oc=5",
+      "published": "2026-03-20T23:01:08",
+      "symbol": "DIS",
+      "provider": "google_news",
+      "sentiment_hint": "negative"
+    },
+    {
+      "headline": "Dana Walden (DIS) awarded stock options and RSUs in new Disney equity grant",
+      "source": "Stock Titan",
+      "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxPbEF1cEdrbUlNa2I2QU0xM3BjQWRSbTZYT29IQVd5LWNRa0hmVjcyTkYxdFpkdGNtWDMwUGtWTnp5MTl0cEhJbU5IOWw3VkxkR29vdEU5cHc0cVR2RjdLLW95QjU4Z2lPTEhCRWhRbXMwVFJFTy1JRVRVVFVnQThRNkRIUlJDMHRNNUNxazU4bzYwUWgwQmNLVjVYV0VNMXR2cThaQk1NRlVHcUU?oc=5",
+      "published": "2026-03-20T20:02:19",
+      "symbol": "DIS",
+      "provider": "google_news",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Disney Sank Millions Into the New \u2018Bachelorette.\u2019 Then It Pulled the Plug.",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=499d74f3bc602f5210ecbcea3a457fcdfee26f4f57d897e3dd4a10a079016ad2",
+      "published": "2026-03-20T19:00:00",
+      "symbol": "DIS",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Market Madness: Palantir, Walmart, & other hot stock picks",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=4f4dda3e6ef85b24ebd5cc975168a638104d4c164ecfbc5a43d963249e807587",
+      "published": "2026-03-20T16:13:31",
+      "symbol": "DIS",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "What happened at Nvidia GTC:\u00a0NemoClaw, Robot Olaf, and a\u00a0$1 trillion\u00a0bet",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=057170218262b59089a352dae57adcbce4b3f5052045d194de99fbd8e31ae8cb",
+      "published": "2026-03-20T15:02:35",
+      "symbol": "DIS",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Eric Trump Says 'Up We Go' After American Bitcoin Surpasses Galaxy Digital In Bitcoin Holdings \u2014 So Why Is The Stock Lagging?",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=a2ab90b643dc9aaf39f6398c4d696ddbb5814c9a55507d06305b5c1709e84bba",
+      "published": "2026-03-20T10:01:05",
+      "symbol": "DIS",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Disney Faces Hidden Risk From Reality TV Fallout",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=565df37a18f1164261a000961ab6cc377d16ccc4af554ec641c866ff58571fbc",
+      "published": "2026-03-20T07:15:18",
+      "symbol": "DIS",
+      "provider": "finnhub",
+      "sentiment_hint": "negative"
+    },
+    {
+      "headline": "Is Disney Stock A Buy After Josh D'Amaro Takes Over As CEO?",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=eb11c785188430537fe7eb540dacc5495a7aa46507c86b8859a7e8dbb269df5a",
+      "published": "2026-03-20T06:31:02",
+      "symbol": "DIS",
+      "provider": "finnhub",
+      "sentiment_hint": "positive"
+    },
+    {
+      "headline": "Disney's growth playbook: What will take center stage?",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=4a00ae79858a9c2ad4cd0cc66f7d1168d86244e3651d1420dc5db033a7b07215",
+      "published": "2026-03-20T05:00:32",
+      "symbol": "DIS",
+      "provider": "finnhub",
+      "sentiment_hint": "positive"
+    }
+  ]
+}

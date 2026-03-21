@@ -1,5 +1,5 @@
 """
-ai/inplay_detector.py — In-Play Stocks from Yahoo Finance Trending
+ai/inplay_detector.py — In-Play Stocks - Trending Tickers
 
 Scrapes https://finance.yahoo.com/markets/stocks/trending/
 Multiple extraction methods with robust fallbacks.
@@ -73,7 +73,7 @@ def _fetch_trending() -> InPlayResult:
     # Method 1: Direct page scrape
     tickers = _scrape_yahoo_page()
     if tickers and len(tickers) >= 10:
-        print(f"  [In-Play] Got {len(tickers)} from Yahoo page scrape")
+        print(f"  [In-Play] Got {len(tickers)} from page scrape")
         return _build_result(tickers, "yahoo_scrape")
 
     # Method 2: Yahoo Finance API endpoints
@@ -83,7 +83,7 @@ def _fetch_trending() -> InPlayResult:
     ]:
         tickers = _try_api(url)
         if tickers and len(tickers) >= 5:
-            print(f"  [In-Play] Got {len(tickers)} from Yahoo API")
+            print(f"  [In-Play] Got {len(tickers)} from API")
             return _build_result(tickers, "yahoo_api")
 
     # Method 3: yfinance screener
@@ -195,13 +195,13 @@ def _filter_tickers(tickers: list[str]) -> list[str]:
 
 def _build_result(tickers: list[str], source: str) -> InPlayResult:
     stocks = [
-        InPlayStock(symbol=sym, reason="Trending on Yahoo Finance",
+        InPlayStock(symbol=sym, reason="Trending today",
                     catalyst="trending", expected_direction="volatile", priority=i+1)
         for i, sym in enumerate(tickers[:50])
     ]
     return InPlayResult(
         stocks=stocks,
-        market_summary=f"Top {len(stocks)} trending stocks from Yahoo Finance",
+        market_summary=f"Top {len(stocks)} trending stocks",
         generated_at=datetime.now().isoformat(), source=source,
     )
 
@@ -216,7 +216,7 @@ FALLBACK = [
 ]
 
 def _fallback_result() -> InPlayResult:
-    stocks = [InPlayStock(symbol=s, reason="High-volume watchlist", catalyst="volume",
+    stocks = [InPlayStock(symbol=s, reason="High volume", catalyst="volume",
                           expected_direction="volatile", priority=i+1)
               for i, s in enumerate(FALLBACK)]
     return InPlayResult(stocks=stocks, market_summary="Using high-volume watchlist",

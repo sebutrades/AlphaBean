@@ -1,5 +1,5 @@
 """
-main.py — AlphaBean API Server v3.4
+main.py — Juicer API Server v1.0
 
 Start: uvicorn backend.main:app --reload --port 8000
 """
@@ -20,7 +20,7 @@ from backend.ai.inplay_detector import get_in_play, refresh_in_play
 from backend.features.correlation import compute_correlation_live
 import numpy as np
 
-app = FastAPI(title="AlphaBean API", version="3.4.0")
+app = FastAPI(title="Juicer API", version="1.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173","http://localhost:3000","http://127.0.0.1:5173"], allow_methods=["*"], allow_headers=["*"])
 
 _evaluator = StrategyEvaluator()
@@ -53,9 +53,11 @@ def _mkt_hours_filter(setups):
     return out
 
 
+# ═══ CORE ═══
+
 @app.get("/api/health")
 async def health():
-    return {"status":"ok","app":"AlphaBean","version":"3.4.0","patterns":len(get_all_pattern_names()),
+    return {"status":"ok","app":"Juicer","version":"1.0.0","patterns":len(get_all_pattern_names()),
             "strategies_tracked":_evaluator.stats_summary()["strategies_tracked"],
             "ollama":check_ollama_status(),"market_open":_mkt_open()}
 
@@ -71,7 +73,9 @@ async def list_patterns():
 async def scan(symbol:str=Query(...),mode:str=Query("today"),ai:bool=Query(True)):
     if mode not in ("today","active"): return {"error":"mode must be 'today' or 'active'"}
     setups = scan_symbol(symbol.upper(),mode=mode,evaluator=_evaluator)
-    if mode == "today": setups = _mkt_hours_filter(setups)
+    # Only filter market hours when market is actually open
+    if mode == "today" and _mkt_open(): setups = _mkt_hours_filter(setups)
+    # AI evaluation
     if ai and setups:
         try:
             news = fetch_news(symbol.upper(),15); hl = format_headlines_for_llm(news)
@@ -88,7 +92,7 @@ async def scan(symbol:str=Query(...),mode:str=Query("today"),ai:bool=Query(True)
 async def scan_multi(symbols:str=Query(...),mode:str=Query("today"),ai:bool=Query(True)):
     sl = [s.strip().upper() for s in symbols.split(",") if s.strip()]
     setups = scan_multiple(sl,mode=mode,evaluator=_evaluator)
-    if mode == "today": setups = _mkt_hours_filter(setups)
+    if mode == "today" and _mkt_open(): setups = _mkt_hours_filter(setups)
     if ai and setups:
         try:
             nb = fetch_news_batch(sl); ns = {sym:format_headlines_for_llm(items) for sym,items in nb.items()}
@@ -108,19 +112,14 @@ async def in_play_refresh():
     return refresh_in_play().to_dict()
 
 @app.get("/api/top-opportunities")
-async def top_opportunities(ai:bool=Query(True),per_symbol:int=Query(2),max_symbols:int=Query(50)):
-    """50 trending tickers → scan → top 2 per symbol → AI evaluate → ranked."""
+async def top_opportunities(ai:bool=Query(True),per_symbol:int=Query(2),max_symbols:int=Query(15)):
     t = time.time()
-    print(f"\n{'═'*55}\n  TOP OPPORTUNITIES — {per_symbol}/sym, {max_symbols} symbols\n{'═'*55}")
-
     ip = get_in_play()
     symbols = [s.symbol for s in ip.stocks if s.symbol][:max_symbols]
     if not symbols:
         return {"market_summary":ip.market_summary,"in_play":ip.to_dict(),"setups":[],"count":0,"market_open":_mkt_open()}
 
-    print(f"  Trending: {len(symbols)} symbols")
     all_setups = scan_multiple(symbols,mode="active",evaluator=_evaluator)
-    print(f"  Raw: {len(all_setups)} setups")
 
     # Cap to top N per symbol
     by_sym: dict[str, list] = defaultdict(list)
@@ -130,8 +129,8 @@ async def top_opportunities(ai:bool=Query(True),per_symbol:int=Query(2),max_symb
         ss.sort(key=lambda x: x.get("composite_score",0), reverse=True)
         capped.extend(ss[:per_symbol])
     capped.sort(key=lambda x: x.get("composite_score",0), reverse=True)
-    capped = _mkt_hours_filter(capped)
-    print(f"  Capped: {len(capped)} setups ({per_symbol}/sym)")
+    # Only filter market hours when market is open
+    if _mkt_open(): capped = _mkt_hours_filter(capped)
 
     # AI evaluate
     if ai and capped:
@@ -157,21 +156,11 @@ async def top_opportunities(ai:bool=Query(True),per_symbol:int=Query(2),max_symb
         if sym in ip_map: s["in_play_info"] = ip_map[sym]
 
     elapsed = time.time() - t
-    print(f"  Done: {len(capped)} opportunities ({elapsed:.1f}s)")
     return {"market_summary":ip.market_summary,"in_play":ip.to_dict(),"setups":capped,
             "count":len(capped),"elapsed_seconds":round(elapsed,1),"market_open":_mkt_open()}
 
 
 # ═══ TRACKING ═══
-
-@app.get("/api/track-price")
-async def track_price(symbol:str=Query(...)):
-    try:
-        bars=fetch_bars(symbol.upper(),"5min",1)
-        if not bars.bars: return {"error":"No data"}
-        l=bars.bars[-1]
-        return {"symbol":symbol.upper(),"price":l.close,"high":l.high,"low":l.low,"volume":l.volume,"timestamp":l.timestamp.isoformat()}
-    except Exception as e: return {"error":str(e)}
 
 @app.get("/api/track-prices")
 async def track_prices(symbols:str=Query(...)):

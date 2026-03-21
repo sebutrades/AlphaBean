@@ -1,6 +1,33 @@
 {
-  "cached_at": 1774055730.3444085,
+  "cached_at": 1774135212.0131083,
   "items": [
+    {
+      "headline": "Central Bank Policy On Hold As Markets Weigh Energy Risks",
+      "source": "SeekingAlpha",
+      "url": "https://finnhub.io/api/news?id=df85109413540dc16b3b40387b1fd7917a95dcb42392834fe20effa8ce046644",
+      "published": "2026-03-21T04:44:00",
+      "symbol": "USO",
+      "provider": "finnhub",
+      "sentiment_hint": "negative"
+    },
+    {
+      "headline": "This Week's Market Wrap: Cash Me On The Sidelines",
+      "source": "SeekingAlpha",
+      "url": "https://finnhub.io/api/news?id=ea7c42141d017c5d0d0bfe2f68590109c698828c3f72584338c1665ebc46816f",
+      "published": "2026-03-20T23:11:00",
+      "symbol": "USO",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Commodity Price Watch: March 2026",
+      "source": "SeekingAlpha",
+      "url": "https://finnhub.io/api/news?id=afe6d92763ed696208d61549d417ae944cbe6e38c2ecb3f1491ad5c774d8b309",
+      "published": "2026-03-20T21:48:00",
+      "symbol": "USO",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
     {
       "headline": "USO Stock Today, March 21: IEA Urges WFH, Slower Speeds to Curb Oil",
       "source": "Meyka",
@@ -9,6 +36,15 @@
       "symbol": "USO",
       "provider": "google_news",
       "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Markets Weekly Outlook: Farewell, Rate Cuts",
+      "source": "SeekingAlpha",
+      "url": "https://finnhub.io/api/news?id=7a42c3019df37eb70c93b5e6716677956c2e8cfb2250ffb14d29faf8c40658c5",
+      "published": "2026-03-20T18:35:00",
+      "symbol": "USO",
+      "provider": "finnhub",
+      "sentiment_hint": "negative"
     },
     {
       "headline": "Post-Iran Winners: Oil, Energy, And Israel",
@@ -20,121 +56,85 @@
       "sentiment_hint": "neutral"
     },
     {
-      "headline": "Markets Starting To Price In Stagflation Risk",
-      "source": "SeekingAlpha",
-      "url": "https://finnhub.io/api/news?id=aa8cd038817df497cd064337e751d90847f800ace61cb165098590e06867ed6a",
-      "published": "2026-03-20T07:05:00",
+      "headline": "President Trump Says We Are Getting Very Close To Meeting Our Objectives As We Consider Winding Down Our Great Military Efforts In Middle East; Hormuz Strait Will Have To Be Guarded And Policed, As Necessary, By Other Nations Who Use It; If Asked, We Will Help These Countries In Their Hormuz Efforts, But It Shouldn't Be Necessary",
+      "source": "Benzinga",
+      "url": "https://finnhub.io/api/news?id=fc769c91ff5f27542dcc851e88bfdd8a4838dd0d541276b51dd59f96fe001238",
+      "published": "2026-03-20T12:20:25",
+      "symbol": "USO",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Why United States Oil Fund Is Surging Friday Afternoon",
+      "source": "Benzinga",
+      "url": "https://finnhub.io/api/news?id=eb8b56a27409a6ba102375367e10e89373b87ce043985d1eb792d60ab142c71f",
+      "published": "2026-03-20T10:12:22",
+      "symbol": "USO",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Kevin O'Leary Warns $95 Oil Could Trigger $6\u2013$7 Gallon Gas Shock",
+      "source": "Benzinga",
+      "url": "https://finnhub.io/api/news?id=8a93e121d0daeb7c9534a1baa273c63b6c96329d0f07058a445efbe22c360249",
+      "published": "2026-03-20T09:22:44",
+      "symbol": "USO",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Oil Ministry Sources Says Iraq Declares Force Majeure On All Oilfields Developed By Foreign Oil Companies",
+      "source": "Benzinga",
+      "url": "https://finnhub.io/api/news?id=7d70116a875e08a4b903555855f4a3f378b6d9d584f4fa0d0b08c68a6ccda835",
+      "published": "2026-03-20T09:10:02",
+      "symbol": "USO",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "'Oil Prices Could Average $120/bbl If Hormuz Closed for Six Months' - Fitch Ratings",
+      "source": "Benzinga",
+      "url": "https://finnhub.io/api/news?id=0354790255f09d34bac0540fec30c963687211431e4c96c22c8d2f63e9a20b4a",
+      "published": "2026-03-20T09:01:58",
+      "symbol": "USO",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "'US Furiously Seeks To Avert Potential Months-Long Closure Of Strait Of Hormuz' - CNN",
+      "source": "Benzinga",
+      "url": "https://finnhub.io/api/news?id=ef9cc46142198b255ee4a1cd76405ddbd831099957ce31dc01ec555cf9064367",
+      "published": "2026-03-20T08:29:24",
+      "symbol": "USO",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "'Iran Unwilling to Talk About Opening Hormuz While Under Attack' - Bloomberg News",
+      "source": "Benzinga",
+      "url": "https://finnhub.io/api/news?id=3a68456d5d01136c183799171456946e1e16cdef64fdf4557506a6f727e9cec6",
+      "published": "2026-03-20T08:15:27",
+      "symbol": "USO",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "U.S. Baker Hughes Oil Rig Count +2 To 414; U.S. Baker Hughes NatGas Rig Count -2 To 131",
+      "source": "Benzinga",
+      "url": "https://finnhub.io/api/news?id=1c42d1eea6da5752e2bd7135110212bd60a69a4c2b925e2eac88d86a08f52030",
+      "published": "2026-03-20T08:03:51",
+      "symbol": "USO",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "'QatarEnergy CEO Says He Had Warned U.S. Energy Secretary And Top Executives Almost Daily Of The Dire Consequences For Others Should Iran's Oil And Gas Facilities Be Targeted; North Field Expansion Project Set For 2027 Could Be Delayed By More Than A Year; Because Of Earlier Decision To Evacuate 10,000 Workers In Span Of 24 Hours There Were No Fatalities Or Injuries In Iran Attack' - Reuters Exclusive",
+      "source": "Benzinga",
+      "url": "https://finnhub.io/api/news?id=b8ad8015803d7d0570043ce2d278f595780e06be6b4f6346d257c75556be1f6c",
+      "published": "2026-03-20T07:51:52",
       "symbol": "USO",
       "provider": "finnhub",
       "sentiment_hint": "negative"
-    },
-    {
-      "headline": "Middle East: Markets Brace For Extended Disruption",
-      "source": "SeekingAlpha",
-      "url": "https://finnhub.io/api/news?id=e79a4698314182aa339ad02a0ba7710699841593b6167477645f69063edf9349",
-      "published": "2026-03-20T06:30:00",
-      "symbol": "USO",
-      "provider": "finnhub",
-      "sentiment_hint": "neutral"
-    },
-    {
-      "headline": "The Market Has Been Too Complacent About The Strait of Hormuz",
-      "source": "SeekingAlpha",
-      "url": "https://finnhub.io/api/news?id=d35c6ddcd4091092c39a541859d7b82d0afe7bcd5044bd2618165a38f8b020b1",
-      "published": "2026-03-20T05:56:49",
-      "symbol": "USO",
-      "provider": "finnhub",
-      "sentiment_hint": "neutral"
-    },
-    {
-      "headline": "Two Indian Flagged Tankers Loaded With Liquefied Petroleum Gas Preparing To Sail Through Hormuz In Coming Days",
-      "source": "Benzinga",
-      "url": "https://finnhub.io/api/news?id=25e105c03f30db3f839464c6ff3d746b441bcc4ed7c9b33eef07161e03b373ae",
-      "published": "2026-03-20T04:51:14",
-      "symbol": "USO",
-      "provider": "finnhub",
-      "sentiment_hint": "neutral"
-    },
-    {
-      "headline": "'Oil Tanker Market's Key Rate Thrown Into Chaos With Hormuz Shut' - Bloomberg",
-      "source": "Benzinga",
-      "url": "https://finnhub.io/api/news?id=13e51e0d6fb0fa9d3c61c0105db86b551def1b8c41f5d61e7756f52fb455cdff",
-      "published": "2026-03-20T04:32:49",
-      "symbol": "USO",
-      "provider": "finnhub",
-      "sentiment_hint": "neutral"
-    },
-    {
-      "headline": "US Energy Secretary Wright, On Fox Business, Said Unsanctioned Iran Oil Could Be Absorbed In 30-45 Days With Shipments Arriving At Ports Within 3-4 Days",
-      "source": "Benzinga",
-      "url": "https://finnhub.io/api/news?id=8137ec5d189cf20598e3bbfa28f52e3425c8629111d43e1d1d822eb201113a6b",
-      "published": "2026-03-20T02:12:05",
-      "symbol": "USO",
-      "provider": "finnhub",
-      "sentiment_hint": "neutral"
-    },
-    {
-      "headline": "BlackRock's Rick Rieder Says Fed 'Patience' Is Right Call Despite $820 Billion Market Rout, Oil Spike",
-      "source": "Benzinga",
-      "url": "https://finnhub.io/api/news?id=b75063c123f63a979cb82bc0f9689fbdc9c88eeb2510b8b885d21f6d45a92c1e",
-      "published": "2026-03-20T01:32:26",
-      "symbol": "USO",
-      "provider": "finnhub",
-      "sentiment_hint": "neutral"
-    },
-    {
-      "headline": "Axios Reported Trump Considering Kharg Island Takeover To Force Iran To Open Strait Of Hormuz",
-      "source": "Benzinga",
-      "url": "https://finnhub.io/api/news?id=3e497df56e396791a25cae436b238a7e73e989e6ba4abf84aef5eeffa02f6a7b",
-      "published": "2026-03-20T00:49:19",
-      "symbol": "USO",
-      "provider": "finnhub",
-      "sentiment_hint": "neutral"
-    },
-    {
-      "headline": "Crude Oil Trade: Defensive And Tactical Stock Buying",
-      "source": "SeekingAlpha",
-      "url": "https://finnhub.io/api/news?id=9ecc421646dfa905a56eb6f61bfda2241be64f5ee571adbf7842690d373924fc",
-      "published": "2026-03-20T00:00:00",
-      "symbol": "USO",
-      "provider": "finnhub",
-      "sentiment_hint": "positive"
-    },
-    {
-      "headline": "'Saudi Arabia Sees A Spike To $180 Oil If Energy Shock Persists Past April' - WSJ",
-      "source": "Benzinga",
-      "url": "https://finnhub.io/api/news?id=2fd65580deb59f916513abe2f342e54ae2135714c7b09e3730f9f28c17d1e0ae",
-      "published": "2026-03-19T22:42:39",
-      "symbol": "USO",
-      "provider": "finnhub",
-      "sentiment_hint": "neutral"
-    },
-    {
-      "headline": "Market Brief: FOMC Recap, Nobody Knows",
-      "source": "SeekingAlpha",
-      "url": "https://finnhub.io/api/news?id=edc046f41936ef2f36010ad13d10c2feecdc294e6b19f293e5175034fc77d357",
-      "published": "2026-03-19T22:35:00",
-      "symbol": "USO",
-      "provider": "finnhub",
-      "sentiment_hint": "neutral"
-    },
-    {
-      "headline": "Finally Coming Into View? 'Old-Economy' Stocks Show Their Colors",
-      "source": "SeekingAlpha",
-      "url": "https://finnhub.io/api/news?id=88dc8cba92f2d670d3bc3168b414eb5c6c30b30440d33d4cfa598a7a4e197e20",
-      "published": "2026-03-19T22:05:00",
-      "symbol": "USO",
-      "provider": "finnhub",
-      "sentiment_hint": "neutral"
-    },
-    {
-      "headline": "Scott Bessent Rejects Oil Markets Intervention As 'Rumor,' Points To Russian Sanctions Waiver As Short-Term Fix",
-      "source": "Benzinga",
-      "url": "https://finnhub.io/api/news?id=c325a571d56ec23b38c0b1e57dd607a6a44e9161285191b7d241474f6401ae43",
-      "published": "2026-03-19T21:35:21",
-      "symbol": "USO",
-      "provider": "finnhub",
-      "sentiment_hint": "neutral"
     }
   ]
 }

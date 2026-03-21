@@ -1,0 +1,95 @@
+{
+  "cached_at": 1774134899.4113276,
+  "items": [
+    {
+      "headline": "How The Altria (MO) Investment Story Is Shifting As Analysts Reframe Risks And Rewards",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=bc3cec3cebefed42f694cf36fd427e84c1821e0385c27b7870a184d014183020",
+      "published": "2026-03-21T10:04:45",
+      "symbol": "MO",
+      "provider": "finnhub",
+      "sentiment_hint": "negative"
+    },
+    {
+      "headline": "Altria Faces New Antitrust Classes As Juul Ties Revisit Valuation",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=24e71fa57e8e0e35cd66c25399a88e8cd7ba807b45f445e147a538afefbc6c35",
+      "published": "2026-03-21T06:04:42",
+      "symbol": "MO",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Jobs Data, PMI In Focus With A Muted Earnings Calendar Next Week",
+      "source": "SeekingAlpha",
+      "url": "https://finnhub.io/api/news?id=9e92f2440a982259fe85722e3e99196de902a3920f1e13a76ef02ea60a85a324",
+      "published": "2026-03-21T06:00:00",
+      "symbol": "MO",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Dividend Champion, Contender, And Challenger Highlights: Week Of March 22",
+      "source": "SeekingAlpha",
+      "url": "https://finnhub.io/api/news?id=ec149472fb79f5b8e61c7649bd6967fe4d188b8771004eb1b3ce40402a5b29fc",
+      "published": "2026-03-20T12:55:21",
+      "symbol": "MO",
+      "provider": "finnhub",
+      "sentiment_hint": "positive"
+    },
+    {
+      "headline": "Is Trending Stock Altria Group, Inc. (MO) a Buy Now?",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=25b0e80522c9bc8c389896bcc35f4f966f0d2336cfa4d4d908bdb26b31aeda5f",
+      "published": "2026-03-20T08:00:03",
+      "symbol": "MO",
+      "provider": "finnhub",
+      "sentiment_hint": "positive"
+    },
+    {
+      "headline": "Had You Invested $1,000 in Altria or Philip Morris 10 Years Ago, Here\u2019s What You\u2019d Have Now",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=e4b6880a186f4b49da6ca76886353ff47ec16fabd5c3798fd00171b53c8375ce",
+      "published": "2026-03-19T09:30:08",
+      "symbol": "MO",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "You Already Own SCHD. This New ETF Pays Twice the Yield With One Simple Swap",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=0878e3d9fd5874c67f4c286a2612eb8a63129a678f72a5c15bc6a18734d13a13",
+      "published": "2026-03-19T08:35:45",
+      "symbol": "MO",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "MO Stock Price, Quote & Chart | ALTRIA GROUP INC (NYSE:MO)",
+      "source": "ChartMill",
+      "url": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE9seUJUQnpvOGZaN013cjlXbV9zQ3V0TlprbFV6SUFieDBuVFFmcUpiclByQ2xvUUcwTGxpYU94UGVkck5TaXgzMTRScTY1QW5VLTllYzdWQXNXSFps?oc=5",
+      "published": "2026-03-19T07:00:00",
+      "symbol": "MO",
+      "provider": "google_news",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Best Dividend Kings: March 2026",
+      "source": "SeekingAlpha",
+      "url": "https://finnhub.io/api/news?id=91bb0af8cfec7b9d531ba521cb90718cb3e586e7084f2f5d316fad87c18ce12b",
+      "published": "2026-03-18T22:27:36",
+      "symbol": "MO",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Altria (MO) Falls More Steeply Than Broader Market: What Investors Need to Know",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=482b63d0f8896eb1641b3d7c755d8dcfb9a2fc8c4622e748a2133fe40bed932f",
+      "published": "2026-03-18T16:50:05",
+      "symbol": "MO",
+      "provider": "finnhub",
+      "sentiment_hint": "negative"
+    }
+  ]
+}
