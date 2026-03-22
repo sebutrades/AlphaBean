@@ -18,6 +18,7 @@ from backend.news.pipeline import fetch_news, fetch_market_news, format_headline
 from backend.ai.ollama_agent import evaluate_setups_batch, check_ollama_status
 from backend.ai.inplay_detector import get_in_play, refresh_in_play
 from backend.features.correlation import compute_correlation_live
+from backend.analytics.symbol_stats import get_symbol_analytics
 import numpy as np
 
 app = FastAPI(title="Juicer API", version="1.0.0")
@@ -253,3 +254,10 @@ async def ollama_status(): return check_ollama_status()
 
 @app.post("/api/reload-evaluator")
 async def reload_evaluator(): _evaluator.load(); return {"status":"reloaded",**_evaluator.stats_summary()}
+
+# ═══ SYMBOL SPECIFIC ANALYTICS ═══
+@app.get("/api/analytics/{symbol}")
+async def symbol_analytics(symbol: str, pattern: str = Query("")):
+    """Per-symbol pattern analytics. Shows how patterns perform on this specific stock."""
+    return get_symbol_analytics(symbol.upper(), pattern)
+ 

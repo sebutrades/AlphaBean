@@ -290,6 +290,128 @@ function BacktestModal({ open, onClose, t }: { open: boolean; onClose: () => voi
     </AnimatePresence>
   );
 }
+// ═══════════════════════════════════════════════
+// SYMBOL ANALYTICS MODAL
+// ═══════════════════════════════════════════════
+function SymbolAnalytics({ symbol, pattern, t }: { symbol: string; pattern: string; t: any }) {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [show, setShow] = useState(false);
+ 
+  const fetchAnalytics = () => {
+    if (data) { setShow(!show); return; } // Toggle if already loaded
+    setLoading(true); setShow(true);
+    fetch(`${API}/api/analytics/${symbol}?pattern=${encodeURIComponent(pattern)}`)
+      .then(r => r.json())
+      .then(d => { setData(d); setLoading(false); })
+      .catch(() => setLoading(false));
+  };
+ 
+  const gradeColor = (edge: number) => edge >= 65 ? t.long : edge >= 45 ? t.gold : t.short;
+ 
+  return (
+    <div style={{ marginTop: 8 }}>
+      <motion.button
+        whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
+        onClick={fetchAnalytics}
+        style={{
+          fontSize: 12, fontWeight: 700, padding: "6px 14px", borderRadius: 8,
+          border: `1px solid ${t.border}`, background: t.bgCard,
+          color: t.textDim, cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
+        }}>
+        📊 {show ? "Hide" : "Show"} Pattern Stats on {symbol}
+        {loading && <motion.span animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity }}>...</motion.span>}
+      </motion.button>
+ 
+      <AnimatePresence>
+        {show && data && !loading && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+            style={{ overflow: "hidden", marginTop: 8, padding: "14px 16px", background: t.bgCard, borderRadius: 12, border: `1px solid ${t.border}` }}>
+ 
+            {/* Highlighted pattern */}
+            {data.highlighted ? (
+              <div style={{ marginBottom: 14, padding: "10px 14px", borderRadius: 10, background: t.accent + "08", border: `1px solid ${t.accent}20` }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: t.text, marginBottom: 6 }}>
+                  {pattern} on {symbol}
+                </div>
+                <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13, fontFamily: "'JetBrains Mono',monospace" }}>
+                  <span><span style={{ color: t.textMuted, fontSize: 10 }}>Signals:</span> <span style={{ fontWeight: 700 }}>{data.highlighted.signals}</span></span>
+                  <span><span style={{ color: t.textMuted, fontSize: 10 }}>WR:</span> <span style={{ fontWeight: 700, color: data.highlighted.win_rate >= 55 ? t.long : data.highlighted.win_rate >= 45 ? t.gold : t.short }}>{data.highlighted.win_rate}%</span></span>
+                  <span><span style={{ color: t.textMuted, fontSize: 10 }}>PF:</span> <span style={{ fontWeight: 700 }}>{data.highlighted.profit_factor}</span></span>
+                  <span><span style={{ color: t.textMuted, fontSize: 10 }}>Exp:</span> <span style={{ fontWeight: 700, color: data.highlighted.expectancy >= 0 ? t.long : t.short }}>{data.highlighted.expectancy >= 0 ? "+" : ""}{data.highlighted.expectancy}</span></span>
+                  <span><span style={{ color: t.textMuted, fontSize: 10 }}>Avg Win:</span> <span style={{ fontWeight: 700, color: t.long }}>{data.highlighted.avg_win_r}R</span></span>
+                  <span><span style={{ color: t.textMuted, fontSize: 10 }}>Avg Loss:</span> <span style={{ fontWeight: 700, color: t.short }}>{data.highlighted.avg_loss_r}R</span></span>
+                  <span><span style={{ color: t.textMuted, fontSize: 10 }}>Edge:</span> <span style={{ fontWeight: 800, padding: "1px 6px", borderRadius: 4, background: gradeColor(data.highlighted.edge_score) + "15", color: gradeColor(data.highlighted.edge_score) }}>{data.highlighted.edge_score}</span></span>
+                </div>
+              </div>
+            ) : pattern && (
+              <div style={{ marginBottom: 14, fontSize: 12, color: t.textMuted, fontStyle: "italic" }}>
+                No backtest data for {pattern} on {symbol} yet.
+              </div>
+            )}
+ 
+            {/* Top 5 patterns on this stock */}
+            {data.top_patterns?.length > 0 && (
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: t.textMuted, marginBottom: 6, letterSpacing: 0.4 }}>
+                  TOP PATTERNS ON {symbol} ({data.total_signals} total signals)
+                </div>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: "'JetBrains Mono',monospace" }}>
+                  <thead>
+                    <tr style={{ fontSize: 10, color: t.textMuted, borderBottom: `1px solid ${t.border}` }}>
+                      <th style={{ padding: "6px 0", textAlign: "left" }}>Pattern</th>
+                      <th style={{ textAlign: "right" }}>Signals</th>
+                      <th style={{ textAlign: "right" }}>WR%</th>
+                      <th style={{ textAlign: "right" }}>PF</th>
+                      <th style={{ textAlign: "right" }}>Exp</th>
+                      <th style={{ textAlign: "right" }}>Edge</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.top_patterns.map((p: any) => (
+                      <tr key={p.name} style={{ borderBottom: `1px solid ${t.border}` }}>
+                        <td style={{ padding: "6px 0", fontWeight: p.name === pattern ? 700 : 500, color: p.name === pattern ? t.accent : t.text, fontFamily: "'Outfit',sans-serif" }}>{p.name}</td>
+                        <td style={{ textAlign: "right", color: t.textDim }}>{p.signals}</td>
+                        <td style={{ textAlign: "right", color: p.win_rate >= 55 ? t.long : p.win_rate >= 45 ? t.gold : t.short, fontWeight: 700 }}>{p.win_rate}%</td>
+                        <td style={{ textAlign: "right" }}>{p.profit_factor}</td>
+                        <td style={{ textAlign: "right", color: p.expectancy >= 0 ? t.long : t.short }}>{p.expectancy >= 0 ? "+" : ""}{p.expectancy}</td>
+                        <td style={{ textAlign: "right" }}><span style={{ padding: "1px 5px", borderRadius: 4, background: gradeColor(p.edge_score) + "12", color: gradeColor(p.edge_score), fontWeight: 800 }}>{p.edge_score}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div style={{ fontSize: 10, color: t.textMuted, marginTop: 6 }}>
+                  Source: {data.source === "cached" ? "Pre-computed backtest" : data.source === "computed" ? "Computed on-demand (90 days)" : "Backtest cache"} • {data.total_patterns} patterns analyzed
+                </div>
+              </div>
+            )}
+ 
+            {data.total_signals === 0 && (
+              <div style={{ fontSize: 12, color: t.textMuted }}>
+                No backtest data available for {symbol}. Run a backtest that includes this symbol.
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+ 
+ 
+// === INTEGRATION INTO TradeChart ===
+// Find the TradeChart component's return block. After the chart div, 
+// BEFORE the closing </motion.div>, add:
+//
+//   <SymbolAnalytics symbol={setup.symbol} pattern={setup.pattern_name} t={t} />
+//
+// So the end of TradeChart looks like:
+//
+//   {ld && <div ...>Loading chart...</div>}
+//   {err && <div ...>Chart: {err}</div>}
+//   <div ref={ref} style={{...}} />
+//   <SymbolAnalytics symbol={setup.symbol} pattern={setup.pattern_name} t={t} />
+// </motion.div>
 
 // ═══════════════════════════════════════════════
 // CHART
@@ -342,6 +464,7 @@ function TradeChart({ setup, onClose, t }: { setup: any; onClose: () => void; t:
       {ld && <div style={{ textAlign: "center", padding: 30, color: t.textDim }}>Loading chart...</div>}
       {err && <div style={{ textAlign: "center", padding: 14, color: t.short, fontSize: 13 }}>Chart: {err}</div>}
       <div ref={ref} style={{ width: "100%", minHeight: ld ? 0 : 400, marginTop: 8 }} />
+      <SymbolAnalytics symbol={setup.symbol} pattern={setup.pattern_name} t={t} />
     </motion.div>
   );
 }
