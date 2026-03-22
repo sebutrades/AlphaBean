@@ -131,6 +131,7 @@ async def top_opportunities(ai:bool=Query(True),per_symbol:int=Query(2),max_symb
     capped.sort(key=lambda x: x.get("composite_score",0), reverse=True)
     # Only filter market hours when market is open
     if _mkt_open(): capped = _mkt_hours_filter(capped)
+    capped = [s for s in capped if s.get("composite_score", 0) >= 45]
     # Only AI-evaluate top 50% by composite score — cuts Ollama calls in half
     cutoff = len(capped) // 2 or len(capped)
     ai_batch = capped[:cutoff]
