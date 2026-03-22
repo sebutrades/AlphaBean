@@ -1,0 +1,95 @@
+{
+  "cached_at": 1774140911.6185832,
+  "items": [
+    {
+      "headline": "Salesforce And NVIDIA Target Regulated Clients With Enterprise AI Agents",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=a1584ae27f73f24e3aced81fb114653cb0eadef85b1a64f03ffc9f705bf6fe88",
+      "published": "2026-03-21T17:06:14",
+      "symbol": "CRM",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Got $5,000? 2 Beaten-Down Tech Stocks Smart Money Is Quietly Accumulating",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=f96609fe81d0f42a7bc3664620f18159a3872ec0367f9f78d8a77423b0901dc3",
+      "published": "2026-03-21T16:20:00",
+      "symbol": "CRM",
+      "provider": "finnhub",
+      "sentiment_hint": "positive"
+    },
+    {
+      "headline": "Salesforce (CRM) Partners with NVIDIA for AI Agents in Enterprise Business Workflows",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=cef1f049e7da6d9a1396a897f774a147c4e06344db0393ea1d5a7bea11b89122",
+      "published": "2026-03-21T13:27:39",
+      "symbol": "CRM",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Salesforce, Inc. stock surges on AI-driven fiscal 2026 results and massive $50B buyback amid growth",
+      "source": "AD HOC NEWS",
+      "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxNbS1BemxtSG9uYXVkTWlzcTFlc3NsMFkwcy1oRmE3ZVZmbnE0aXBjS1dJWm9CRXhNNVdHXzNkckotRnk3SEpNazJTOWZxVE1VY2YwdlJDMld6bFVPdi1EUFVVTHNMTnFnU1Q0NEdTUUh5eDBxUHROaHUydVRNRlRiTERteW53UzlTQjVMQUMwS09Ed09kUjByOTVZWmRDZ1hWakZ0TDdhc3VMRW5ibkx6LW1pX2xSZWlZLUI5bGM0bUlHRjR0?oc=5",
+      "published": "2026-03-20T18:21:40",
+      "symbol": "CRM",
+      "provider": "google_news",
+      "sentiment_hint": "positive"
+    },
+    {
+      "headline": "Is Salesforce a good long-term investment? Its buy-and-hold prospects explained",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=cec1126e1e157ab29ab7e81d3474a2d59612406e9e4c097cc130af28de8567fb",
+      "published": "2026-03-20T17:32:28",
+      "symbol": "CRM",
+      "provider": "finnhub",
+      "sentiment_hint": "positive"
+    },
+    {
+      "headline": "Should You Sell Moody\u2019s (MCO) Amid AI Disruption Fears?",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=742d6a2ce1e1b8e6c1a478ff2a304c7231b25c38a4b824848609867194ab9feb",
+      "published": "2026-03-20T15:32:35",
+      "symbol": "CRM",
+      "provider": "finnhub",
+      "sentiment_hint": "negative"
+    },
+    {
+      "headline": "CRM Stock | Salesforce.com Price, Quote, News & Analysis",
+      "source": "TipRanks",
+      "url": "https://news.google.com/rss/articles/CBMiS0FVX3lxTE9pTVpwU3dHM3piQUdrZHVXWk94TVBnREVKakNfTFhuQ2R0emY3dXZLN2hYN2g3aE96UmkwakNsY2MyVVpqdENxVXBuZw?oc=5",
+      "published": "2026-03-20T13:35:53",
+      "symbol": "CRM",
+      "provider": "google_news",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Salesforce Stock (CRM) Stays Strong in the SaaSpocalypse",
+      "source": "TipRanks",
+      "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxQY0dkZ1BlNlJoeEhEdDd5SDFIUS0tb2cyaHY4N1NNdFRTWm40VjlUNE8zekxkRHR2bUxmYWh2d2tXTlFJWXVTRzBOejNQcDFkQVJUM053WjdVTEppR09WdFRxX3N1NFpfM0stb1VsVEh1MXRSd1V1djJ5Nk94dVI2eUlGU2pFc18yY2Nfdg?oc=5",
+      "published": "2026-03-20T13:29:58",
+      "symbol": "CRM",
+      "provider": "google_news",
+      "sentiment_hint": "positive"
+    },
+    {
+      "headline": "1 of Wall Street\u2019s Favorite Stock to Target This Week and 2 We Find Risky",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=5de5b30b53183b0277a94fe476c7cd8166ca83f4bf9c4cc02e74b712db49bc58",
+      "published": "2026-03-20T11:52:25",
+      "symbol": "CRM",
+      "provider": "finnhub",
+      "sentiment_hint": "negative"
+    },
+    {
+      "headline": "Salesforce issues $25 billion in debt to buy back stock. Should we be concerned?",
+      "source": "CNBC",
+      "url": "https://finnhub.io/api/news?id=e1cab9b8d45b6277583b8f66ae1d57de8f12212cd7bbfbd37d5996e5a0883163",
+      "published": "2026-03-20T08:48:52",
+      "symbol": "CRM",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    }
+  ]
+}

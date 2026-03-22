@@ -1,14 +1,77 @@
 {
-  "cached_at": 1774057240.7693958,
+  "cached_at": 1774140568.651106,
   "items": [
     {
-      "headline": "Stock Market Review: SPY, QQQ Tumble on Rate Hike Scenario as U.S.-Iran War Reaches 3-Week Mark",
-      "source": "TipRanks",
-      "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxQZEFSM0V0YkNOcmk0bU5RWFdWVThjTElIRmU1LS1OVFhpcjRTVjM1RTFrWnNqVzhZUDJpaHJKaUVNeTlzX0xNSVJxRkhhVXVZdk9BRk9VejhEbkNYZTNCbkRCZUZsS2Z2bXlfdnQwbHBfS0MxTnpvWnIyVTg3aHZ0X0ZUdGRWbUNmdDJIVi1ONHNWb3B1a3dzZXZMdDVJeVVFWGdtNHQwdjc2V3JVSVREaUlBaDlJMU5KNWNlUnJIYw?oc=5",
-      "published": "2026-03-20T20:22:12",
+      "headline": "Weekly Commentary: Bubbles, Dams, War And Cracks",
+      "source": "SeekingAlpha",
+      "url": "https://finnhub.io/api/news?id=e19de58277b149565c8a298154f483abc86bae444ca90e4534c13c29d22c3d45",
+      "published": "2026-03-21T05:14:00",
       "symbol": "QQQ",
-      "provider": "google_news",
+      "provider": "finnhub",
       "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "How I'd Build My Own $1,000 Monthly Paycheck With 3 Likely Safe Picks",
+      "source": "SeekingAlpha",
+      "url": "https://finnhub.io/api/news?id=4e90cb863f9b7d231d38082de4d0a766f16c67f5c1c7d14212c85764b96d53df",
+      "published": "2026-03-21T04:15:00",
+      "symbol": "QQQ",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "3 Market Segments I'm Targeting When Iran War Ends",
+      "source": "SeekingAlpha",
+      "url": "https://finnhub.io/api/news?id=ef30136cf167965415ee1b6f1863ea09b2b7de34361852511dc73b457e05557d",
+      "published": "2026-03-21T03:30:00",
+      "symbol": "QQQ",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Weekly Indicators: Oil Shock Damage Continues To Spread",
+      "source": "SeekingAlpha",
+      "url": "https://finnhub.io/api/news?id=5a9909f473395f04623a8b4c6ed0500e22baf38d472a437f757b37498f188d62",
+      "published": "2026-03-21T03:00:00",
+      "symbol": "QQQ",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "The Coming Credit Crunch",
+      "source": "SeekingAlpha",
+      "url": "https://finnhub.io/api/news?id=56f65dd96214d8b46109734d09fba9be02f3ff1755c7f316cf8bfff52b8f0c49",
+      "published": "2026-03-21T03:00:00",
+      "symbol": "QQQ",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Forget Stagflation - This Is The Kind Of Market Where I Start Building Positions",
+      "source": "SeekingAlpha",
+      "url": "https://finnhub.io/api/news?id=7a56efbbc90fff405e6aaedcff9e126fca99912c0e2ad6b27f19433043f42a38",
+      "published": "2026-03-21T02:30:00",
+      "symbol": "QQQ",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "This Week's Market Wrap: Cash Me On The Sidelines",
+      "source": "SeekingAlpha",
+      "url": "https://finnhub.io/api/news?id=ea7c42141d017c5d0d0bfe2f68590109c698828c3f72584338c1665ebc46816f",
+      "published": "2026-03-20T23:11:00",
+      "symbol": "QQQ",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Markets Weekly Outlook: Farewell, Rate Cuts",
+      "source": "SeekingAlpha",
+      "url": "https://finnhub.io/api/news?id=7a42c3019df37eb70c93b5e6716677956c2e8cfb2250ffb14d29faf8c40658c5",
+      "published": "2026-03-20T18:35:00",
+      "symbol": "QQQ",
+      "provider": "finnhub",
+      "sentiment_hint": "negative"
     },
     {
       "headline": "QQQ is down 1.0% today, on META stock price movement",
@@ -56,84 +119,21 @@
       "sentiment_hint": "neutral"
     },
     {
+      "headline": "Major indexes are trading lower as escalating tensions in the Iran conflict drive oil prices higher, pushing Treasury yields up, and inflation concerns that are weighing on equities. The Russell 2000 has fallen more than 10% from its recent high, entering correction territory, while the S&P 500 is on track for a fourth straight losing week.",
+      "source": "Benzinga",
+      "url": "https://finnhub.io/api/news?id=8fbf67d555fb670644f475cb4d166aa68aaabec4722014105311c37f5983c0bd",
+      "published": "2026-03-20T09:43:32",
+      "symbol": "QQQ",
+      "provider": "finnhub",
+      "sentiment_hint": "negative"
+    },
+    {
       "headline": "Invesco QQQ $QQQ Stock Holdings Lifted by Strategic Advocates LLC",
       "source": "MarketBeat",
       "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPMmk4MUVyRFJLamxVVVoxbGw5dmNWTmFPY05fMFRrUWJfVE9DUUpxTlFQV0Q5aXhSSzBXRWZSQnRPN0F3c2ltN3JxZGdiTDBDeWxBV3BXNzJxQ1dnd2tjci02WmJxRnJnSnh6NGl4YklMWjhBTkUxRjVKeTNfOFQ3MGk0Njg3VlVjdHMtR1dGQ09GbWk4X0ZTZlNHbnRidlNaRW9qNl9vUEE0Q2tISXZ3V0FWZ1JENFp5RHE4RGtRdWZEQzQ?oc=5",
       "published": "2026-03-20T09:22:57",
       "symbol": "QQQ",
       "provider": "google_news",
-      "sentiment_hint": "neutral"
-    },
-    {
-      "headline": "Chair Powell Is Not Leaving And Other Observations",
-      "source": "SeekingAlpha",
-      "url": "https://finnhub.io/api/news?id=fa86a986fcd770cc7a55676f665f23b238aa1a1bf9f22905e14d20ca3e14868d",
-      "published": "2026-03-20T09:05:25",
-      "symbol": "QQQ",
-      "provider": "finnhub",
-      "sentiment_hint": "neutral"
-    },
-    {
-      "headline": "Goodbye Bull Market, Hello Recession",
-      "source": "SeekingAlpha",
-      "url": "https://finnhub.io/api/news?id=1b9dd6e6b92b04053bdd210eeb54f4b5fe8a9f713db7a3ab12c7db85fc63fe5f",
-      "published": "2026-03-20T08:49:42",
-      "symbol": "QQQ",
-      "provider": "finnhub",
-      "sentiment_hint": "neutral"
-    },
-    {
-      "headline": "Even With Hormuz Reopened, I Still See The S&P 500 At 6,100",
-      "source": "SeekingAlpha",
-      "url": "https://finnhub.io/api/news?id=28a7a80abe3fe2c208a772da001ac173fe8d1cb20706499371d0a76abe456fbe",
-      "published": "2026-03-20T08:37:35",
-      "symbol": "QQQ",
-      "provider": "finnhub",
-      "sentiment_hint": "neutral"
-    },
-    {
-      "headline": "Markets Are Souring On Trump's Iran Strategy",
-      "source": "SeekingAlpha",
-      "url": "https://finnhub.io/api/news?id=c35314c4a61cd81a0a4bf0244d57c3b6d0a45a0201b757b134a9ef414d4a92a2",
-      "published": "2026-03-20T07:55:24",
-      "symbol": "QQQ",
-      "provider": "finnhub",
-      "sentiment_hint": "neutral"
-    },
-    {
-      "headline": "Market Breadth Rebounds, But Conviction Is Still Missing",
-      "source": "ChartMill",
-      "url": "https://finnhub.io/api/news?id=db54b03cce1275b7d4af0c85b24b54676a9b3b9d6b5a42456d0661fe0884da9f",
-      "published": "2026-03-20T07:36:36",
-      "symbol": "QQQ",
-      "provider": "finnhub",
-      "sentiment_hint": "negative"
-    },
-    {
-      "headline": "3 Reasons A Recession Is Likely - 3 Reasons It Isn't",
-      "source": "SeekingAlpha",
-      "url": "https://finnhub.io/api/news?id=c1720860583013a50b2d553023531a24518b39c48f8bd3a85e17bdf45c26ec9c",
-      "published": "2026-03-20T07:36:19",
-      "symbol": "QQQ",
-      "provider": "finnhub",
-      "sentiment_hint": "neutral"
-    },
-    {
-      "headline": "Markets Starting To Price In Stagflation Risk",
-      "source": "SeekingAlpha",
-      "url": "https://finnhub.io/api/news?id=aa8cd038817df497cd064337e751d90847f800ace61cb165098590e06867ed6a",
-      "published": "2026-03-20T07:05:00",
-      "symbol": "QQQ",
-      "provider": "finnhub",
-      "sentiment_hint": "negative"
-    },
-    {
-      "headline": "Federal Reserve Watch: Can We Get Through 2026",
-      "source": "SeekingAlpha",
-      "url": "https://finnhub.io/api/news?id=96d9a571c7f030b3b07d600d49a850fe6001bd343ef2c82ce8d4df7fbc6d45c8",
-      "published": "2026-03-20T06:40:44",
-      "symbol": "QQQ",
-      "provider": "finnhub",
       "sentiment_hint": "neutral"
     }
   ]

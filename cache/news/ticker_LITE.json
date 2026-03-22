@@ -1,6 +1,33 @@
 {
-  "cached_at": 1774040502.703087,
+  "cached_at": 1774141871.8833973,
   "items": [
+    {
+      "headline": "Is It Too Late To Consider Lumentum Holdings (LITE) After An 83% Year To Date Surge?",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=3e0d903d1694d4157159c7871c59eb29a00678f5b72860d0f7beb78c2842e73c",
+      "published": "2026-03-21T08:03:48",
+      "symbol": "LITE",
+      "provider": "finnhub",
+      "sentiment_hint": "positive"
+    },
+    {
+      "headline": "2 Artificial Intelligence (AI) Stocks That Are Quietly Outperforming Micron Technology in 2026 With 76% and 82% Gains",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=2f98f06cbdad3b49fe2d521d8b44d880fd265fb5ab31dfd5e8ad7ba8360dc170",
+      "published": "2026-03-21T04:32:00",
+      "symbol": "LITE",
+      "provider": "finnhub",
+      "sentiment_hint": "positive"
+    },
+    {
+      "headline": "Lumentum Touts AI Optics Boom, $2B Quarterly Target, New Fab and 1.6T Transceiver Shipments",
+      "source": "Yahoo",
+      "url": "https://finnhub.io/api/news?id=56c524901474264ab4515da856ce80a27e083384a8b6fc77ca52df98845b48b3",
+      "published": "2026-03-20T19:03:28",
+      "symbol": "LITE",
+      "provider": "finnhub",
+      "sentiment_hint": "positive"
+    },
     {
       "headline": "Lumentum vs. Amphenol: Which AI Connectivity Stock is the Better Buy?",
       "source": "Yahoo",
@@ -9,6 +36,15 @@
       "symbol": "LITE",
       "provider": "finnhub",
       "sentiment_hint": "positive"
+    },
+    {
+      "headline": "Brent Hits $110, Rate-Hike Fears Hammer Stocks And Gold: What's Moving Markets Friday?",
+      "source": "Benzinga",
+      "url": "https://finnhub.io/api/news?id=278aa989a239afcd96152f8c6db24360c9aa0097ce20de06b946f4f876dbb82a",
+      "published": "2026-03-20T08:36:23",
+      "symbol": "LITE",
+      "provider": "finnhub",
+      "sentiment_hint": "negative"
     },
     {
       "headline": "Nvidia Partner Rallies 1,600% In Less Than A Year. This Could Keep It Going Longer.",
@@ -27,15 +63,6 @@
       "symbol": "LITE",
       "provider": "finnhub",
       "sentiment_hint": "positive"
-    },
-    {
-      "headline": "Lumentum Stock Rockets 25% With 5-Day Winning Streak",
-      "source": "Trefis",
-      "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxQU2xJdURoY2pWQ2lFYWxZb201eW5EYVhpNERuOG40Q3VsbDRwR1V3bmlIZlhwZWJFaDBpVjl3NllrUmJGejJHamp4Z1NIUHZYWk5hSGxvY1d6UV9nSlJDT19OUFZLb1pqY2drancwdWhTN0lBNlZVQlZjYzFreGU2YXVONVBSZTg1cm1QbmVGWlJaRjBCUG1RLWtYVl9zczQtMm1F?oc=5",
-      "published": "2026-03-20T04:38:23",
-      "symbol": "LITE",
-      "provider": "google_news",
-      "sentiment_hint": "neutral"
     },
     {
       "headline": "Lumentum Stock 5-Day Winning Spree: Stock Climbs 25%",
@@ -74,12 +101,30 @@
       "sentiment_hint": "positive"
     },
     {
+      "headline": "Lumentum Climbs On Optical Networking Technology Outlook, Nvidia GTC News",
+      "source": "Investor's Business Daily",
+      "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxQVDZ0MzlaR05seVdVb00yamdYTkVDUUFKWDBXRFRvb2FadzhpQmY2ZzBucHpWQk5LTUlzbHlmUWhMSzFMVGpPeVI3bnYwd0VvbGVsMUFDT1loSjdaUTVtSHFlVjh2eUZ6THU4MHNCSlVQU19RWVlnWDBvclJCSkJGZTk5SmJ0V09YX3lNQ3U4UWNvZmkwWEE4?oc=5",
+      "published": "2026-03-19T12:19:00",
+      "symbol": "LITE",
+      "provider": "google_news",
+      "sentiment_hint": "neutral"
+    },
+    {
       "headline": "Lumentum's OCS & CPO Strength Reflects Broader Demand: What's Ahead?",
       "source": "Yahoo",
       "url": "https://finnhub.io/api/news?id=7579ff8fc9b53ce500da212887d2a61a3a6d9eef14358e2d0c33f9d27cb01b65",
       "published": "2026-03-19T10:01:00",
       "symbol": "LITE",
       "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "symbol__ Stock Quote Price and Forecast",
+      "source": "CNN",
+      "url": "https://news.google.com/rss/articles/CBMiUEFVX3lxTE9NVmtVMDJ1WWg5Yjh1ZFgyWUFsenRLU0xta05BVHMwZDlVNDdSMFBnNWxmZXZiWkZnOXd3ejI3cExJdjAtN0ZaQ3JRSkdlamJn?oc=5",
+      "published": "2026-03-19T09:01:11",
+      "symbol": "LITE",
+      "provider": "google_news",
       "sentiment_hint": "neutral"
     },
     {
@@ -90,51 +135,6 @@
       "symbol": "LITE",
       "provider": "finnhub",
       "sentiment_hint": "negative"
-    },
-    {
-      "headline": "LITE Drops Without Clear Catalyst \u2014 Volume Fails to Confirm Breakout",
-      "source": "Bitget",
-      "url": "https://news.google.com/rss/articles/CBMiY0FVX3lxTFBkclpkMFBPcWpQQmJ4blJFWHp1dWE5UFZvNnRzRWI4d0xHS0s4WHFVMWljNDg4NXRNRVo0NEFJcWNLSFNQeXVrNFRTd1A4U1RzV1BuTndLWmFnZDRRZlIwRzlWa9IBY0FVX3lxTFBkclpkMFBPcWpQQmJ4blJFWHp1dWE5UFZvNnRzRWI4d0xHS0s4WHFVMWljNDg4NXRNRVo0NEFJcWNLSFNQeXVrNFRTd1A4U1RzV1BuTndLWmFnZDRRZlIwRzlWaw?oc=5",
-      "published": "2026-03-19T08:30:58",
-      "symbol": "LITE",
-      "provider": "google_news",
-      "sentiment_hint": "neutral"
-    },
-    {
-      "headline": "Zacks Investment Ideas feature highlights: Lumentum, Ciena, Sandisk, Micron and Western Digital",
-      "source": "Yahoo",
-      "url": "https://finnhub.io/api/news?id=e258d11309d10e60186dfda699ef73bff66f2857c92293c7c9b8fcf6bc0d526d",
-      "published": "2026-03-19T08:17:00",
-      "symbol": "LITE",
-      "provider": "finnhub",
-      "sentiment_hint": "positive"
-    },
-    {
-      "headline": "Lumentum (LITE) Surges 7.9%: Is This an Indication of Further Gains?",
-      "source": "Yahoo",
-      "url": "https://finnhub.io/api/news?id=04fe0f5582145cc9be9aff8428f62e294369ca7063989a3d214f28d23c0fdf4e",
-      "published": "2026-03-19T05:06:00",
-      "symbol": "LITE",
-      "provider": "finnhub",
-      "sentiment_hint": "positive"
-    },
-    {
-      "headline": "LITE: Morgan Stanley Raises Price Target Amid Equal-Weight Ratin",
-      "source": "GuruFocus",
-      "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxQV2JGN0hXV2pRWm1WN0YtRk1SaDJKeWJWTENnMndRZE5KU3ZCdUptRnRUcHFXdmRXa0twc21LbzR6X0ZTeE9uTUlIRHQ0SzY5a1lCd0RyRkRKeHFQTnE5czBHdEk5VDRELWFYNUZEWTFwTjNBdGtSMGkySjdIY1QweDZsVUxpVU90TVhhZkVSTmpmNlVnOERvekh4anU5U2dNTjB5Y0FEWGxSdlZBRDhDd3FBam42dWRtR2V1cTljcmpUNzE4N3pwSXNB?oc=5",
-      "published": "2026-03-19T04:52:30",
-      "symbol": "LITE",
-      "provider": "google_news",
-      "sentiment_hint": "positive"
-    },
-    {
-      "headline": "LITE Stock Increase: What\u2019s Driving the Rally?",
-      "source": "EBC Financial Group",
-      "url": "https://news.google.com/rss/articles/CBMieEFVX3lxTFB6eDZZdlBiNzRveGliYUI1WTJvNmRaVTQweDgzR2lrY1AtY25EVDR5MDVWSWRQMHFLb0dmSml1TWtrbS1ieExlSWtjVFhHc2o4MExyTklkcTNPZWluVzNSbml2S3RucWhuenB2aGJva0syUjNMbzhISw?oc=5",
-      "published": "2026-03-19T03:09:14",
-      "symbol": "LITE",
-      "provider": "google_news",
-      "sentiment_hint": "positive"
     }
   ]
 }

@@ -307,10 +307,39 @@ function TradeChart({ setup, onClose, t }: { setup: any; onClose: () => void; t:
         ch = lc.createChart(ref.current!, { width: ref.current!.clientWidth, height: 400, layout: { background: { color: t.chartBg } as any, textColor: t.chartText, fontFamily: "JetBrains Mono,monospace" }, grid: { vertLines: { color: t.chartGrid }, horzLines: { color: t.chartGrid } }, crosshair: { mode: lc.CrosshairMode.Normal }, rightPriceScale: { borderColor: t.border }, timeScale: { borderColor: t.border, timeVisible: true } });
         let s: any; if ((lc as any).CandlestickSeries) s = ch.addSeries((lc as any).CandlestickSeries, { upColor: t.long, downColor: t.short, borderUpColor: t.long, borderDownColor: t.short, wickUpColor: t.long, wickDownColor: t.short }); else s = ch.addCandlestickSeries({ upColor: t.long, downColor: t.short, borderUpColor: t.long, borderDownColor: t.short, wickUpColor: t.long, wickDownColor: t.short });
         s.setData(d.bars);
-        s.createPriceLine({ price: setup.entry_price, color: t.accent, lineWidth: 2, lineStyle: lc.LineStyle.Dashed, axisLabelVisible: true, title: "ENTRY" });
-        s.createPriceLine({ price: setup.stop_loss, color: t.short, lineWidth: 2, lineStyle: lc.LineStyle.Dashed, axisLabelVisible: true, title: "STOP" });
-        s.createPriceLine({ price: setup.target_price, color: t.long, lineWidth: 2, lineStyle: lc.LineStyle.Dashed, axisLabelVisible: true, title: "TARGET" });
-        Object.entries(setup.key_levels || {}).forEach(([n, p]) => { if (typeof p === "number" && p > 0) s.createPriceLine({ price: p, color: t.textMuted, lineWidth: 1, lineStyle: lc.LineStyle.Dotted, axisLabelVisible: false, title: n }) });
+
+        // Helper: add price line safely (works on v3 + v4)
+        const addLine = (price: number, color: string, title: string, style: number, width: number) => {
+          try { s.createPriceLine({ price, color, lineWidth: width, lineStyle: style, axisLabelVisible: true, title }); } catch {}
+        };
+
+        // STOP and TARGET as dashed lines
+        addLine(setup.stop_loss, t.short, "STOP", lc.LineStyle.Dashed, 2);
+        addLine(setup.target_price, t.long, "TARGET", lc.LineStyle.Dashed, 2);
+
+        // ENTRY as solid thick line (visually distinct)
+        addLine(setup.entry_price, t.accent, `⮕ ENTRY $${setup.entry_price?.toFixed(2)}`, lc.LineStyle.Solid, 3);
+
+        // Try to add arrow marker at entry (v3 method — bonus, not critical)
+        try {
+          const entryPrice = setup.entry_price;
+          const isLong = setup.bias === "long";
+          let entryBarIdx = d.bars.length - 1;
+          for (let i = d.bars.length - 1; i >= Math.max(0, d.bars.length - 60); i--) {
+            if (d.bars[i].low <= entryPrice && d.bars[i].high >= entryPrice) { entryBarIdx = i; break; }
+          }
+          // v3: setMarkers on series
+          if (typeof s.setMarkers === "function") {
+            s.setMarkers([{ time: d.bars[entryBarIdx].time, position: isLong ? "belowBar" : "aboveBar", color: t.accent, shape: isLong ? "arrowUp" : "arrowDown", text: `ENTRY $${entryPrice.toFixed(2)}` }]);
+          }
+          // v4: createSeriesMarkers
+          if (typeof (lc as any).createSeriesMarkers === "function") {
+            (lc as any).createSeriesMarkers(s, [{ time: d.bars[entryBarIdx].time, position: isLong ? "belowBar" : "aboveBar", color: t.accent, shape: isLong ? "arrowUp" : "arrowDown", text: `ENTRY $${entryPrice.toFixed(2)}` }]);
+          }
+        } catch { /* markers not supported in this version — entry line still shows */ }
+
+        // Key levels as dotted lines
+        Object.entries(setup.key_levels || {}).forEach(([n, p]) => { if (typeof p === "number" && p > 0) addLine(p, t.textMuted, n, lc.LineStyle.Dotted, 1) });
         ch.timeScale().fitContent(); setLd(false);
         const ro = new ResizeObserver(() => { if (ref.current && ch) ch.applyOptions({ width: ref.current.clientWidth }) }); ro.observe(ref.current!);
       } catch (e: any) { setErr(e.message); setLd(false) }
