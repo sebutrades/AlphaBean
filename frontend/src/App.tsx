@@ -380,6 +380,11 @@ function SetupRow({ s, open, toggle, t, onTrack }: { s: any; open: boolean; togg
                 <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 15, fontWeight: 700, color: c }}>${v?.toFixed(2)}</div>
               </div>))}
           </div>
+          {/* R:R */}
+          <div style={{ width: 42, textAlign: "center" }}>
+            <div style={{ fontSize: 9, color: t.textMuted, fontWeight: 700 }}>R:R</div>
+            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 15, fontWeight: 800, color: s.risk_reward_ratio >= 2 ? t.long : s.risk_reward_ratio >= 1.5 ? t.text : t.gold }}>{s.risk_reward_ratio?.toFixed(1)}</div>
+          </div>
           <ScoreCell score={s.composite_score || 0} t={t} />
           <motion.div animate={{ rotate: open ? 180 : 0 }} style={{ width: 16, textAlign: "center", fontSize: 13, color: t.textDim }}>▾</motion.div>
         </div>
@@ -486,7 +491,7 @@ export default function App() {
 
   const addTrack = (s: any) => { if (!tracked.find((x: any) => x.symbol === s.symbol && x.pattern_name === s.pattern_name)) setTracked(p => [...p, s]) };
   const active = view === "opp" ? topSetups : scanSetups;
-  const filtered = useMemo(() => { let r = active; if (fBias !== "ALL") r = r.filter((s: any) => s.bias === fBias.toLowerCase()); if (fCat !== "ALL") r = r.filter((s: any) => s.category === fCat); return [...r].sort((a: any, b: any) => sortBy === "rr" ? b.risk_reward_ratio - a.risk_reward_ratio : (b.composite_score || 0) - (a.composite_score || 0)) }, [active, fBias, fCat, sortBy]);
+  const filtered = useMemo(() => { let r = active; r = r.filter((s: any) => (s.composite_score || 0) >= 45); if (fBias !== "ALL") r = r.filter((s: any) => s.bias === fBias.toLowerCase()); if (fCat !== "ALL") r = r.filter((s: any) => s.category === fCat); return [...r].sort((a: any, b: any) => sortBy === "rr" ? b.risk_reward_ratio - a.risk_reward_ratio : (b.composite_score || 0) - (a.composite_score || 0)) }, [active, fBias, fCat, sortBy]);
 
   return (
     <div style={{ background: t.bg, minHeight: "100vh", fontFamily: "'Outfit',sans-serif", color: t.text, transition: "background .3s" }}>
@@ -584,7 +589,7 @@ export default function App() {
             <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 16px", borderBottom: `2px solid ${t.borderLight}`, fontSize: 10, fontWeight: 700, color: t.textMuted, letterSpacing: 0.6, textTransform: "uppercase" }}>
               <div style={{ width: 70 }}>Ticker</div><div style={{ flex: 1 }}>Setup / Trigger / Analysis</div>
               <div style={{ display: "flex", gap: 12 }}><div style={{ width: 58, textAlign: "right" }}>Entry</div><div style={{ width: 58, textAlign: "right" }}>Stop</div><div style={{ width: 58, textAlign: "right" }}>Target</div></div>
-              <div style={{ width: 42, textAlign: "center" }}>Score</div><div style={{ width: 16 }} /><div style={{ width: 75 }} />
+              <div style={{ width: 42, textAlign: "center" }}>R:R</div><div style={{ width: 42, textAlign: "center" }}>Score</div><div style={{ width: 16 }} /><div style={{ width: 75 }} />
             </div>
             <AnimatePresence>
               {filtered.map((s: any, i: number) => <SetupRow key={`${s.symbol}-${s.pattern_name}-${i}`} s={s} open={chartIdx === i} toggle={() => setChartIdx(chartIdx === i ? null : i)} t={t} onTrack={addTrack} />)}

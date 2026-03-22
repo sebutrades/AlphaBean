@@ -86,6 +86,8 @@ async def scan(symbol:str=Query(...),mode:str=Query("today"),ai:bool=Query(True)
         corr = compute_correlation_live(symbol.upper()).to_dict()
         for s in setups: s["spy_correlation"] = corr
     except: pass
+    # Remove anything below 45 score
+    setups = [s for s in setups if s.get("composite_score", 0) >= 45]
     return {"symbol":symbol.upper(),"mode":mode,"count":len(setups),"setups":setups,"market_open":_mkt_open()}
 
 @app.get("/api/scan-multiple")
@@ -98,6 +100,7 @@ async def scan_multi(symbols:str=Query(...),mode:str=Query("today"),ai:bool=Quer
             nb = fetch_news_batch(sl); ns = {sym:format_headlines_for_llm(items) for sym,items in nb.items()}
             setups = evaluate_setups_batch(setups,ns,_regime_str(),top_n=5)
         except Exception as e: print(f"  AI error: {e}")
+    setups = [s for s in setups if s.get("composite_score", 0) >= 45]
     return {"symbols":sl,"mode":mode,"count":len(setups),"setups":setups}
 
 
@@ -129,9 +132,10 @@ async def top_opportunities(ai:bool=Query(True),per_symbol:int=Query(2),max_symb
         ss.sort(key=lambda x: x.get("composite_score",0), reverse=True)
         capped.extend(ss[:per_symbol])
     capped.sort(key=lambda x: x.get("composite_score",0), reverse=True)
+    # Remove anything below 45
+    capped = [s for s in capped if s.get("composite_score", 0) >= 45]
     # Only filter market hours when market is open
     if _mkt_open(): capped = _mkt_hours_filter(capped)
-    capped = [s for s in capped if s.get("composite_score", 0) >= 45]
     # Only AI-evaluate top 50% by composite score — cuts Ollama calls in half
     cutoff = len(capped) // 2 or len(capped)
     ai_batch = capped[:cutoff]

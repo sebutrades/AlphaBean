@@ -1,5 +1,5 @@
 {
-  "cached_at": 1774140915.6536784,
+  "cached_at": 1774143746.558424,
   "items": [
     {
       "headline": "Polestar Stock Sinks as Strong Sales Meet Tariff Fears",
@@ -47,6 +47,15 @@
       "sentiment_hint": "neutral"
     },
     {
+      "headline": "Polestar shareholders 2025: who owns the most PSNY stock?",
+      "source": "Capital.com",
+      "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxQOExyZ01BUTc4SkR0LU5JM3BSczdITlY2WVpDSmFmSDdXbG9TUERJa1c1STVlWThYdWd1dHN3N2gxdDREWU5BNlNXMkt2WmxRbS1QNUZjV3l6a1JqRnN6WThZZjFiSzNpQkticG53MW84dzVieGstVWw0ZkdKQTRxZUJXTGppcGN6?oc=5",
+      "published": "2025-11-19T08:00:00",
+      "symbol": "PSNYW",
+      "provider": "google_news",
+      "sentiment_hint": "neutral"
+    },
+    {
       "headline": "Polestar stock hits 52-week high at $0.61",
       "source": "Investing.com",
       "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxNd0dKS29BMmpBNF9LR2lubXRYNUZ0dXVuWFhjZGdaYnpRMmhuR3lrQTRLR1VYaGpwNVR5ZE84dXBFLW0wR000UjZHU1dESXhuWGVJemsyX0lUaUw5aWZidWJKdHRRYWVBRTVSWHBVbVpJNW9uaTlPWUJnRjBreUpOdFppVFY4djJwVXBVM2R6ZEtLeGZaRDZGOWJQSQ?oc=5",
@@ -54,15 +63,6 @@
       "symbol": "PSNYW",
       "provider": "google_news",
       "sentiment_hint": "positive"
-    },
-    {
-      "headline": "Polestar stock falls 50% after InvestingPro\u2019s overvaluation alert By Investing.com",
-      "source": "Investing.com UK",
-      "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxNU1hteEpoaXF2aGozNVZmMk5iZ3JPaUJtRkl0cHlrS0VjdV9vdE5ac3NQYlJIUWsyM2t5UXZKY2tURDFkdGNTR1ZQMXc5LUxWS2xZVS0tWnhtV0plTzNuQnZKSjBwc3BYZFhGX0RaeXZ4Ml9VamNyZE9nUjhHZFg2OTNpUDVTTmpYNUhNYWczVXBUc29kcUQyTmJHd2dKVjhDaFFjbDlzeWN2bWlqNHlxcXpMU3BVaUpzMWFwUnozUzE?oc=5",
-      "published": "2025-07-04T07:00:00",
-      "symbol": "PSNYW",
-      "provider": "google_news",
-      "sentiment_hint": "negative"
     },
     {
       "headline": "symbol__ Stock Quote Price and Forecast",
