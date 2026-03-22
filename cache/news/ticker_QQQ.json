@@ -1,5 +1,5 @@
 {
-  "cached_at": 1774140568.651106,
+  "cached_at": 1774142768.7505143,
   "items": [
     {
       "headline": "Weekly Commentary: Bubbles, Dams, War And Cracks",
@@ -65,6 +65,15 @@
       "sentiment_hint": "neutral"
     },
     {
+      "headline": "Stock Market Review: SPY, QQQ Tumble on Rate Hike Scenario as U.S.-Iran War Reaches 3-Week Mark",
+      "source": "TipRanks",
+      "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxQZEFSM0V0YkNOcmk0bU5RWFdWVThjTElIRmU1LS1OVFhpcjRTVjM1RTFrWnNqVzhZUDJpaHJKaUVNeTlzX0xNSVJxRkhhVXVZdk9BRk9VejhEbkNYZTNCbkRCZUZsS2Z2bXlfdnQwbHBfS0MxTnpvWnIyVTg3aHZ0X0ZUdGRWbUNmdDJIVi1ONHNWb3B1a3dzZXZMdDVJeVVFWGdtNHQwdjc2V3JVSVREaUlBaDlJMU5KNWNlUnJIYw?oc=5",
+      "published": "2026-03-20T20:22:12",
+      "symbol": "QQQ",
+      "provider": "google_news",
+      "sentiment_hint": "neutral"
+    },
+    {
       "headline": "Markets Weekly Outlook: Farewell, Rate Cuts",
       "source": "SeekingAlpha",
       "url": "https://finnhub.io/api/news?id=7a42c3019df37eb70c93b5e6716677956c2e8cfb2250ffb14d29faf8c40658c5",
@@ -126,15 +135,6 @@
       "symbol": "QQQ",
       "provider": "finnhub",
       "sentiment_hint": "negative"
-    },
-    {
-      "headline": "Invesco QQQ $QQQ Stock Holdings Lifted by Strategic Advocates LLC",
-      "source": "MarketBeat",
-      "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPMmk4MUVyRFJLamxVVVoxbGw5dmNWTmFPY05fMFRrUWJfVE9DUUpxTlFQV0Q5aXhSSzBXRWZSQnRPN0F3c2ltN3JxZGdiTDBDeWxBV3BXNzJxQ1dnd2tjci02WmJxRnJnSnh6NGl4YklMWjhBTkUxRjVKeTNfOFQ3MGk0Njg3VlVjdHMtR1dGQ09GbWk4X0ZTZlNHbnRidlNaRW9qNl9vUEE0Q2tISXZ3V0FWZ1JENFp5RHE4RGtRdWZEQzQ?oc=5",
-      "published": "2026-03-20T09:22:57",
-      "symbol": "QQQ",
-      "provider": "google_news",
-      "sentiment_hint": "neutral"
     }
   ]
 }
