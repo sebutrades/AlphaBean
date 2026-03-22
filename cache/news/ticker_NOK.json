@@ -1,5 +1,5 @@
 {
-  "cached_at": 1774134907.1969733,
+  "cached_at": 1774135684.127842,
   "items": [
     {
       "headline": "Nokia: Growth Potential Driven by AI",
@@ -9,15 +9,6 @@
       "symbol": "NOK",
       "provider": "google_news",
       "sentiment_hint": "positive"
-    },
-    {
-      "headline": "Nokia's Stock Plummets 3.86% as Q4 Earnings Miss and Supply Chain Woes Sink Daily Volume to 495th Rank",
-      "source": "Bitget",
-      "url": "https://news.google.com/rss/articles/CBMiY0FVX3lxTFAyQW02YVJCSTNieVhFeUc3ai05MWhoWk1oQnp3Mkw5OUNEX2EwdkxjY2czSGIwb1ZFN1lraWdVY2lVdVFhQVNrUHlzM0xLcFNfSjlUY2xFVWFYXzlXcUJqWDZHRdIBY0FVX3lxTFAyQW02YVJCSTNieVhFeUc3ai05MWhoWk1oQnp3Mkw5OUNEX2EwdkxjY2czSGIwb1ZFN1lraWdVY2lVdVFhQVNrUHlzM0xLcFNfSjlUY2xFVWFYXzlXcUJqWDZHRQ?oc=5",
-      "published": "2026-03-21T01:35:47",
-      "symbol": "NOK",
-      "provider": "google_news",
-      "sentiment_hint": "negative"
     },
     {
       "headline": "Nokia Shares Show Divergent Trends Ahead of Market Decisions",
@@ -90,6 +81,15 @@
       "symbol": "NOK",
       "provider": "google_news",
       "sentiment_hint": "positive"
+    },
+    {
+      "headline": "Lumen Technologies vs. Nokia: Which Stock Will Make You Richer?",
+      "source": "Yahoo Finance",
+      "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxQbmRab2hjaDBkZ1lMOXZCbjBucG1GYTN0bVN4SWtVS2JHU1dCU1dVM3lvQ3B4RFhyeENlMDRfR2FpSnIyMU9FTXVsaXdrdk4tMlBDNGh5LVVMLXd5aG5vSFNSc3ZaME9SVUpGdFlSNTZ2OXdDMkxDSUFibDl4aGVjN1ZZdzFKdw?oc=5",
+      "published": "2026-02-25T08:00:00",
+      "symbol": "NOK",
+      "provider": "google_news",
+      "sentiment_hint": "neutral"
     }
   ]
 }
