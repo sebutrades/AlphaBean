@@ -1,20 +1,17 @@
 """
-run_backtest.py — Walk-Forward Backtest Engine v3.1
+run_backtest.py — Walk-Forward Backtest Engine v3.2
 
-Runs all 47 pattern detectors on historical data with strict walk-forward
-methodology: detect on bar N using ONLY bars 0..N, then check bars N+1
-onward to see if target or stop was hit first.
+v3.2 changes:
+  - Per-pattern cooldown and max_hold from PATTERN_META (cd/mh in minutes)
+  - Composite cooldown key (pattern + bias + price bucket)
+  - Minutes-to-bars conversion per timeframe
+  - Updated pattern count display (42 not 47)
 
 Usage:
   python run_backtest.py                                  # Quick: 10 symbols, 30 days
   python run_backtest.py --symbols AAPL,NVDA,TSLA         # Specific symbols
-  python run_backtest.py --from-cache --days 90            # Use cached top symbols
-  python run_backtest.py --from-cache --days 90 --resume   # Resume interrupted run
-
-Output:
-  cache/backtest_results.json        — per-pattern stats (feeds scanner + AI)
-  cache/strategy_performance.json    — rolling evaluator data
-  cache/backtest_checkpoint.json     — checkpoint for resume
+  python run_backtest.py --count 50 --days 90             # 50 symbols, 90 days
+  python run_backtest.py --from-cache --days 90 --resume  # Resume interrupted run
 """
 import argparse
 import json
@@ -44,22 +41,45 @@ DEFAULT_SYMBOLS = [
 
 TIMEFRAMES = ["5min", "15min"]
 
-# Scan intervals scale with lookback to keep runtime manageable
-# Format: {timeframe: bars_between_scans}
+# Bar duration in minutes for each timeframe
+BAR_MINUTES = {"5min": 5, "15min": 15, "1d": 390}  # 390 = 6.5hr trading day
+
+# Scan intervals (in bars)
 SCAN_INTERVAL_SHORT = {"5min": 6, "15min": 4}    # 30 days: every 30min / 1hr
 SCAN_INTERVAL_LONG = {"5min": 12, "15min": 6}    # 60+ days: every 1hr / 1.5hr
 
-MAX_HOLD_BARS = {"5min": 120, "15min": 60}
+# Minimum bars needed before first scan
 MIN_BARS = 60
-COOLDOWN_BARS = {"5min": 24, "15min": 12}
+
+# Fallback defaults (used if pattern doesn't have cd/mh in registry)
+DEFAULT_COOLDOWN_MIN = 120   # 2 hours
+DEFAULT_MAX_HOLD_MIN = 600   # 10 hours
 
 # Checkpointing
 CHECKPOINT_PATH = Path("cache/backtest_checkpoint.json")
-CHECKPOINT_EVERY = 10  # Save checkpoint every N symbols
-
+CHECKPOINT_EVERY = 10
 RESULTS_PATH = Path("cache/backtest_results.json")
 EVALUATOR_PATH = Path("cache/strategy_performance.json")
 SYMBOLS_CACHE = Path("cache/top_symbols.json")
+
+
+# ==============================================================================
+# HELPERS: Convert minutes to bars
+# ==============================================================================
+
+def _cooldown_bars(pattern_name: str, timeframe: str) -> int:
+    """Get cooldown in bars for this pattern on this timeframe."""
+    meta = PATTERN_META.get(pattern_name, {})
+    cd_min = meta.get("cd", DEFAULT_COOLDOWN_MIN)
+    bar_min = BAR_MINUTES.get(timeframe, 5)
+    return max(1, int(cd_min / bar_min))
+
+def _max_hold_bars(pattern_name: str, timeframe: str) -> int:
+    """Get max hold in bars for this pattern on this timeframe."""
+    meta = PATTERN_META.get(pattern_name, {})
+    mh_min = meta.get("mh", DEFAULT_MAX_HOLD_MIN)
+    bar_min = BAR_MINUTES.get(timeframe, 5)
+    return max(1, int(mh_min / bar_min))
 
 
 # ==============================================================================
@@ -67,7 +87,7 @@ SYMBOLS_CACHE = Path("cache/top_symbols.json")
 # ==============================================================================
 
 class PendingTrade:
-    def __init__(self, pattern_name, strategy_type, symbol, bias, entry, target, stop, bar_idx):
+    def __init__(self, pattern_name, strategy_type, symbol, bias, entry, target, stop, bar_idx, max_hold):
         self.pattern_name = pattern_name
         self.strategy_type = strategy_type
         self.symbol = symbol
@@ -76,6 +96,7 @@ class PendingTrade:
         self.target = target
         self.stop = stop
         self.bar_idx = bar_idx
+        self.max_hold = max_hold  # Per-pattern max hold in bars
         self.risk = abs(entry - stop)
 
     def check_resolution(self, bar: Bar) -> tuple[str, float] | None:
@@ -124,19 +145,17 @@ def backtest_symbol_tf(
         print(f"      {n} bars ({bars[0].timestamp.strftime('%m/%d')} → "
               f"{bars[-1].timestamp.strftime('%m/%d %H:%M')})")
 
-    # Use wider scan intervals for long lookbacks
     scan_interval = (SCAN_INTERVAL_LONG if days_back >= 60 else SCAN_INTERVAL_SHORT).get(timeframe, 6)
-    max_hold = MAX_HOLD_BARS.get(timeframe, 100)
-    cooldown = COOLDOWN_BARS.get(timeframe, 20)
 
     outcomes: list[TradeOutcome] = []
     pending: list[PendingTrade] = []
+    # Composite cooldown: pattern + bias + price bucket
     last_fired: dict[str, int] = {}
 
     wins = 0; losses = 0; timeouts = 0; signals_found = 0
 
     for i in range(MIN_BARS, n):
-        # Check pending trades
+        # Check pending trades — each has its own max_hold
         still_pending = []
         for trade in pending:
             bars_held = i - trade.bar_idx
@@ -152,7 +171,7 @@ def backtest_symbol_tf(
                 ))
                 if outcome_str == "win": wins += 1
                 else: losses += 1
-            elif bars_held >= max_hold:
+            elif bars_held >= trade.max_hold:  # PER-PATTERN max hold
                 timeout_r = trade.timeout_r(bars[i].close)
                 outcomes.append(TradeOutcome(
                     pattern_name=trade.pattern_name, strategy_type=trade.strategy_type,
@@ -177,17 +196,28 @@ def backtest_symbol_tf(
             continue
 
         for setup in setups:
-            lf = last_fired.get(setup.pattern_name, -999)
-            if i - lf < cooldown: continue
+            # COMPOSITE COOLDOWN KEY: pattern + bias + approximate price level
+            price_bucket = round(setup.entry_price, 0)
+            cooldown_key = f"{setup.pattern_name}_{setup.bias.value}_{price_bucket}"
+
+            # PER-PATTERN cooldown in bars
+            cd_bars = _cooldown_bars(setup.pattern_name, timeframe)
+            lf = last_fired.get(cooldown_key, -9999)
+            if i - lf < cd_bars: continue
+
+            # Don't stack same pattern
             if any(p.pattern_name == setup.pattern_name for p in pending): continue
 
+            # Per-pattern max hold
+            mh_bars = _max_hold_bars(setup.pattern_name, timeframe)
+
             signals_found += 1
-            last_fired[setup.pattern_name] = i
+            last_fired[cooldown_key] = i
             pending.append(PendingTrade(
                 pattern_name=setup.pattern_name, strategy_type=setup.strategy_type,
                 symbol=symbol, bias=setup.bias.value,
                 entry=setup.entry_price, target=setup.target_price, stop=setup.stop_loss,
-                bar_idx=i,
+                bar_idx=i, max_hold=mh_bars,
             ))
 
     # Resolve remaining
@@ -221,7 +251,6 @@ def run_full_backtest(
 ) -> dict:
     t_start = time.time()
 
-    # Load checkpoint if resuming
     completed_symbols: set[str] = set()
     all_outcomes: list[TradeOutcome] = []
 
@@ -229,9 +258,6 @@ def run_full_backtest(
         try:
             cp = json.loads(CHECKPOINT_PATH.read_text())
             completed_symbols = set(cp.get("completed", []))
-            # Reload outcomes from evaluator
-            eval_temp = StrategyEvaluator()
-            eval_temp.load()
             print(f"\n  RESUMING: {len(completed_symbols)} symbols already done")
             print(f"  Remaining: {len(symbols) - len(completed_symbols)} symbols")
         except Exception:
@@ -240,14 +266,14 @@ def run_full_backtest(
     remaining = [s for s in symbols if s not in completed_symbols]
 
     print(f"\n{'═' * 72}")
-    print(f"  AlphaBean v3.1 — Walk-Forward Backtest Engine")
-    print(f"  {len(symbols)} total symbols ({len(remaining)} remaining) × {len(TIMEFRAMES)} TFs × 47 patterns")
+    print(f"  Juicer v2.0 — Walk-Forward Backtest Engine")
+    print(f"  {len(symbols)} total symbols ({len(remaining)} remaining) × {len(TIMEFRAMES)} TFs × 42 patterns")
     print(f"  Lookback: {days_back} days | Scan interval: {'wide (1hr)' if days_back >= 60 else 'standard (30min)'}")
+    print(f"  Per-pattern cooldown + max_hold from registry")
     print(f"  Checkpoint: every {CHECKPOINT_EVERY} symbols | Resume: {'yes' if resume else 'no'}")
     print(f"{'═' * 72}")
 
-    # Time estimate
-    per_sym = 20 if days_back <= 30 else 45 if days_back <= 60 else 70  # seconds
+    per_sym = 20 if days_back <= 30 else 45 if days_back <= 60 else 70
     est_total = len(remaining) * per_sym
     print(f"\n  Estimated time: ~{est_total // 3600}h {(est_total % 3600) // 60}m")
     print(f"  Checkpoint saves every {CHECKPOINT_EVERY} symbols so you can resume if interrupted\n")
@@ -260,13 +286,11 @@ def run_full_backtest(
         sym_start = time.time()
         sym_outcomes = []
 
-        # Progress bar
         pct = (si + 1 + len(completed_symbols)) / len(symbols) * 100
         elapsed = time.time() - t_start
         rate = (si + 1) / elapsed if elapsed > 0 else 1
         eta = (len(remaining) - si - 1) / rate if rate > 0 else 0
 
-        # Compact progress line
         print(f"  [{si+1+len(completed_symbols):>3}/{len(symbols)}] {symbol:<6} "
               f"({pct:.0f}%) elapsed:{elapsed/60:.1f}m eta:{eta/60:.1f}m", end="")
 
@@ -294,17 +318,12 @@ def run_full_backtest(
         all_outcomes.extend(sym_outcomes)
         completed_symbols.add(symbol)
 
-        # Checkpoint
         if (si + 1) % CHECKPOINT_EVERY == 0:
             _save_checkpoint(completed_symbols, symbol_stats)
-            # Also incrementally save evaluator
             _save_evaluator_incremental(batch_outcomes)
             batch_outcomes = []
-
-            done = si + 1 + len(completed_symbols) - len(remaining)
             print(f"\n  ✓ CHECKPOINT: {len(completed_symbols)}/{len(symbols)} symbols saved\n")
 
-    # Save remaining batch
     if batch_outcomes:
         _save_evaluator_incremental(batch_outcomes)
 
@@ -320,10 +339,10 @@ def run_full_backtest(
         pattern_stats[pattern_name] = stats
 
     # Print results table
-    print(f"\n{'─' * 95}")
+    print(f"\n{'─' * 99}")
     print(f"  {'Pattern':<28} {'Cat':<10} {'N':>5} {'WR':>6} {'PF':>6} "
           f"{'Exp':>8} {'AvgW':>6} {'AvgL':>6} {'Edge':>5} {'Grade':<5}")
-    print(f"{'─' * 95}")
+    print(f"{'─' * 99}")
 
     sorted_patterns = sorted(pattern_stats.items(), key=lambda x: x[1]["edge_score"], reverse=True)
 
@@ -336,7 +355,6 @@ def run_full_backtest(
         wr = s["win_rate"]; pf = s["profit_factor"]; exp = s["expectancy"]
         aw = s["avg_win_r"]; al = s["avg_loss_r"]; edge = s["edge_score"]
 
-        # Grade
         if edge >= 70 and n >= 20: grade = "A"
         elif edge >= 55 and n >= 10: grade = "B"
         elif edge >= 40 and n >= 5: grade = "C"
@@ -367,7 +385,7 @@ def run_full_backtest(
             extra = f" +{len(names)-6} more" if len(names) > 6 else ""
             print(f"    {grade}: {shown}{extra}")
 
-    # ─── Save final evaluator ─────────────────────────────────────
+    # ─── Save evaluator ───────────────────────────────────────────
     evaluator = StrategyEvaluator()
     evaluator.record_batch(all_outcomes)
     evaluator.save()
@@ -385,7 +403,7 @@ def run_full_backtest(
     total_wins = sum(1 for o in all_outcomes if o.outcome == "win")
 
     results = {
-        "version": "3.1",
+        "version": "3.2",
         "run_date": datetime.now().isoformat(),
         "config": {
             "symbols": list(completed_symbols),
@@ -410,7 +428,6 @@ def run_full_backtest(
     RESULTS_PATH.parent.mkdir(parents=True, exist_ok=True)
     RESULTS_PATH.write_text(json.dumps(results, indent=2))
 
-    # Clean up checkpoint
     if CHECKPOINT_PATH.exists():
         CHECKPOINT_PATH.unlink()
 
@@ -460,11 +477,10 @@ def _compute_pattern_stats(pattern_name: str, trades: list[TradeOutcome]) -> dic
 
     expectancy = (wr * avg_win_r) - ((1 - wr) * avg_loss_r)
 
-    # Edge score
     wr_score = max(0, min(100, (wr - 0.35) / 0.35 * 100))
     pf_score = max(0, min(100, (min(pf, 5.0) - 0.5) / 2.5 * 100))
     exp_score = max(0, min(100, (expectancy + 0.5) / 1.5 * 100))
-    sample_score = min(100, n / 50 * 100)  # Scaled for larger sample
+    sample_score = min(100, n / 50 * 100)
     r_std = float(np.std(all_r)) if len(all_r) > 1 else 2.0
     consistency_score = max(0, min(100, (3.0 - r_std) / 3.0 * 100))
 
@@ -494,7 +510,6 @@ def _save_checkpoint(completed: set[str], symbol_stats: dict):
 
 
 def _save_evaluator_incremental(outcomes: list[TradeOutcome]):
-    """Incrementally add outcomes to the evaluator cache."""
     evaluator = StrategyEvaluator()
     evaluator.load()
     evaluator.record_batch(outcomes)
@@ -514,7 +529,7 @@ def _load_cached_symbols() -> list[str]:
 # ==============================================================================
 
 def main():
-    parser = argparse.ArgumentParser(description="AlphaBean v3.1 Walk-Forward Backtest")
+    parser = argparse.ArgumentParser(description="Juicer v2.0 Walk-Forward Backtest")
     parser.add_argument("--symbols", type=str, default=None,
                         help="Comma-separated: AAPL,NVDA,TSLA")
     parser.add_argument("--count", type=int, default=10,
@@ -537,16 +552,17 @@ def main():
     else:
         symbols = DEFAULT_SYMBOLS[:args.count]
 
+    n_patterns = len(PATTERN_META)
     print(f"\n  ╔══════════════════════════════════════════════════════╗")
-    print(f"  ║  AlphaBean v3.1 — Walk-Forward Backtest             ║")
+    print(f"  ║  Juicer v2.0 — Walk-Forward Backtest               ║")
     print(f"  ╠══════════════════════════════════════════════════════╣")
     print(f"  ║  Symbols:     {len(symbols):<40}║")
     print(f"  ║  Days back:   {args.days:<40}║")
     print(f"  ║  Timeframes:  {', '.join(TIMEFRAMES):<40}║")
-    print(f"  ║  Patterns:    47 (16+10+11+10)                      ║")
-    print(f"  ║  Method:      Strict walk-forward                   ║")
+    print(f"  ║  Patterns:    {n_patterns} (per-pattern cooldown+hold)      ║")
+    print(f"  ║  Method:      Strict walk-forward                  ║")
     if args.resume:
-        print(f"  ║  Mode:        RESUME from checkpoint                ║")
+        print(f"  ║  Mode:        RESUME from checkpoint               ║")
     print(f"  ╚══════════════════════════════════════════════════════╝")
 
     run_full_backtest(symbols, days_back=args.days, verbose=not args.quiet,

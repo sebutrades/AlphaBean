@@ -699,55 +699,63 @@ def _detect_orb(s, minutes=15):
         if range_pct > 3.0: return None  # Too chaotic
     if s.current_atr > 0 and orng < s.current_atr * 0.3: return None  # Too narrow
     nm = f"ORB {minutes}min"
-    for i in range(oe+1, min(oe+30, s.n)):
-        if s.bars[i].close > oh:
-            # FIX: Stop at ORB low (not breakout bar low)
-            e = round(oh+0.02, 2); st = round(ol-0.02, 2)
-            r = e - st
-            if r <= 0: continue
-            # FIX: Target 1.5x ORB range (was 2x)
-            t = round(e + orng * 1.5, 2)
-            c = 0.50 + (0.15 if s.bars[i].volume > np.mean([b.volume for b in ob])*1.5 else 0)
-            return _make(s, nm, Bias.LONG, e, st, t, c,
-                         f"ORB {minutes}min above {oh:.2f}", max_attempts=2,
-                         key_levels={"orb_high": oh, "orb_low": ol})
-        if s.bars[i].close < ol:
-            # FIX: Stop at ORB high
-            e = round(ol-0.02, 2); st = round(oh+0.02, 2)
-            r = st - e
-            if r <= 0: continue
-            t = round(e - orng * 1.5, 2)
-            return _make(s, nm, Bias.SHORT, e, st, t, 0.55,
-                         f"ORB {minutes}min below {ol:.2f}", max_attempts=2,
-                         key_levels={"orb_high": oh, "orb_low": ol})
+    # FIX: Only detect breakout if it happened on the CURRENT bar (last bar).
+    # Previous versions searched all 30 bars after ORB, causing re-detection
+    # on every scan once the breakout persisted.
+    cur = s.bars[-1]
+    prev_close = s.bars[-2].close if s.n >= 2 else cur.close
+    # Breakout long: current bar closes above ORB high AND previous didn't
+    if cur.close > oh and prev_close <= oh:
+        e = round(oh+0.02, 2); st = round(ol-0.02, 2)
+        r = e - st
+        if r <= 0: return None
+        t = round(e + orng * 1.5, 2)
+        avg_ob_vol = float(np.mean([b.volume for b in ob]))
+        c = 0.50 + (0.15 if cur.volume > avg_ob_vol * 1.5 else 0)
+        return _make(s, nm, Bias.LONG, e, st, t, c,
+                     f"ORB {minutes}min above {oh:.2f}", max_attempts=2,
+                     key_levels={"orb_high": oh, "orb_low": ol})
+    # Breakout short: current bar closes below ORB low AND previous didn't
+    if cur.close < ol and prev_close >= ol:
+        e = round(ol-0.02, 2); st = round(oh+0.02, 2)
+        r = st - e
+        if r <= 0: return None
+        t = round(e - orng * 1.5, 2)
+        return _make(s, nm, Bias.SHORT, e, st, t, 0.55,
+                     f"ORB {minutes}min below {ol:.2f}", max_attempts=2,
+                     key_levels={"orb_high": oh, "orb_low": ol})
     return None
 
 def _detect_second_chance(s):
-    """Second Chance — FIX: ATR tolerance, require prior-day level, breakout volume."""
+    """Second Chance — FIX: recency requirement + ATR tolerance + prior-day level + volume.
+    The bounce (entry trigger) must happen within the last 5 bars to prevent
+    re-detection of the same historical sequence on every scan.
+    """
     if s.n < 30 or len(s.sw_high_idx) < 2 or s.current_atr <= 0: return None
     atr = s.current_atr
     oi = s.day_open_idx
     for i in range(len(s.sw_high_idx)-1):
         lev = s.highs[s.sw_high_idx[i]]
-        tol = atr * 0.3  # FIX: ATR-based tolerance (was 0.3% of price)
+        tol = atr * 0.3
         touches = [s.sw_high_idx[i]]
         for j in range(i+1, len(s.sw_high_idx)):
             if abs(s.highs[s.sw_high_idx[j]]-lev) < tol:
                 touches.append(s.sw_high_idx[j])
         if len(touches) < 2: continue
         res = float(np.mean([s.highs[idx] for idx in touches]))
-        # FIX: At least one touch must be from a prior day
+        # At least one touch from a prior day
         has_prior_day = any(s.timestamps[idx].date() < s.timestamps[-1].date()
                             for idx in touches if idx < len(s.timestamps))
-        if not has_prior_day and oi > 0: continue  # Skip if all same-day unless no prior data
+        if not has_prior_day and oi > 0: continue
         last = touches[-1]
         for k in range(last+1, min(last+20, s.n)):
             if s.closes[k] > res*1.002:
-                # FIX: Breakout bar needs volume
                 avg_vol = float(np.mean(s.volumes[max(0, k-20):k]))
                 if avg_vol > 0 and s.volumes[k] < avg_vol * 1.3: continue
                 for p in range(k+1, min(k+15, s.n)):
                     if s.lows[p] <= res*1.003 and p+1 < s.n and s.closes[p+1] > s.bars[p].high:
+                        # FIX: The bounce bar (p+1) must be within last 5 bars
+                        if p + 1 < s.n - 5: continue  # Stale signal, skip
                         e = round(s.closes[p+1], 2); st = round(s.bars[p].low-0.02, 2)
                         r = e - st
                         if r <= 0: continue
@@ -760,7 +768,7 @@ def _detect_second_chance(s):
     return None
 
 def _detect_fashionably_late(s):
-    """Fashionably Late — FIX: hard time filter after 10:00 AM, require established range."""
+    """Fashionably Late — FIX: cross must be RECENT (last 3 bars), hard time filter."""
     if s.n < 30: return None
     oi = s.day_open_idx
     if s.n - oi < 20: return None
@@ -770,15 +778,16 @@ def _detect_fashionably_late(s):
         tp = (s.highs[i]+s.lows[i]+s.closes[i])/3; cv += s.volumes[i]; ctv += tp*s.volumes[i]
         vs[i] = ctv/cv if cv > 0 else tp
     dl = float(np.min(s.lows[oi:]))
-    for i in range(oi+10, s.n):
+    # FIX: Only check the last 3 bars for a FRESH cross. Searching all history
+    # caused the same cross to be re-detected on every subsequent scan.
+    search_start = max(oi + 10, s.n - 3)
+    for i in range(search_start, s.n):
         if np.isnan(e9s[i]) or np.isnan(e9s[i-1]) or vs[i]==0 or vs[i-1]==0: continue
-        # FIX: Hard time filter — only after 10:00 AM
         if not _in_time(s.timestamps[i], 10, 0, 14, 0): continue
         if e9s[i-1] < vs[i-1] and e9s[i] >= vs[i]:
             cp = vs[i]; mm = cp - dl
             if mm <= 0: continue
-            # FIX: Require at least 30 min of data after open (range established)
-            if i - oi < 6: continue  # ~30 min on 5-min bars
+            if i - oi < 6: continue
             c = 0.55 + (0.10 if _in_time(s.timestamps[i], 10, 0, 10, 45) else 0)
             return _make(s, "Fashionably Late", Bias.LONG, round(cp, 2), round(cp-mm/3, 2),
                          round(cp+mm, 2), c, f"Fashionably Late: measured ${mm:.2f}",
