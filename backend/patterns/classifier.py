@@ -1107,48 +1107,89 @@ def _detect_donchian_breakout(s):
 # MAIN CLASSIFIER
 # ==============================================================================
 
-_ALL_DETECTORS = [
-    # Classical (16)
-    _detect_head_and_shoulders, _detect_inverse_hs,
-    _detect_double_top, _detect_double_bottom,
-    _detect_triple_top, _detect_triple_bottom,
-    _detect_ascending_triangle, _detect_descending_triangle, _detect_symmetrical_triangle,
-    _detect_bull_flag, _detect_bear_flag, _detect_pennant,
-    _detect_cup_and_handle, _detect_rectangle,
-    _detect_rising_wedge, _detect_falling_wedge,
-    # Candlestick (10)
-    _detect_bullish_engulfing, _detect_bearish_engulfing,
-    _detect_morning_star, _detect_evening_star,
-    _detect_hammer, _detect_shooting_star,
-    _detect_doji, _detect_dragonfly_doji,
-    _detect_three_white_soldiers, _detect_three_black_crows,
-    # SMB Scalps (7)
-    _detect_rubberband,
-    lambda s: _detect_orb(s, 15), lambda s: _detect_orb(s, 30),
-    _detect_second_chance,
-    _detect_fashionably_late,
-    _detect_gap_give_and_go, _detect_tidal_wave,
-    # Quant — Intraday (4)
-    _detect_mean_reversion, _detect_trend_pullback,
-    _detect_gap_fade, _detect_vwap_reversion,
-    # Quant — Daily only (5) — return None on 5min/15min
-    _detect_momentum_breakout, _detect_vol_compression_breakout,
-    _detect_range_expansion, _detect_volume_breakout, _detect_donchian_breakout,
-]
+# ==============================================================================
+# DETECTOR REGISTRY — Maps pattern name → detector function
+# ==============================================================================
+# classify_all() checks PATTERN_META[name]["tf"] before calling each detector.
+# This prevents structural patterns from firing on 5min noise, scalps from
+# firing on 1h bars, etc.
+
+_DETECTOR_MAP: dict[str, callable] = {
+    # Classical (16) — run on 15min + 1h per registry
+    "Head & Shoulders":     _detect_head_and_shoulders,
+    "Inverse H&S":          _detect_inverse_hs,
+    "Double Top":           _detect_double_top,
+    "Double Bottom":        _detect_double_bottom,
+    "Triple Top":           _detect_triple_top,
+    "Triple Bottom":        _detect_triple_bottom,
+    "Ascending Triangle":   _detect_ascending_triangle,
+    "Descending Triangle":  _detect_descending_triangle,
+    "Symmetrical Triangle": _detect_symmetrical_triangle,
+    "Bull Flag":            _detect_bull_flag,
+    "Bear Flag":            _detect_bear_flag,
+    "Pennant":              _detect_pennant,
+    "Cup & Handle":         _detect_cup_and_handle,
+    "Rectangle":            _detect_rectangle,
+    "Rising Wedge":         _detect_rising_wedge,
+    "Falling Wedge":        _detect_falling_wedge,
+    # Candlestick (10) — run on 5min + 15min per registry
+    "Bullish Engulfing":    _detect_bullish_engulfing,
+    "Bearish Engulfing":    _detect_bearish_engulfing,
+    "Morning Star":         _detect_morning_star,
+    "Evening Star":         _detect_evening_star,
+    "Hammer":               _detect_hammer,
+    "Shooting Star":        _detect_shooting_star,
+    "Doji":                 _detect_doji,
+    "Dragonfly Doji":       _detect_dragonfly_doji,
+    "Three White Soldiers": _detect_three_white_soldiers,
+    "Three Black Crows":    _detect_three_black_crows,
+    # SMB Scalps (7) — mostly 5min only per registry
+    "RubberBand Scalp":     _detect_rubberband,
+    "ORB 15min":            lambda s: _detect_orb(s, 15),
+    "ORB 30min":            lambda s: _detect_orb(s, 30),
+    "Second Chance Scalp":  _detect_second_chance,
+    "Fashionably Late":     _detect_fashionably_late,
+    "Gap Give & Go":        _detect_gap_give_and_go,
+    "Tidal Wave":           _detect_tidal_wave,
+    # Quant — Intraday (4) — 5min only per registry
+    "Mean Reversion":       _detect_mean_reversion,
+    "Trend Pullback":       _detect_trend_pullback,
+    "Gap Fade":             _detect_gap_fade,
+    "VWAP Reversion":       _detect_vwap_reversion,
+    # Quant — Daily (5) — 1d only per registry
+    "Momentum Breakout":       _detect_momentum_breakout,
+    "Vol Compression Breakout": _detect_vol_compression_breakout,
+    "Range Expansion":         _detect_range_expansion,
+    "Volume Breakout":         _detect_volume_breakout,
+    "Donchian Breakout":       _detect_donchian_breakout,
+}
 
 
 def classify_all(bars: BarSeries) -> list[TradeSetup]:
-    """Run ALL 42 pattern detectors. Returns setups sorted by confidence."""
+    """Run pattern detectors appropriate for this timeframe.
+
+    Checks PATTERN_META[name]["tf"] before calling each detector.
+    A pattern configured for ["15min", "1h"] will NOT run on 5min bars.
+    """
     if len(bars.bars) < 15:
         return []
     s = extract_structures(bars)
+    tf = bars.timeframe  # e.g. "5min", "15min", "1h", "1d"
     setups = []
-    for fn in _ALL_DETECTORS:
+
+    for pattern_name, fn in _DETECTOR_MAP.items():
+        # Check timeframe routing from registry
+        meta = PATTERN_META.get(pattern_name, {})
+        allowed_tfs = meta.get("tf", ["5min", "15min"])  # Fallback: intraday
+        if tf not in allowed_tfs:
+            continue  # Skip — this pattern doesn't belong on this timeframe
+
         try:
             result = fn(s)
             if result is not None:
                 setups.append(result)
         except Exception:
             continue
+
     setups.sort(key=lambda x: x.confidence, reverse=True)
     return setups
