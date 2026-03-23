@@ -103,36 +103,164 @@ def _max_hold_bars(pattern_name: str, timeframe: str) -> int:
 # ==============================================================================
 
 class PendingTrade:
-    def __init__(self, pattern_name, strategy_type, symbol, bias, entry, target, stop, bar_idx, max_hold):
+    """A pending trade that resolves through partial exits.
+    
+    Position lifecycle:
+      1. Entry: Full position opened at entry ± slippage
+      2. T1 hit: Exit position_splits[0] (default 50%) at target_1
+      3. T2 hit: Exit position_splits[1] (default 30%) at target_2
+      4. Trail/timeout: Remaining position_splits[2] (default 20%) exits at trailing stop or timeout
+      5. Stop hit at any point: ALL remaining position exits at stop
+    
+    The realized_r is the weighted-average R across all exits.
+    """
+ 
+    def __init__(self, pattern_name, strategy_type, symbol, bias,
+                 entry, target, stop, bar_idx, max_hold,
+                 target_1=0.0, target_2=0.0,
+                 position_splits=(0.5, 0.3, 0.2),
+                 atr=0.0):
         self.pattern_name = pattern_name
         self.strategy_type = strategy_type
         self.symbol = symbol
         self.bias = bias
-        self.entry = entry
-        self.target = target
         self.stop = stop
+        self.target = target  # Full measured move (backward compat)
         self.bar_idx = bar_idx
         self.max_hold = max_hold
-        self.risk = abs(entry - stop)
-
-    def check_resolution(self, bar: Bar) -> tuple[str, float] | None:
+        self.atr = atr
+ 
+        # Apply slippage to entry (0.05 ATR adverse)
+        slippage = atr * 0.05 if atr > 0 else 0.0
+        if bias == "long":
+            self.entry = entry + slippage  # Buy slightly higher
+        else:
+            self.entry = entry - slippage  # Sell slightly lower
+ 
+        self.risk = abs(self.entry - stop)
+ 
+        # Scaled exit targets
+        self.target_1 = target_1 if target_1 > 0 else target  # Fallback to single target
+        self.target_2 = target_2 if target_2 > 0 else target
+        self.splits = position_splits
+ 
+        # State tracking
+        self.t1_hit = False
+        self.t2_hit = False
+        self.partial_rs = []  # List of (weight, realized_r) for each exit
+        self.remaining_weight = 1.0  # How much position is still open
+ 
+    def check_resolution_CORRECTED(self, bar):
+        """Check if any exit conditions are met on this bar.
+        
+        Returns (outcome, realized_r) when trade is FULLY resolved,
+        or None if position still open.
+        
+        BUGFIX: Stop R is now calculated at actual stop price,
+        not hardcoded to -1.0. This matters because:
+        - Before T1: stop at original level → R ≈ -1.0 (correct)
+        - After T1:  stop at breakeven → R = 0.0 (was incorrectly -1.0)
+        """
         if self.risk <= 0:
             return ("loss", -1.0)
+    
+        is_long = self.bias == "long"
+    
+        # ── STOP CHECK (always first) ──
+        stop_hit = False
+        if is_long and bar.low <= self.stop:
+            stop_hit = True
+        elif not is_long and bar.high >= self.stop:
+            stop_hit = True
+    
+        if stop_hit:
+            # Calculate actual R at the stop price
+            if self.risk > 0:
+                if is_long:
+                    stop_r = (self.stop - self.entry) / self.risk
+                else:
+                    stop_r = (self.entry - self.stop) / self.risk
+            else:
+                stop_r = -1.0
+            self.partial_rs.append((self.remaining_weight, round(stop_r, 3)))
+            self.remaining_weight = 0.0
+            return self._finalize()
+    
+        # ── TARGET 1 CHECK ──
+        if not self.t1_hit:
+            t1_hit = False
+            if (is_long and bar.high >= self.target_1) or \
+            (not is_long and bar.low <= self.target_1):
+                t1_hit = True
+    
+            if t1_hit:
+                self.t1_hit = True
+                t1_r = abs(self.target_1 - self.entry) / self.risk
+                self.partial_rs.append((self.splits[0], round(t1_r, 3)))
+                self.remaining_weight -= self.splits[0]
+                self.stop = self.entry  # Move stop to breakeven
+                if self.remaining_weight <= 0.01:
+                    return self._finalize()
+    
+        # ── TARGET 2 CHECK (only if T1 already hit) ──
+        if self.t1_hit and not self.t2_hit:
+            t2_hit = False
+            if (is_long and bar.high >= self.target_2) or \
+            (not is_long and bar.low <= self.target_2):
+                t2_hit = True
+    
+            if t2_hit:
+                self.t2_hit = True
+                t2_r = abs(self.target_2 - self.entry) / self.risk
+                self.partial_rs.append((self.splits[1], round(t2_r, 3)))
+                self.remaining_weight -= self.splits[1]
+                if self.remaining_weight <= 0.01:
+                    return self._finalize()
+    
+        return None  # Trade still open
+ 
+    def timeout_resolve(self, current_price: float) -> tuple[str, float]:
+        """Resolve remaining position at current price (timeout or EOD).
+        
+        Called when max_hold bars reached or end of data.
+        """
+        if self.risk <= 0:
+            return ("timeout", 0.0)
+ 
+        # Close remaining position at market
         if self.bias == "long":
-            if bar.low <= self.stop: return ("loss", -1.0)
-            if bar.high >= self.target:
-                return ("win", round((self.target - self.entry) / self.risk, 2))
+            remaining_r = (current_price - self.entry) / self.risk
         else:
-            if bar.high >= self.stop: return ("loss", -1.0)
-            if bar.low <= self.target:
-                return ("win", round((self.entry - self.target) / self.risk, 2))
-        return None
-
-    def timeout_r(self, current_price: float) -> float:
-        if self.risk <= 0: return 0.0
-        if self.bias == "long":
-            return round((current_price - self.entry) / self.risk, 2)
-        return round((self.entry - current_price) / self.risk, 2)
+            remaining_r = (self.entry - current_price) / self.risk
+ 
+        self.partial_rs.append((self.remaining_weight, remaining_r))
+        self.remaining_weight = 0.0
+        return self._finalize()
+ 
+    def _finalize(self) -> tuple[str, float]:
+        """Calculate final weighted-average R and determine outcome string."""
+        if not self.partial_rs:
+            return ("loss", -1.0)
+ 
+        # Weighted average R
+        total_weight = sum(w for w, _ in self.partial_rs)
+        if total_weight <= 0:
+            return ("loss", -1.0)
+ 
+        weighted_r = sum(w * r for w, r in self.partial_rs) / total_weight
+        weighted_r = round(weighted_r, 3)
+ 
+        # Classify outcome
+        if self.t1_hit and self.t2_hit:
+            outcome = "win"          # Both targets hit
+        elif self.t1_hit:
+            outcome = "partial_win"  # T1 hit, stopped at BE or timed out on rest
+        elif weighted_r > 0:
+            outcome = "timeout"      # No targets hit but net positive
+        else:
+            outcome = "loss"
+ 
+        return (outcome, weighted_r)
 
 
 # ==============================================================================
@@ -227,8 +355,12 @@ def backtest_symbol_tf(
                 symbol=symbol, bias=setup.bias.value,
                 entry=setup.entry_price, target=setup.target_price, stop=setup.stop_loss,
                 bar_idx=i, max_hold=mh_bars,
+                target_1=getattr(setup, 'target_1', 0.0),
+                target_2=getattr(setup, 'target_2', 0.0),
+                position_splits=getattr(setup, 'position_splits', (0.5, 0.3, 0.2)),
+                atr=s.current_atr if hasattr(setup, 'current_atr') else 0.0,
             ))
-
+        
     # Resolve remaining
     for trade in pending:
         timeout_r = trade.timeout_r(bars[-1].close)
@@ -483,7 +615,7 @@ def _compute_pattern_stats(pattern_name: str, trades: list[TradeOutcome]) -> dic
                 "avg_win_r": 0, "avg_loss_r": 0, "best_r": 0, "worst_r": 0,
                 "edge_score": 0, "sample_size": 0}
 
-    wins = [t for t in trades if t.outcome == "win"]
+    wins = [t for t in trades if t.outcome in ("win", "partial_win")]
     losses = [t for t in trades if t.outcome == "loss"]
 
     n_wins = len(wins)

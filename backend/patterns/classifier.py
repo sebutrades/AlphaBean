@@ -103,22 +103,53 @@ def extract_structures(bars: BarSeries) -> ExtractedStructures:
 # HELPERS
 # ==============================================================================
 
-def _make(s, name, bias, entry, stop, target, conf, desc, **kw):
-    """Create TradeSetup with entry validation.
-    Rejects setups where entry has already been exceeded (retroactive entry)."""
+# ==============================================================================
+# UPDATED _make() — now supports scaled exits
+# ==============================================================================
+ 
+def _make(s, name, bias, entry, stop, target, conf, desc,
+          target_1=0.0, target_2=0.0,
+          trail_type="atr", trail_param=2.0,
+          position_splits=(0.5, 0.3, 0.2),
+          **kw):
+    """Create TradeSetup with entry validation and scaled exit defaults.
+    
+    Changes from v2.1:
+      - Accepts target_1, target_2, trail_type, trail_param, position_splits
+      - Auto-calculates target_1 = entry + 1R if not provided
+      - Auto-sets target_2 = target (measured move) if not provided
+      - Uses ATR-based retroactive entry check (unchanged)
+    """
     risk = abs(entry - stop)
-    if risk <= 0: return None
+    if risk <= 0:
+        return None
     rr = round(abs(target - entry) / risk, 2)
-    if rr < 0.5: return None
-
+    if rr < 0.5:
+        return None
+ 
     cur = s.closes[-1]
     atr = s.current_atr if s.current_atr > 0 else abs(cur * 0.01)
-
+ 
+    # Retroactive entry rejection (unchanged from v2.1)
     if bias == Bias.LONG:
-        if cur > entry + atr * 0.5: return None
+        if cur > entry + atr * 0.5:
+            return None
     elif bias == Bias.SHORT:
-        if cur < entry - atr * 0.5: return None
-
+        if cur < entry - atr * 0.5:
+            return None
+ 
+    # Auto-calculate scaled targets if not provided
+    if target_1 == 0.0:
+        # Default T1 = 1R from entry
+        if bias == Bias.LONG:
+            target_1 = round(entry + risk, 2)
+        else:
+            target_1 = round(entry - risk, 2)
+ 
+    if target_2 == 0.0:
+        # Default T2 = the full measured move target
+        target_2 = round(target, 2)
+ 
     meta = PATTERN_META.get(name, {})
     return TradeSetup(
         pattern_name=name, category=meta.get("cat", PatternCategory.CLASSICAL),
@@ -127,7 +158,13 @@ def _make(s, name, bias, entry, stop, target, conf, desc, **kw):
         target_price=round(target, 2), risk_reward_ratio=rr,
         confidence=round(min(0.95, conf), 2), detected_at=s.timestamps[-1],
         description=desc, strategy_type=meta.get("type", "breakout"),
-        win_rate=meta.get("wr", 0.5), timeframe_detected=s.timeframe, **kw)
+        win_rate=meta.get("wr", 0.5), timeframe_detected=s.timeframe,
+        # Scaled exits
+        target_1=target_1, target_2=target_2,
+        trail_type=trail_type, trail_param=trail_param,
+        position_splits=position_splits,
+        **kw)
+ 
 
 
 def _candle_context_ok(s, is_bullish: bool, key_bar_idx: int = -1) -> bool:
@@ -191,6 +228,296 @@ def _compute_vwap(s, start_idx: int) -> float:
         tp = (s.highs[i] + s.lows[i] + s.closes[i]) / 3
         cv += s.volumes[i]; ctv += tp * s.volumes[i]
     return ctv / cv if cv > 0 else s.closes[-1]
+
+# ==============================================================================
+# ATR-BASED OFFSET (replaces ALL $0.02 fixed offsets)
+# ==============================================================================
+ 
+def _atr_offset(atr: float, multiplier: float = 0.1) -> float:
+    """Return an ATR-scaled offset for entry/stop placement.
+    
+    Replaces all hardcoded $0.02 offsets throughout the codebase.
+    A $500 stock with ATR=$5 gets $0.50 offset.
+    A $10 stock with ATR=$0.30 gets $0.03 offset.
+    
+    Common multipliers:
+      0.05 = tight (entry trigger just past level)
+      0.10 = standard entry offset
+      0.15 = stop buffer beyond structural level  
+      0.25 = wide stop buffer
+    """
+    if atr <= 0:
+        return 0.02  # Fallback if ATR unavailable
+    return round(atr * multiplier, 2)
+ 
+ # ==============================================================================
+# VOLUME ANALYSIS HELPERS
+# ==============================================================================
+ 
+def _volume_confirms_breakout(s, bar_idx: int = -1, threshold: float = 1.3) -> bool:
+    """Check if the bar at bar_idx has volume >= threshold × 20-bar average.
+    
+    Used for: structural breakouts (triangles, rectangles, H&S neckline breaks),
+    flag breakouts, cup & handle breakouts.
+    
+    Args:
+        s: ExtractedStructures
+        bar_idx: Index of the bar to check (-1 = last bar)
+        threshold: Volume must be >= this × average (default 1.3x)
+    
+    Returns:
+        True if volume confirms the breakout
+    """
+    idx = bar_idx if bar_idx >= 0 else s.n + bar_idx
+    if idx < 20:
+        return True  # Not enough history, don't reject
+ 
+    avg_vol = float(np.mean(s.volumes[max(0, idx - 20):idx]))
+    if avg_vol <= 0:
+        return True  # Can't compute, don't reject
+ 
+    return s.volumes[idx] >= avg_vol * threshold
+ 
+ 
+def _volume_declining_formation(s, start_idx: int, end_idx: int) -> bool:
+    """Check if volume is generally declining during a formation period.
+    
+    Used for: triangle formations, flag consolidations, wedge formations.
+    Professional observation: volume contracts during consolidation patterns,
+    then expands on breakout. This filter removes patterns where volume
+    is INCREASING during formation (suggests accumulation, not consolidation).
+    
+    Method: Compare average volume in first half vs second half of formation.
+    Second half should be lower.
+    """
+    if end_idx - start_idx < 6:
+        return True  # Too short to measure, don't reject
+ 
+    mid = (start_idx + end_idx) // 2
+    first_half_vol = float(np.mean(s.volumes[start_idx:mid]))
+    second_half_vol = float(np.mean(s.volumes[mid:end_idx]))
+ 
+    if first_half_vol <= 0:
+        return True
+ 
+    # Second half volume should be < first half (allowing 10% tolerance)
+    return second_half_vol <= first_half_vol * 1.10
+ 
+ 
+def _volume_exhaustion(s, bar_idx: int = -1) -> bool:
+    """Check for volume exhaustion at a price extreme.
+    
+    Used for: mean reversion, VWAP reversion, gap fade.
+    At price extremes, declining volume on the final push signals exhaustion.
+    
+    Method: Check that the signal bar's volume is LESS than the 3-bar
+    average leading up to it (sellers/buyers are drying up at the extreme).
+    """
+    idx = bar_idx if bar_idx >= 0 else s.n + bar_idx
+    if idx < 5:
+        return True  # Not enough data
+ 
+    recent_avg = float(np.mean(s.volumes[max(0, idx - 3):idx]))
+    if recent_avg <= 0:
+        return True
+ 
+    # Signal bar volume should be declining relative to recent bars
+    # (allowing the bar itself to be up to 130% — not a hard cutoff)
+    return s.volumes[idx] <= recent_avg * 1.3
+ 
+ 
+def _volume_pattern_hs(s, ls_idx: int, head_idx: int, rs_idx: int) -> float:
+    """Score the volume pattern for Head & Shoulders.
+    
+    Bulkowski: Volume should be highest at the left shoulder, lower at the head,
+    lowest at the right shoulder. This declining pattern adds ~0.10 confidence.
+    
+    Returns: confidence bonus (0.0 to 0.12)
+    """
+    if ls_idx >= s.n or head_idx >= s.n or rs_idx >= s.n:
+        return 0.0
+ 
+    # Get average volume around each peak (±2 bars)
+    def avg_vol_around(idx, radius=2):
+        start = max(0, idx - radius)
+        end = min(s.n, idx + radius + 1)
+        return float(np.mean(s.volumes[start:end]))
+ 
+    ls_vol = avg_vol_around(ls_idx)
+    head_vol = avg_vol_around(head_idx)
+    rs_vol = avg_vol_around(rs_idx)
+ 
+    if ls_vol <= 0:
+        return 0.0
+ 
+    bonus = 0.0
+    # Left shoulder > head volume
+    if head_vol < ls_vol:
+        bonus += 0.04
+    # Head > right shoulder volume
+    if rs_vol < head_vol:
+        bonus += 0.04
+    # Perfect declining pattern
+    if ls_vol > head_vol > rs_vol:
+        bonus += 0.04
+ 
+    return bonus
+ 
+ 
+def _volume_double_touch(s, idx1: int, idx2: int) -> float:
+    """Score volume pattern for double top/bottom.
+    
+    Second touch should have lower volume than first (exhaustion).
+    Returns confidence bonus 0.0 to 0.08.
+    """
+    if idx1 >= s.n or idx2 >= s.n:
+        return 0.0
+ 
+    def avg_vol_around(idx, radius=2):
+        start = max(0, idx - radius)
+        end = min(s.n, idx + radius + 1)
+        return float(np.mean(s.volumes[start:end]))
+ 
+    v1 = avg_vol_around(idx1)
+    v2 = avg_vol_around(idx2)
+ 
+    if v1 <= 0:
+        return 0.0
+ 
+    if v2 < v1 * 0.85:
+        return 0.08  # Strong exhaustion on second touch
+    elif v2 < v1:
+        return 0.04  # Mild exhaustion
+    return 0.0
+ 
+ 
+# ==============================================================================
+# S/R TARGET HELPER
+# ==============================================================================
+ 
+def _nearest_sr_target(s, entry: float, bias_long: bool, min_rr: float = 1.0) -> float:
+    """Find the nearest S/R level that gives at least min_rr as a target.
+    
+    Used for realistic profit targets instead of always using the full
+    measured move. Returns 0.0 if no suitable S/R level found.
+    
+    For longs: find nearest resistance above entry
+    For shorts: find nearest support below entry
+    """
+    risk = abs(entry - (entry - s.current_atr if bias_long else entry + s.current_atr))
+ 
+    for level in s.sr_levels:
+        if bias_long and level.price > entry:
+            reward = level.price - entry
+            if risk > 0 and reward / risk >= min_rr:
+                return round(level.price, 2)
+        elif not bias_long and level.price < entry:
+            reward = entry - level.price
+            if risk > 0 and reward / risk >= min_rr:
+                return round(level.price, 2)
+ 
+    return 0.0  # No suitable S/R target found
+ 
+ 
+# ==============================================================================
+# REGIME CONFIDENCE MULTIPLIER
+# ==============================================================================
+ 
+def _regime_confidence_mult(s, strategy_type: str) -> float:
+    """Return a confidence multiplier based on regime alignment.
+    
+    Boosts confidence when pattern type aligns with current market regime,
+    penalizes when misaligned.
+    
+    strategy_type: "breakout", "momentum", "mean_reversion", "scalp"
+    
+    Returns: multiplier (0.7 to 1.2)
+    """
+    regime = s._regime  # "trending_bull", "trending_bear", "mean_reverting", "mixed", "unknown"
+ 
+    if regime == "unknown" or regime == "mixed":
+        return 1.0
+ 
+    # Alignment matrix
+    alignment = {
+        "trending_bull": {
+            "momentum": 1.15, "breakout": 1.10, "scalp": 1.0, "mean_reversion": 0.75,
+        },
+        "trending_bear": {
+            "momentum": 1.10, "breakout": 1.05, "scalp": 1.0, "mean_reversion": 0.75,
+        },
+        "mean_reverting": {
+            "mean_reversion": 1.15, "scalp": 1.05, "breakout": 0.80, "momentum": 0.75,
+        },
+    }
+ 
+    return alignment.get(regime, {}).get(strategy_type, 1.0)
+ 
+ 
+# ==============================================================================
+# NR7 FILTER (for ORB)
+# ==============================================================================
+ 
+def _is_nr7(s) -> bool:
+    """Check if yesterday's daily range was the narrowest of the last 7 days.
+    
+    Crabel's key insight: ORB works best after NR7 days (narrow range 7).
+    Volatility compression → breakout.
+    
+    We approximate using intraday bars: check if yesterday's session range
+    was the tightest of the last 7 sessions.
+    """
+    if s.n < 50:
+        return False
+ 
+    # Group bars by date, compute each day's range
+    daily_ranges = {}
+    for i in range(s.n):
+        d = s.timestamps[i].date()
+        if d not in daily_ranges:
+            daily_ranges[d] = {"high": s.highs[i], "low": s.lows[i]}
+        else:
+            daily_ranges[d]["high"] = max(daily_ranges[d]["high"], s.highs[i])
+            daily_ranges[d]["low"] = min(daily_ranges[d]["low"], s.lows[i])
+ 
+    dates = sorted(daily_ranges.keys())
+    if len(dates) < 3:
+        return False
+ 
+    # Yesterday = second to last date, today = last date
+    # Check last 7 completed sessions (exclude today)
+    completed = dates[:-1]  # Exclude today (incomplete)
+    if len(completed) < 7:
+        return False
+ 
+    recent_7 = completed[-7:]
+    ranges = [daily_ranges[d]["high"] - daily_ranges[d]["low"] for d in recent_7]
+ 
+    # Yesterday is the last in the list
+    yesterday_range = ranges[-1]
+    return yesterday_range == min(ranges)
+ 
+ 
+# ==============================================================================
+# SPAN VALIDATION (minimum pattern width)
+# ==============================================================================
+ 
+def _min_span_ok(idx1: int, idx2: int, timeframe: str) -> bool:
+    """Check if two swing points are far enough apart for a valid pattern.
+    
+    Double/Triple top/bottom patterns need enough time between peaks/troughs
+    to represent a genuine structure, not just noise.
+    
+    Minimum spans (in bars):
+      5min:  20 bars (100 min)
+      15min: 15 bars (3.75 hours) 
+      1h:    10 bars (10 hours)
+      1d:    15 bars (3 weeks)
+    """
+    min_spans = {"5min": 20, "15min": 15, "1h": 10, "1d": 15}
+    required = min_spans.get(timeframe, 10)
+    return abs(idx2 - idx1) >= required
+
 
 
 # ==============================================================================
