@@ -1,25 +1,16 @@
 """
-patterns/classifier.py — Structure-first pattern classification (47 detectors).
+patterns/classifier.py — Structure-first pattern classification (42 detectors).
+
+v2.0 — Post-audit rebuild:
+  Removed 5: Breaking News, HitchHiker, Spencer, BackSide, Relative Strength Break
+  Systemic: _make() rejects retroactive entries (entry already exceeded by 0.5 ATR)
+  Fixed: Tidal Wave (5 fixes), Wedge targets, Flag poles, ORB stops/targets,
+         Cup&Handle, Second Chance, RubberBand, Gap G&G, Gap Fade,
+         Mean Reversion, VWAP Reversion, Trend Pullback, Fashionably Late
+  Added: _candle_context_ok() for all 10 candlestick patterns
+  Daily: 5 breakout strategies only fire on 1d timeframe
 
 Pipeline: BarSeries → extract_structures() → classify_all() → list[TradeSetup]
-
-Categories:
-  Classical Structural (16): H&S, Inv H&S, Double/Triple Top/Bottom,
-    Asc/Desc/Sym Triangle, Bull/Bear Flag, Pennant, Cup&Handle,
-    Rectangle, Rising/Falling Wedge
-  Candlestick (10): Bullish/Bearish Engulfing, Morning/Evening Star,
-    Hammer, Shooting Star, Doji, Dragonfly Doji, 3 White Soldiers, 3 Black Crows
-  SMB Scalps (11): RubberBand, HitchHiker, ORB 15/30, Second Chance,
-    BackSide, Fashionably Late, Spencer, Gap G&G, Tidal Wave, Breaking News
-  Quant Strategies (10): Momentum Breakout, Vol Compression, Mean Reversion,
-    Trend Pullback, Gap Fade, Relative Strength, Range Expansion,
-    Volume Breakout, VWAP Reversion, Donchian Breakout
-
-Candlestick math follows Steve Nison's conventions:
-  body = |close - open|
-  upper_shadow = high - max(open, close)
-  lower_shadow = min(open, close) - low
-  range = high - low
 """
 from datetime import datetime, time, timedelta
 from typing import Optional
@@ -75,6 +66,9 @@ class ExtractedStructures:
 
         self.day_open_idx = self._find_day_open()
 
+        # Precompute regime hint for filters
+        self._regime = self._compute_regime_hint()
+
     def _find_day_open(self) -> int:
         if self.n == 0: return 0
         today = self.timestamps[-1].date()
@@ -86,6 +80,20 @@ class ExtractedStructures:
                 return i
         return max(0, self.n - 20)
 
+    def _compute_regime_hint(self) -> str:
+        """Quick regime hint: trending_bull, trending_bear, or mean_reverting."""
+        if self.n < 50: return "unknown"
+        sma50 = float(np.mean(self.closes[-50:]))
+        cur = self.closes[-1]
+        r = atr_ratio(self.highs, self.lows, self.closes, 14, 40)
+        if cur > sma50 and r > 0.8:
+            return "trending_bull"
+        elif cur < sma50 and r > 0.8:
+            return "trending_bear"
+        elif r < 0.6:
+            return "mean_reverting"
+        return "mixed"
+
 
 def extract_structures(bars: BarSeries) -> ExtractedStructures:
     return ExtractedStructures(bars)
@@ -96,9 +104,21 @@ def extract_structures(bars: BarSeries) -> ExtractedStructures:
 # ==============================================================================
 
 def _make(s, name, bias, entry, stop, target, conf, desc, **kw):
+    """Create TradeSetup with entry validation.
+    Rejects setups where entry has already been exceeded (retroactive entry)."""
     risk = abs(entry - stop)
     if risk <= 0: return None
     rr = round(abs(target - entry) / risk, 2)
+    if rr < 0.5: return None
+
+    cur = s.closes[-1]
+    atr = s.current_atr if s.current_atr > 0 else abs(cur * 0.01)
+
+    if bias == Bias.LONG:
+        if cur > entry + atr * 0.5: return None
+    elif bias == Bias.SHORT:
+        if cur < entry - atr * 0.5: return None
+
     meta = PATTERN_META.get(name, {})
     return TradeSetup(
         pattern_name=name, category=meta.get("cat", PatternCategory.CLASSICAL),
@@ -109,6 +129,50 @@ def _make(s, name, bias, entry, stop, target, conf, desc, **kw):
         description=desc, strategy_type=meta.get("type", "breakout"),
         win_rate=meta.get("wr", 0.5), timeframe_detected=s.timeframe, **kw)
 
+
+def _candle_context_ok(s, is_bullish: bool, key_bar_idx: int = -1) -> bool:
+    """Context filter for candlestick patterns. ALL THREE must pass:
+    1. S/R confluence: signal bar within 0.5 ATR of a known level
+    2. Volume: key bar volume >= 1.3x 20-bar average
+    3. Trend: sufficient prior move in opposite direction (reversal context)
+    """
+    if s.current_atr <= 0 or s.n < 25: return False
+    idx = key_bar_idx if key_bar_idx >= 0 else s.n + key_bar_idx
+    atr = s.current_atr
+
+    # 1. S/R confluence — signal bar within 0.5 ATR of a known level
+    bar_price = s.lows[idx] if is_bullish else s.highs[idx]
+    near_sr = False
+    for lvl in s.sr_levels:
+        if abs(lvl.price - bar_price) < atr * 0.5:
+            near_sr = True; break
+    # Also check zigzag swing levels if sr_levels is sparse
+    if not near_sr:
+        check_swings = s.zz_lows if is_bullish else s.zz_highs
+        for sw in check_swings:
+            if abs(sw.price - bar_price) < atr * 0.5:
+                near_sr = True; break
+    if not near_sr: return False
+
+    # 2. Volume >= 1.3x 20-bar average
+    lb = max(0, idx - 20)
+    avg_vol = float(np.mean(s.volumes[lb:idx])) if idx > lb else 1
+    if avg_vol <= 0 or s.volumes[idx] < avg_vol * 1.3: return False
+
+    # 3. Trend context: price moved >= 1.5 ATR in the opposite direction over prior 20 bars
+    lb20 = max(0, idx - 20)
+    if is_bullish:
+        prior_high = float(np.max(s.highs[lb20:idx]))
+        decline = prior_high - s.lows[idx]
+        if decline < atr * 1.5: return False
+    else:
+        prior_low = float(np.min(s.lows[lb20:idx]))
+        rally = s.highs[idx] - prior_low
+        if rally < atr * 1.5: return False
+
+    return True
+
+
 def _in_time(ts, sh, sm, eh, em):
     return time(sh, sm) <= ts.time() <= time(eh, em)
 
@@ -118,6 +182,15 @@ def _lower_shadow(bar): return min(bar.open, bar.close) - bar.low
 def _range(bar): return bar.high - bar.low
 def _is_green(bar): return bar.close > bar.open
 def _is_red(bar): return bar.close < bar.open
+
+
+def _compute_vwap(s, start_idx: int) -> float:
+    """Compute VWAP from start_idx to end of bars."""
+    cv, ctv = 0.0, 0.0
+    for i in range(start_idx, s.n):
+        tp = (s.highs[i] + s.lows[i] + s.closes[i]) / 3
+        cv += s.volumes[i]; ctv += tp * s.volumes[i]
+    return ctv / cv if cv > 0 else s.closes[-1]
 
 
 # ==============================================================================
@@ -249,52 +322,54 @@ def _detect_symmetrical_triangle(s):
     return None
 
 def _detect_bull_flag(s):
-    if len(s.zz_lows) < 1 or len(s.zz_highs) < 1: return None
+    """Bull Flag — FIX: require pole >= 1.5 ATR (was 2% fixed)."""
+    if len(s.zz_lows) < 1 or len(s.zz_highs) < 1 or s.current_atr <= 0: return None
     for li in range(len(s.zz_lows)):
         lo = s.zz_lows[li]
         post = [h for h in s.zz_highs if h.index > lo.index]
         if not post: continue
         hi = post[0]
-        pct = (hi.price - lo.price) / lo.price
-        if pct < 0.02: continue
+        pole_size = hi.price - lo.price
+        if pole_size < s.current_atr * 1.5: continue  # FIX: ATR-based pole minimum
         fs = hi.index
         if fs >= s.n - 3: continue
         flag = s.bars[fs:]
         if len(flag) < 3 or len(flag) > 30: continue
         fl = min(b.low for b in flag)
-        if (hi.price - fl) / (hi.price - lo.price) > 0.50: continue
+        if (hi.price - fl) / pole_size > 0.50: continue
         if s.closes[-1] <= hi.price: continue
+        pct = pole_size / lo.price
         return _make(s, "Bull Flag", Bias.LONG, hi.price*1.001, fl*0.998,
-                     hi.price*1.001+(hi.price-lo.price), 0.60,
+                     hi.price*1.001+pole_size, 0.60,
                      f"Bull Flag: {pct:.1%} pole, {len(flag)}-bar flag",
                      key_levels={"pole_hi": hi.price, "pole_lo": lo.price, "flag_low": fl})
     return None
 
 def _detect_bear_flag(s):
-    if len(s.zz_highs) < 1 or len(s.zz_lows) < 1: return None
+    """Bear Flag — FIX: require pole >= 1.5 ATR."""
+    if len(s.zz_highs) < 1 or len(s.zz_lows) < 1 or s.current_atr <= 0: return None
     for hi_idx in range(len(s.zz_highs)):
         hi = s.zz_highs[hi_idx]
         post = [l for l in s.zz_lows if l.index > hi.index]
         if not post: continue
         lo = post[0]
-        pct = (hi.price - lo.price) / hi.price
-        if pct < 0.02: continue
+        pole_size = hi.price - lo.price
+        if pole_size < s.current_atr * 1.5: continue  # FIX
         fs = lo.index
         if fs >= s.n - 3: continue
         flag = s.bars[fs:]
         if len(flag) < 3 or len(flag) > 30: continue
         fh = max(b.high for b in flag)
-        if (fh - lo.price) / (hi.price - lo.price) > 0.50: continue
+        if (fh - lo.price) / pole_size > 0.50: continue
         if s.closes[-1] >= lo.price: continue
+        pct = pole_size / hi.price
         return _make(s, "Bear Flag", Bias.SHORT, lo.price*0.999, fh*1.002,
-                     lo.price*0.999-(hi.price-lo.price), 0.58,
+                     lo.price*0.999-pole_size, 0.58,
                      f"Bear Flag: {pct:.1%} pole", key_levels={"pole_hi": hi.price, "flag_high": fh})
     return None
 
 def _detect_pennant(s):
-    """Pennant: impulse + short symmetrical triangle (3-15 bars)."""
     if len(s.zz_lows) < 1 or len(s.zz_highs) < 1 or s.n < 20: return None
-    # Find impulse (pole)
     for li in range(len(s.zz_lows)):
         lo = s.zz_lows[li]
         post = [h for h in s.zz_highs if h.index > lo.index]
@@ -302,18 +377,16 @@ def _detect_pennant(s):
         hi = post[0]
         pct = (hi.price - lo.price) / lo.price
         if pct < 0.03: continue
-        # Pennant: 3-15 bars after pole, converging highs and lows
         fs = hi.index
         if fs >= s.n - 4: continue
         pn_bars = s.bars[fs:min(fs+15, s.n)]
         if len(pn_bars) < 3: continue
         pn_highs = [b.high for b in pn_bars]
         pn_lows = [b.low for b in pn_bars]
-        # Check converging: highs falling, lows rising
         h_slope = (pn_highs[-1] - pn_highs[0]) / len(pn_highs) if len(pn_highs) > 1 else 0
         l_slope = (pn_lows[-1] - pn_lows[0]) / len(pn_lows) if len(pn_lows) > 1 else 0
         if h_slope >= 0 or l_slope <= 0: continue
-        if s.closes[-1] <= max(pn_highs): continue  # Need breakout
+        if s.closes[-1] <= max(pn_highs): continue
         return _make(s, "Pennant", Bias.LONG, max(pn_highs)+0.02, min(pn_lows)-0.02,
                      max(pn_highs)+0.02+(hi.price-lo.price), 0.53,
                      f"Pennant: {pct:.1%} pole, converging consolidation",
@@ -321,6 +394,7 @@ def _detect_pennant(s):
     return None
 
 def _detect_cup_and_handle(s):
+    """Cup & Handle — FIX: min 30-bar cup span, handle vol decline, breakout vol."""
     if len(s.zz_lows) < 1 or s.n < 40: return None
     cl = s.zz_lows[-1]
     lr = max(s.highs[:cl.index]) if cl.index > 5 else None
@@ -328,36 +402,42 @@ def _detect_cup_and_handle(s):
     if lr is None or rr is None: return None
     rim = min(lr, rr); depth = rim - cl.price
     if depth <= 0: return None
-    handle = s.bars[-min(10,s.n):]
+    # FIX: Cup must span at least 30 bars
+    if cl.index < 15 or s.n - cl.index < 15: return None
+    handle = s.bars[-min(10, s.n):]
     hl = min(b.low for b in handle)
     ret = (rim - hl) / depth
     if ret > 0.50 or ret < 0.10 or s.closes[-1] < rim: return None
+    # FIX: Volume should decline in handle
+    handle_vol = float(np.mean([b.volume for b in handle]))
+    cup_vol = float(np.mean(s.volumes[max(0, cl.index-10):cl.index+10]))
+    if cup_vol > 0 and handle_vol > cup_vol * 1.2: return None  # Handle vol should be lower
+    # FIX: Breakout bar needs volume
+    avg_vol = float(np.mean(s.volumes[-20:]))
+    if avg_vol > 0 and s.volumes[-1] < avg_vol * 1.3: return None
     return _make(s, "Cup & Handle", Bias.LONG, rim+0.02, hl-0.02, rim+0.02+depth, 0.63,
                  f"Cup & Handle: rim {rim:.2f}", key_levels={"rim": rim, "cup_low": cl.price})
 
 def _detect_rectangle(s):
-    """Rectangle: horizontal S/R levels with breakout."""
     if s.n < 20 or len(s.sr_levels) < 2: return None
-    # Find strongest resistance and support
     res_levels = [l for l in s.sr_levels if l.level_type in ("resistance", "both")]
     sup_levels = [l for l in s.sr_levels if l.level_type in ("support", "both")]
     if not res_levels or not sup_levels: return None
-    res = res_levels[0].price
-    sup = sup_levels[0].price
+    res = res_levels[0].price; sup = sup_levels[0].price
     if res <= sup: return None
-    rng = res - sup
-    cur = s.closes[-1]
-    if cur > res + rng * 0.01:  # Breakout above
+    rng = res - sup; cur = s.closes[-1]
+    if cur > res + rng * 0.01:
         return _make(s, "Rectangle", Bias.LONG, res+0.02, sup-0.02, res+0.02+rng, 0.58,
                      f"Rectangle breakout above {res:.2f}",
                      key_levels={"resistance": res, "support": sup})
-    elif cur < sup - rng * 0.01:  # Breakdown below
+    elif cur < sup - rng * 0.01:
         return _make(s, "Rectangle", Bias.SHORT, sup-0.02, res+0.02, sup-0.02-rng, 0.58,
                      f"Rectangle breakdown below {sup:.2f}",
                      key_levels={"resistance": res, "support": sup})
     return None
 
 def _detect_rising_wedge(s):
+    """Rising Wedge — FIX: target uses widest point of wedge, not narrowest."""
     if len(s.zz_highs) < 2 or len(s.zz_lows) < 2: return None
     u = fit_trendline(s.zz_highs[-3:] if len(s.zz_highs)>=3 else s.zz_highs[-2:])
     l = fit_trendline(s.zz_lows[-3:] if len(s.zz_lows)>=3 else s.zz_lows[-2:])
@@ -365,10 +445,17 @@ def _detect_rising_wedge(s):
     if not (u.slope > 0 and l.slope > 0 and u.slope < l.slope): return None
     lp = l.price_at(s.n-1); up = u.price_at(s.n-1)
     if s.closes[-1] > lp: return None
-    return _make(s, "Rising Wedge", Bias.SHORT, lp-0.02, up+0.02, lp-0.02-(up-lp), 0.62,
+    # FIX: Use widest point (start of wedge) for measured move
+    start_idx = min(u.start_index, l.start_index)
+    wide_upper = u.price_at(start_idx)
+    wide_lower = l.price_at(start_idx)
+    widest = abs(wide_upper - wide_lower)
+    if widest <= 0: widest = abs(up - lp)
+    return _make(s, "Rising Wedge", Bias.SHORT, lp-0.02, up+0.02, lp-0.02-widest, 0.62,
                  "Rising Wedge breakdown", key_levels={"upper": up, "lower": lp})
 
 def _detect_falling_wedge(s):
+    """Falling Wedge — FIX: target uses widest point of wedge."""
     if len(s.zz_highs) < 2 or len(s.zz_lows) < 2: return None
     u = fit_trendline(s.zz_highs[-3:] if len(s.zz_highs)>=3 else s.zz_highs[-2:])
     l = fit_trendline(s.zz_lows[-3:] if len(s.zz_lows)>=3 else s.zz_lows[-2:])
@@ -376,176 +463,163 @@ def _detect_falling_wedge(s):
     if not (u.slope < 0 and l.slope < 0 and u.slope > l.slope): return None
     up = u.price_at(s.n-1); lp = l.price_at(s.n-1)
     if s.closes[-1] < up: return None
-    return _make(s, "Falling Wedge", Bias.LONG, up+0.02, lp-0.02, up+0.02+(up-lp), 0.62,
+    start_idx = min(u.start_index, l.start_index)
+    wide_upper = u.price_at(start_idx)
+    wide_lower = l.price_at(start_idx)
+    widest = abs(wide_upper - wide_lower)
+    if widest <= 0: widest = abs(up - lp)
+    return _make(s, "Falling Wedge", Bias.LONG, up+0.02, lp-0.02, up+0.02+widest, 0.62,
                  "Falling Wedge breakout", key_levels={"upper": up, "lower": lp})
 
 
 # ==============================================================================
-# CANDLESTICK PATTERNS (10)
-# Math: Steve Nison's Japanese Candlestick Charting Techniques (1991)
+# CANDLESTICK PATTERNS (10) — all now require _candle_context_ok()
 # ==============================================================================
 
 def _detect_bullish_engulfing(s):
-    """Current green body fully engulfs prior red body. Bullish reversal."""
-    if s.n < 5: return None
+    if s.n < 10: return None
     prev, cur = s.bars[-2], s.bars[-1]
     if not (_is_red(prev) and _is_green(cur)): return None
     if not (cur.open <= prev.close and cur.close >= prev.open): return None
-    if _body(cur) <= _body(prev) * 1.1: return None  # Must be meaningfully larger
-    # Confirm near recent lows (reversal context)
-    recent_low = float(np.min(s.lows[-10:]))
-    if prev.low > recent_low + (s.highs[-10:].max() - recent_low) * 0.3: return None
+    if _body(cur) <= _body(prev) * 1.1: return None
+    if not _candle_context_ok(s, is_bullish=True): return None  # CONTEXT FILTER
     entry = round(cur.close, 2)
     stop = round(min(prev.low, cur.low) - 0.02, 2)
     risk = entry - stop
     if risk <= 0: return None
     return _make(s, "Bullish Engulfing", Bias.LONG, entry, stop, entry + risk*2, 0.58,
-                 "Bullish Engulfing: green body engulfs prior red at lows")
+                 "Bullish Engulfing at S/R with volume")
 
 def _detect_bearish_engulfing(s):
-    """Current red body fully engulfs prior green body. Bearish reversal."""
-    if s.n < 5: return None
+    if s.n < 10: return None
     prev, cur = s.bars[-2], s.bars[-1]
     if not (_is_green(prev) and _is_red(cur)): return None
     if not (cur.open >= prev.close and cur.close <= prev.open): return None
     if _body(cur) <= _body(prev) * 1.1: return None
-    recent_high = float(np.max(s.highs[-10:]))
-    if prev.high < recent_high - (recent_high - s.lows[-10:].min()) * 0.3: return None
+    if not _candle_context_ok(s, is_bullish=False): return None
     entry = round(cur.close, 2)
     stop = round(max(prev.high, cur.high) + 0.02, 2)
     risk = stop - entry
     if risk <= 0: return None
     return _make(s, "Bearish Engulfing", Bias.SHORT, entry, stop, entry - risk*2, 0.58,
-                 "Bearish Engulfing: red body engulfs prior green at highs")
+                 "Bearish Engulfing at S/R with volume")
 
 def _detect_morning_star(s):
-    """3-bar reversal: big red → small body (star) → big green. Bullish."""
-    if s.n < 5: return None
+    if s.n < 10: return None
     b1, b2, b3 = s.bars[-3], s.bars[-2], s.bars[-1]
     if not _is_red(b1) or not _is_green(b3): return None
-    if _body(b2) >= _body(b1) * 0.3: return None  # Star must be small
-    if _body(b3) < _body(b1) * 0.5: return None   # Recovery must be strong
-    # Star should gap down or be near b1's close
-    if b2.high > b1.open: return None  # Star shouldn't exceed b1 open
+    if _body(b2) >= _body(b1) * 0.3: return None
+    if _body(b3) < _body(b1) * 0.5: return None
+    if b2.high > b1.open: return None
+    if not _candle_context_ok(s, is_bullish=True, key_bar_idx=-2): return None
     entry = round(b3.close, 2)
     stop = round(min(b1.low, b2.low, b3.low) - 0.02, 2)
     risk = entry - stop
     if risk <= 0: return None
     return _make(s, "Morning Star", Bias.LONG, entry, stop, entry + risk*2, 0.60,
-                 "Morning Star: 3-bar bullish reversal")
+                 "Morning Star at S/R with volume")
 
 def _detect_evening_star(s):
-    """3-bar reversal: big green → small body → big red. Bearish."""
-    if s.n < 5: return None
+    if s.n < 10: return None
     b1, b2, b3 = s.bars[-3], s.bars[-2], s.bars[-1]
     if not _is_green(b1) or not _is_red(b3): return None
     if _body(b2) >= _body(b1) * 0.3: return None
     if _body(b3) < _body(b1) * 0.5: return None
-    if b2.low < b1.close: return None  # Star shouldn't drop below b1 close area
+    if b2.low < b1.close: return None
+    if not _candle_context_ok(s, is_bullish=False, key_bar_idx=-2): return None
     entry = round(b3.close, 2)
     stop = round(max(b1.high, b2.high, b3.high) + 0.02, 2)
     risk = stop - entry
     if risk <= 0: return None
     return _make(s, "Evening Star", Bias.SHORT, entry, stop, entry - risk*2, 0.60,
-                 "Evening Star: 3-bar bearish reversal")
+                 "Evening Star at S/R with volume")
 
 def _detect_hammer(s):
-    """Hammer: small body at top, lower shadow >= 2x body, at lows. Bullish."""
     if s.n < 10: return None
     bar = s.bars[-1]
     body = _body(bar); ls = _lower_shadow(bar); us = _upper_shadow(bar); rng = _range(bar)
     if rng == 0 or body == 0: return None
-    if ls < body * 2: return None       # Lower shadow must be >= 2x body
-    if us > body * 0.5: return None     # Upper shadow must be small
-    # Must be near recent lows
-    recent_low = float(np.min(s.lows[-10:]))
-    if bar.low > recent_low * 1.01: return None
+    if ls < body * 2 or us > body * 0.5: return None
+    if not _candle_context_ok(s, is_bullish=True): return None
     entry = round(bar.close, 2)
     stop = round(bar.low - 0.02, 2)
     risk = entry - stop
     if risk <= 0: return None
     return _make(s, "Hammer", Bias.LONG, entry, stop, entry + risk*2, 0.55,
-                 f"Hammer at lows (shadow/body={ls/body:.1f}x)")
+                 f"Hammer at S/R (shadow/body={ls/body:.1f}x)")
 
 def _detect_shooting_star(s):
-    """Shooting Star: small body at bottom, upper shadow >= 2x body, at highs."""
     if s.n < 10: return None
     bar = s.bars[-1]
     body = _body(bar); us = _upper_shadow(bar); ls = _lower_shadow(bar); rng = _range(bar)
     if rng == 0 or body == 0: return None
-    if us < body * 2: return None
-    if ls > body * 0.5: return None
-    recent_high = float(np.max(s.highs[-10:]))
-    if bar.high < recent_high * 0.99: return None
+    if us < body * 2 or ls > body * 0.5: return None
+    if not _candle_context_ok(s, is_bullish=False): return None
     entry = round(bar.close, 2)
     stop = round(bar.high + 0.02, 2)
     risk = stop - entry
     if risk <= 0: return None
     return _make(s, "Shooting Star", Bias.SHORT, entry, stop, entry - risk*2, 0.55,
-                 f"Shooting Star at highs (shadow/body={us/body:.1f}x)")
+                 f"Shooting Star at S/R (shadow/body={us/body:.1f}x)")
 
 def _detect_doji(s):
-    """Doji: body < 10% of range. Indecision / potential reversal."""
     if s.n < 10: return None
     bar = s.bars[-1]
     body = _body(bar); rng = _range(bar)
     if rng == 0: return None
-    if body / rng > 0.10: return None  # Body must be < 10% of range
-    # Direction based on context: near highs = bearish doji, near lows = bullish
+    if body / rng > 0.10: return None
     recent_high = float(np.max(s.highs[-10:]))
     recent_low = float(np.min(s.lows[-10:]))
     mid = (recent_high + recent_low) / 2
-    if bar.close > mid:  # Near highs → bearish
+    if bar.close > mid:
+        if not _candle_context_ok(s, is_bullish=False): return None
         stop = round(bar.high + 0.02, 2); entry = round(bar.close, 2)
         risk = stop - entry
         if risk <= 0: return None
         return _make(s, "Doji", Bias.SHORT, entry, stop, entry - risk*1.5, 0.48,
-                     "Doji at highs: potential bearish reversal")
-    else:  # Near lows → bullish
+                     "Doji at resistance with volume")
+    else:
+        if not _candle_context_ok(s, is_bullish=True): return None
         stop = round(bar.low - 0.02, 2); entry = round(bar.close, 2)
         risk = entry - stop
         if risk <= 0: return None
         return _make(s, "Doji", Bias.LONG, entry, stop, entry + risk*1.5, 0.48,
-                     "Doji at lows: potential bullish reversal")
+                     "Doji at support with volume")
 
 def _detect_dragonfly_doji(s):
-    """Dragonfly Doji: open ≈ close ≈ high, long lower shadow. Bullish."""
     if s.n < 10: return None
     bar = s.bars[-1]
     body = _body(bar); rng = _range(bar); ls = _lower_shadow(bar); us = _upper_shadow(bar)
     if rng == 0: return None
-    if body / rng > 0.10: return None       # Doji body
-    if us > rng * 0.10: return None         # Open/close near high
-    if ls < rng * 0.65: return None         # Long lower shadow
+    if body / rng > 0.10 or us > rng * 0.10 or ls < rng * 0.65: return None
+    if not _candle_context_ok(s, is_bullish=True): return None
     entry = round(bar.close, 2)
     stop = round(bar.low - 0.02, 2)
     risk = entry - stop
     if risk <= 0: return None
     return _make(s, "Dragonfly Doji", Bias.LONG, entry, stop, entry + risk*2, 0.52,
-                 "Dragonfly Doji: rejection of lower prices")
+                 "Dragonfly Doji at S/R with volume")
 
 def _detect_three_white_soldiers(s):
-    """Three White Soldiers: 3 consecutive green bars, each closing higher."""
-    if s.n < 5: return None
+    if s.n < 10: return None
     b1, b2, b3 = s.bars[-3], s.bars[-2], s.bars[-1]
     if not (_is_green(b1) and _is_green(b2) and _is_green(b3)): return None
     if not (b2.close > b1.close and b3.close > b2.close): return None
-    # Each opens within prior body
     if b2.open < b1.open or b2.open > b1.close: return None
     if b3.open < b2.open or b3.open > b2.close: return None
-    # Minimal upper shadows (strong closes)
     for b in [b1, b2, b3]:
         if _upper_shadow(b) > _body(b) * 0.5: return None
+    # Context: S/R + volume (trend context: allow momentum continuation)
+    if not _candle_context_ok(s, is_bullish=True, key_bar_idx=-3): return None
     entry = round(b3.close, 2)
     stop = round(b1.low - 0.02, 2)
     risk = entry - stop
     if risk <= 0: return None
     return _make(s, "Three White Soldiers", Bias.LONG, entry, stop, entry + risk*1.5, 0.58,
-                 "Three White Soldiers: strong bullish momentum")
+                 "Three White Soldiers at S/R with volume")
 
 def _detect_three_black_crows(s):
-    """Three Black Crows: 3 consecutive red bars, each closing lower."""
-    if s.n < 5: return None
+    if s.n < 10: return None
     b1, b2, b3 = s.bars[-3], s.bars[-2], s.bars[-1]
     if not (_is_red(b1) and _is_red(b2) and _is_red(b3)): return None
     if not (b2.close < b1.close and b3.close < b2.close): return None
@@ -553,19 +627,21 @@ def _detect_three_black_crows(s):
     if b3.open > b2.open or b3.open < b2.close: return None
     for b in [b1, b2, b3]:
         if _lower_shadow(b) > _body(b) * 0.5: return None
+    if not _candle_context_ok(s, is_bullish=False, key_bar_idx=-3): return None
     entry = round(b3.close, 2)
     stop = round(b1.high + 0.02, 2)
     risk = stop - entry
     if risk <= 0: return None
     return _make(s, "Three Black Crows", Bias.SHORT, entry, stop, entry - risk*1.5, 0.58,
-                 "Three Black Crows: strong bearish momentum")
+                 "Three Black Crows at S/R with volume")
 
 
 # ==============================================================================
-# SMB SCALP PATTERNS (11) — time-of-day logic preserved
+# SMB SCALP PATTERNS (7) — removed HitchHiker, Spencer, BackSide, Breaking News
 # ==============================================================================
 
 def _detect_rubberband(s):
+    """RubberBand — FIX: 2.0 ATR ext (was 1.0), VWAP target, vol confirm, time filter."""
     if s.n < 20 or s.current_atr <= 0: return None
     oi = s.day_open_idx
     if oi >= s.n - 5: return None
@@ -573,49 +649,37 @@ def _detect_rubberband(s):
     dl = min(b.low for b in db)
     dli = oi + min(range(len(db)), key=lambda i: db[i].low)
     atrs = (op - dl) / s.current_atr
-    if atrs < 1.0 or dli - oi < 5: return None
+    if atrs < 2.0 or dli - oi < 5: return None  # FIX: 2.0 ATR minimum (was 1.0)
+    # Check for accelerating selling
     mid = (oi + dli) // 2
     r1 = [s.bars[i].high - s.bars[i].low for i in range(oi, mid)] if mid > oi else [0]
     r2 = [s.bars[i].high - s.bars[i].low for i in range(mid, dli)] if dli > mid else [0]
     if np.mean(r2) < np.mean(r1) * 1.2: return None
+    # FIX: VWAP for target
+    vwap = _compute_vwap(s, oi)
     for i in range(dli+1, min(dli+10, s.n)):
+        # FIX: Hard time filter — rubber band window is 10:00-11:00
+        if not _in_time(s.bars[i].timestamp, 10, 0, 11, 0): continue
         if s.bars[i].close > s.bars[i].open:
-            if sum(1 for j in range(max(dli,i-5),i) if s.bars[i].high > s.bars[j].high) >= 2:
-                e = round(s.bars[i].high+0.02,2); st = round(dl-0.02,2)
-                r = e-st
+            # FIX: Volume on bounce bar
+            avg_vol = float(np.mean(s.volumes[max(0, i-20):i]))
+            if avg_vol > 0 and s.volumes[i] < avg_vol * 1.3: continue
+            if sum(1 for j in range(max(dli, i-5), i) if s.bars[i].high > s.bars[j].high) >= 2:
+                e = round(s.bars[i].high+0.02, 2); st = round(dl-0.02, 2)
+                r = e - st
                 if r <= 0: continue
-                c = 0.45 + (0.15 if atrs>=3 else 0) + (0.10 if _in_time(s.bars[i].timestamp,10,0,10,45) else 0)
-                return _make(s,"RubberBand Scalp",Bias.LONG,e,st,round(e+2*r,2),c,
-                             f"RubberBand: {atrs:.1f} ATR ext",max_attempts=2,
+                # FIX: Target is VWAP or open, whichever is closer
+                t = round(min(vwap, op), 2)
+                if t <= e: t = round(e + r * 1.5, 2)  # Fallback if VWAP below entry
+                c = 0.50 + (0.10 if atrs >= 3 else 0)
+                return _make(s, "RubberBand Scalp", Bias.LONG, e, st, t, c,
+                             f"RubberBand: {atrs:.1f} ATR ext, target VWAP", max_attempts=2,
                              exit_strategy="1/3 at 1:1, 1/3 at 2:1, 1/3 VWAP",
-                             ideal_time="10:00-10:45 AM ET",key_levels={"day_low":dl})
-    return None
-
-def _detect_hitchhiker(s):
-    if s.n < 15: return None
-    oi = s.day_open_idx
-    if s.n - oi < 10: return None
-    de = None
-    for i in range(oi+3, min(oi+10,s.n)):
-        if s.bars[i].close > s.bars[oi].open*1.005: de = i; break
-    if de is None: return None
-    dh = max(b.high for b in s.bars[oi:]); dl = min(b.low for b in s.bars[oi:])
-    dr = dh - dl
-    if dr <= 0: return None
-    ut = dl + dr * (2/3)
-    for cs in range(de+1, min(de+16,s.n-5)):
-        ce = min(cs+8, s.n-1)
-        cb = s.bars[cs:ce]; ch = max(b.high for b in cb); cl = min(b.low for b in cb)
-        if cl < ut or (ch-cl) > dr*0.40: continue
-        if ce+1 >= s.n or s.bars[ce+1].high <= ch: continue
-        e = round(ch+0.02,2); st = round(cl-0.02,2); r = e-st
-        if r <= 0: continue
-        c = 0.50 + (0.10 if _in_time(s.bars[ce+1].timestamp,9,30,9,59) else 0)
-        return _make(s,"HitchHiker Scalp",Bias.LONG,e,st,round(e+r*1.9,2),c,
-                     "HitchHiker: consol upper 1/3",max_attempts=1,ideal_time="9:30-9:59 AM ET")
+                             ideal_time="10:00-11:00 AM ET", key_levels={"day_low": dl, "vwap": round(vwap, 2)})
     return None
 
 def _detect_orb(s, minutes=15):
+    """ORB — FIX: stop at ORB opposite, target 1.5x range, range size filters."""
     if s.n < 10: return None
     oi = s.day_open_idx
     if oi >= s.n-5: return None
@@ -625,283 +689,355 @@ def _detect_orb(s, minutes=15):
         if s.timestamps[i] <= cut: oe = i
         else: break
     if oe <= oi: return None
-    ob = s.bars[oi:oe+1]; oh = max(b.high for b in ob); ol = min(b.low for b in ob); orng = oh-ol
+    ob = s.bars[oi:oe+1]; oh = max(b.high for b in ob); ol = min(b.low for b in ob)
+    orng = oh - ol
     if orng <= 0: return None
+    # FIX: ORB range filters
+    price = (oh + ol) / 2
+    if price > 0:
+        range_pct = orng / price * 100
+        if range_pct > 3.0: return None  # Too chaotic
+    if s.current_atr > 0 and orng < s.current_atr * 0.3: return None  # Too narrow
     nm = f"ORB {minutes}min"
-    for i in range(oe+1, min(oe+30,s.n)):
+    for i in range(oe+1, min(oe+30, s.n)):
         if s.bars[i].close > oh:
-            e=round(oh+0.02,2); st=round(s.bars[i].low-0.02,2); r=e-st
-            if r<=0 or r>orng: continue
+            # FIX: Stop at ORB low (not breakout bar low)
+            e = round(oh+0.02, 2); st = round(ol-0.02, 2)
+            r = e - st
+            if r <= 0: continue
+            # FIX: Target 1.5x ORB range (was 2x)
+            t = round(e + orng * 1.5, 2)
             c = 0.50 + (0.15 if s.bars[i].volume > np.mean([b.volume for b in ob])*1.5 else 0)
-            return _make(s,nm,Bias.LONG,e,st,round(e+2*orng,2),c,
-                         f"ORB {minutes}min above {oh:.2f}",max_attempts=2,
-                         key_levels={"orb_high":oh,"orb_low":ol})
+            return _make(s, nm, Bias.LONG, e, st, t, c,
+                         f"ORB {minutes}min above {oh:.2f}", max_attempts=2,
+                         key_levels={"orb_high": oh, "orb_low": ol})
         if s.bars[i].close < ol:
-            e=round(ol-0.02,2); st=round(s.bars[i].high+0.02,2); r=st-e
-            if r<=0 or r>orng: continue
-            return _make(s,nm,Bias.SHORT,e,st,round(e-2*orng,2),0.55,
-                         f"ORB {minutes}min below {ol:.2f}",max_attempts=2,
-                         key_levels={"orb_high":oh,"orb_low":ol})
+            # FIX: Stop at ORB high
+            e = round(ol-0.02, 2); st = round(oh+0.02, 2)
+            r = st - e
+            if r <= 0: continue
+            t = round(e - orng * 1.5, 2)
+            return _make(s, nm, Bias.SHORT, e, st, t, 0.55,
+                         f"ORB {minutes}min below {ol:.2f}", max_attempts=2,
+                         key_levels={"orb_high": oh, "orb_low": ol})
     return None
 
 def _detect_second_chance(s):
-    if s.n < 30 or len(s.sw_high_idx) < 2: return None
+    """Second Chance — FIX: ATR tolerance, require prior-day level, breakout volume."""
+    if s.n < 30 or len(s.sw_high_idx) < 2 or s.current_atr <= 0: return None
+    atr = s.current_atr
+    oi = s.day_open_idx
     for i in range(len(s.sw_high_idx)-1):
-        lev = s.highs[s.sw_high_idx[i]]; tol = lev*0.003
+        lev = s.highs[s.sw_high_idx[i]]
+        tol = atr * 0.3  # FIX: ATR-based tolerance (was 0.3% of price)
         touches = [s.sw_high_idx[i]]
         for j in range(i+1, len(s.sw_high_idx)):
-            if abs(s.highs[s.sw_high_idx[j]]-lev) < tol: touches.append(s.sw_high_idx[j])
+            if abs(s.highs[s.sw_high_idx[j]]-lev) < tol:
+                touches.append(s.sw_high_idx[j])
         if len(touches) < 2: continue
         res = float(np.mean([s.highs[idx] for idx in touches]))
+        # FIX: At least one touch must be from a prior day
+        has_prior_day = any(s.timestamps[idx].date() < s.timestamps[-1].date()
+                            for idx in touches if idx < len(s.timestamps))
+        if not has_prior_day and oi > 0: continue  # Skip if all same-day unless no prior data
         last = touches[-1]
-        for k in range(last+1, min(last+20,s.n)):
+        for k in range(last+1, min(last+20, s.n)):
             if s.closes[k] > res*1.002:
-                for p in range(k+1, min(k+15,s.n)):
+                # FIX: Breakout bar needs volume
+                avg_vol = float(np.mean(s.volumes[max(0, k-20):k]))
+                if avg_vol > 0 and s.volumes[k] < avg_vol * 1.3: continue
+                for p in range(k+1, min(k+15, s.n)):
                     if s.lows[p] <= res*1.003 and p+1 < s.n and s.closes[p+1] > s.bars[p].high:
-                        e=round(s.closes[p+1],2); st=round(s.bars[p].low-0.02,2); r=e-st
-                        if r<=0: continue
-                        t=round(max(s.highs[k:p+1]),2)
+                        e = round(s.closes[p+1], 2); st = round(s.bars[p].low-0.02, 2)
+                        r = e - st
+                        if r <= 0: continue
+                        t = round(max(s.highs[k:p+1]), 2)
                         if (t-e)/r < 1: continue
-                        c = 0.45 + (0.15 if s.bars[k].volume > s.bars[p].volume*1.3 else 0)
-                        return _make(s,"Second Chance Scalp",Bias.LONG,e,st,t,c,
-                                     f"Second Chance: retest {res:.2f}",max_attempts=2)
+                        c = 0.50 + (0.10 if s.bars[k].volume > s.bars[p].volume*1.3 else 0)
+                        return _make(s, "Second Chance Scalp", Bias.LONG, e, st, t, c,
+                                     f"Second Chance: retest {res:.2f}", max_attempts=2)
                 break
     return None
 
-def _detect_backside(s):
-    if s.n < 25: return None
-    oi = s.day_open_idx
-    if s.n - oi < 15: return None
-    cv, ctv = 0.0, 0.0
-    for i in range(oi,s.n):
-        tp = (s.highs[i]+s.lows[i]+s.closes[i])/3; cv += s.volumes[i]; ctv += tp*s.volumes[i]
-    vwap = ctv/cv if cv > 0 else s.closes[-1]
-    e9 = ema_last(s.closes, 9)
-    if s.closes[-1] >= vwap or s.closes[-1] < e9: return None
-    if s.n >= 12 and ema_last(s.closes,9) <= ema_last(s.closes[:-3],9): return None
-    e=round(s.highs[-1]+0.02,2); rl = s.lows[-8:]
-    hl = float(np.sort(rl)[-2]) if len(rl)>=2 else s.lows[-1]
-    st=round(hl-0.02,2); t=round(vwap,2); r=e-st
-    if r<=0 or t<=e: return None
-    c = 0.48 + (0.10 if _in_time(s.timestamps[-1],10,0,10,45) else 0)
-    return _make(s,"BackSide Scalp",Bias.LONG,e,st,t,c,f"BackSide: VWAP {vwap:.2f}",
-                 ideal_time="10:00-10:45 ET",key_levels={"vwap":round(vwap,2)})
-
 def _detect_fashionably_late(s):
+    """Fashionably Late — FIX: hard time filter after 10:00 AM, require established range."""
     if s.n < 30: return None
     oi = s.day_open_idx
     if s.n - oi < 20: return None
-    e9s = ema(s.closes, 9); cv, ctv = 0.0, 0.0
-    vs = np.zeros(s.n)
-    for i in range(oi,s.n):
-        tp=(s.highs[i]+s.lows[i]+s.closes[i])/3; cv+=s.volumes[i]; ctv+=tp*s.volumes[i]
+    e9s = ema(s.closes, 9)
+    vs = np.zeros(s.n); cv, ctv = 0.0, 0.0
+    for i in range(oi, s.n):
+        tp = (s.highs[i]+s.lows[i]+s.closes[i])/3; cv += s.volumes[i]; ctv += tp*s.volumes[i]
         vs[i] = ctv/cv if cv > 0 else tp
     dl = float(np.min(s.lows[oi:]))
     for i in range(oi+10, s.n):
         if np.isnan(e9s[i]) or np.isnan(e9s[i-1]) or vs[i]==0 or vs[i-1]==0: continue
+        # FIX: Hard time filter — only after 10:00 AM
+        if not _in_time(s.timestamps[i], 10, 0, 14, 0): continue
         if e9s[i-1] < vs[i-1] and e9s[i] >= vs[i]:
             cp = vs[i]; mm = cp - dl
             if mm <= 0: continue
-            c = 0.55 + (0.10 if _in_time(s.timestamps[i],10,0,10,45) else 0)
-            return _make(s,"Fashionably Late",Bias.LONG,round(cp,2),round(cp-mm/3,2),
-                         round(cp+mm,2),c,f"Fashionably Late: measured ${mm:.2f}",
-                         ideal_time="10:00-10:45 ET",key_levels={"cross":round(cp,2)})
-    return None
-
-def _detect_spencer(s):
-    if s.n < 30: return None
-    oi = s.day_open_idx
-    if s.n-oi < 25: return None
-    dh=max(b.high for b in s.bars[oi:]); dl=min(b.low for b in s.bars[oi:]); dr=dh-dl
-    if dr<=0: return None
-    ut = dl + dr*(2/3)
-    for st in range(oi+5, s.n-10):
-        w=s.bars[st:st+10]; ch=max(b.high for b in w); cl=min(b.low for b in w)
-        if cl<ut or (ch-cl)>dr*0.35: continue
-        bi=st+10
-        if bi>=s.n or s.bars[bi].high<=ch: continue
-        e=round(ch+0.02,2); stp=round(cl-0.02,2); r=e-stp
-        if r<=0: continue
-        return _make(s,"Spencer Scalp",Bias.LONG,e,stp,round(e+2*(ch-cl),2),0.52,
-                     "Spencer: tight consol near HOD",key_levels={"consol_high":ch})
+            # FIX: Require at least 30 min of data after open (range established)
+            if i - oi < 6: continue  # ~30 min on 5-min bars
+            c = 0.55 + (0.10 if _in_time(s.timestamps[i], 10, 0, 10, 45) else 0)
+            return _make(s, "Fashionably Late", Bias.LONG, round(cp, 2), round(cp-mm/3, 2),
+                         round(cp+mm, 2), c, f"Fashionably Late: measured ${mm:.2f}",
+                         ideal_time="10:00-10:45 ET", key_levels={"cross": round(cp, 2)})
     return None
 
 def _detect_gap_give_and_go(s):
+    """Gap Give & Go — FIX: 1.5% gap min, 30% retrace, better target, time filter."""
     if s.n < 15: return None
     oi = s.day_open_idx
-    if oi==0 or s.n-oi < 10: return None
+    if oi == 0 or s.n - oi < 10: return None
     pc = s.bars[oi-1].close; op = s.bars[oi].open
-    gp = (op-pc)/pc*100
-    if gp < 0.5: return None
+    gp = (op - pc) / pc * 100
+    if gp < 1.5: return None  # FIX: 1.5% minimum gap (was 0.5%)
+    gap_size = op - pc
     de = None
-    for i in range(oi+1, min(oi+6,s.n)):
-        if s.bars[i].low < op*0.995: de=i
+    for i in range(oi+1, min(oi+6, s.n)):
+        retrace = (op - s.bars[i].low) / gap_size if gap_size > 0 else 0
+        if retrace >= 0.30:  # FIX: Must retrace at least 30% of gap
+            de = i; break
     if de is None: return None
-    for cl in range(3,8):
-        ce = de+cl
-        if ce >= s.n-1: continue
-        cb = s.bars[de:ce]; ch=max(b.high for b in cb); clo=min(b.low for b in cb)
-        if (ch-clo) > (op-clo)*0.50: continue
+    # FIX: Must happen in first 30 minutes
+    for cl in range(3, 8):
+        ce = de + cl
+        if ce >= s.n - 1: continue
+        if not _in_time(s.timestamps[ce], 9, 30, 10, 0): continue  # FIX: time filter
+        cb = s.bars[de:ce]; ch = max(b.high for b in cb); clo = min(b.low for b in cb)
+        if (ch - clo) > gap_size * 0.50: continue
         if s.bars[ce].high > ch:
-            e=round(ch+0.02,2); st=round(clo-0.02,2); r=e-st
-            if r<=0: continue
-            t=round(op,2)
-            if (t-e)/r < 1: continue
-            c = 0.50 + (0.10 if _in_time(s.timestamps[ce],9,30,9,45) else 0)
-            return _make(s,"Gap Give & Go",Bias.LONG,e,st,t,c,
-                         f"Gap G&G: {gp:.1f}%",max_attempts=2,ideal_time="9:30-9:45 AM ET")
+            e = round(ch+0.02, 2); st = round(clo-0.02, 2); r = e - st
+            if r <= 0: continue
+            # FIX: Target is gap open + 50% of gap (was just gap open)
+            t = round(op + gap_size * 0.5, 2)
+            if (t - e) / r < 1: continue
+            c = 0.55
+            return _make(s, "Gap Give & Go", Bias.LONG, e, st, t, c,
+                         f"Gap G&G: {gp:.1f}%", max_attempts=2,
+                         ideal_time="9:30-10:00 AM ET")
     return None
 
 def _detect_tidal_wave(s):
-    if s.n < 30 or len(s.sw_low_idx) < 2: return None
+    """Tidal Wave — REWRITTEN: all 5 fixes applied.
+    1. Stop at first (highest) bounce high
+    2. Require 3+ support touches
+    3. ATR-based tolerance
+    4. Pattern spans >= 15 bars
+    5. Volume expansion on breakdown
+    """
+    if s.n < 40 or len(s.sw_low_idx) < 3 or s.current_atr <= 0: return None
+    atr = s.current_atr
     for i in range(len(s.sw_low_idx)):
-        sup = s.lows[s.sw_low_idx[i]]; tol = sup*0.003
+        sup = s.lows[s.sw_low_idx[i]]
+        tol = atr * 0.3
         touches = [s.sw_low_idx[i]]
-        for j in range(i+1, len(s.sw_low_idx)):
-            if abs(s.lows[s.sw_low_idx[j]]-sup) < tol: touches.append(s.sw_low_idx[j])
-        if len(touches) < 2: continue
-        bh = []
-        for t in range(len(touches)-1):
-            btw = s.highs[touches[t]:touches[t+1]]
-            if len(btw)>0: bh.append(float(np.max(btw)))
-        if len(bh)<2 or not all(bh[k]>bh[k+1] for k in range(len(bh)-1)): continue
+        for j in range(i + 1, len(s.sw_low_idx)):
+            if abs(s.lows[s.sw_low_idx[j]] - sup) < tol:
+                touches.append(s.sw_low_idx[j])
+        if len(touches) < 3: continue
+        if touches[-1] - touches[0] < 15: continue
+        bounce_highs = []
+        for t in range(len(touches) - 1):
+            btw = s.highs[touches[t]:touches[t + 1]]
+            if len(btw) > 0: bounce_highs.append(float(np.max(btw)))
+        if len(bounce_highs) < 2: continue
+        if not all(bounce_highs[k] > bounce_highs[k + 1] for k in range(len(bounce_highs) - 1)):
+            continue
         if s.closes[-1] >= sup: continue
-        e=round(sup-0.02,2); st=round(bh[-1]+0.02,2); r=st-e
-        if r<=0: continue
-        return _make(s,"Tidal Wave",Bias.SHORT,e,st,round(e-2*r,2),0.55,
-                     f"Tidal Wave: {len(touches)} touches, diminishing bounces",
-                     key_levels={"support":sup})
+        breakdown_bar = None
+        for bi in range(touches[-1], s.n):
+            if s.closes[bi] < sup - tol * 0.5:
+                breakdown_bar = bi; break
+        if breakdown_bar is None: continue
+        avg_vol = float(np.mean(s.volumes[max(0, breakdown_bar - 20):breakdown_bar]))
+        if avg_vol > 0 and s.volumes[breakdown_bar] < avg_vol * 1.5: continue
+        first_bounce_high = bounce_highs[0]
+        entry = round(sup - atr * 0.05, 2)
+        stop = round(first_bounce_high + atr * 0.1, 2)
+        risk = stop - entry
+        if risk <= 0 or risk < atr * 0.3: continue
+        avg_bounce = float(np.mean(bounce_highs)) - sup
+        target = round(entry - max(avg_bounce, risk * 1.5), 2)
+        reward = entry - target
+        if reward / risk < 1.0: continue
+        conf = 0.50 + min(0.15, (len(touches) - 3) * 0.05)
+        diminish_ratio = bounce_highs[-1] / bounce_highs[0]
+        conf += (1 - diminish_ratio) * 0.15
+        if avg_vol > 0 and s.volumes[breakdown_bar] > avg_vol * 2.5: conf += 0.05
+        return _make(s, "Tidal Wave", Bias.SHORT, entry, stop, target, conf,
+                     f"Tidal Wave: {len(touches)} touches, "
+                     f"bounces diminish {bounce_highs[0]:.2f}→{bounce_highs[-1]:.2f}",
+                     key_levels={"support": round(sup, 2),
+                                 "first_bounce": round(first_bounce_high, 2)})
     return None
 
-def _detect_breaking_news(s):
-    if s.n < 12: return None
-    av = float(np.mean(s.volumes[-12:-2])); ar = float(np.mean(s.highs[-12:-2]-s.lows[-12:-2]))
-    cv = s.volumes[-1]; cr = s.highs[-1]-s.lows[-1]
-    if av==0 or cv<av*3 or ar==0 or cr<ar*2: return None
-    vx = cv/av
-    if _is_green(s.bars[-1]):
-        e=round(s.closes[-1],2); st=round(s.lows[-1]-0.02,2); r=e-st
-        if r<=0: return None
-        c = 0.45+(0.15 if vx>5 else 0)+(0.10 if cr>ar*3 else 0)
-        return _make(s,"Breaking News",Bias.LONG,e,st,round(e+r*2,2),c,
-                     f"Breaking News: {vx:.0f}x vol",max_attempts=2)
-    else:
-        e=round(s.closes[-1],2); st=round(s.highs[-1]+0.02,2); r=st-e
-        if r<=0: return None
-        c = 0.45+(0.15 if vx>5 else 0)+(0.10 if cr>ar*3 else 0)
-        return _make(s,"Breaking News",Bias.SHORT,e,st,round(e-r*2,2),c,
-                     f"Breaking News: {vx:.0f}x vol",max_attempts=2)
-
 
 # ==============================================================================
-# QUANT STRATEGY PATTERNS (10)
+# QUANT STRATEGY PATTERNS — Intraday (4)
 # ==============================================================================
-
-def _detect_momentum_breakout(s):
-    """Price > 20-bar high. Core trend-following signal."""
-    if s.n < 25: return None
-    h20 = float(np.max(s.highs[-21:-1])); l20 = float(np.min(s.lows[-20:]))
-    if s.closes[-1] <= h20: return None
-    e=round(s.closes[-1],2); st=round(l20,2); r=e-st
-    if r<=0: return None
-    return _make(s,"Momentum Breakout",Bias.LONG,e,st,round(e+(h20-l20),2),0.55,
-                 f"20-bar high breakout",key_levels={"20d_high":h20,"20d_low":l20})
-
-def _detect_vol_compression_breakout(s):
-    """Bollinger squeeze → expansion."""
-    if s.n < 30: return None
-    r = atr_ratio(s.highs, s.lows, s.closes, atr_period=14, baseline_lookback=40)
-    if r > 0.6: return None
-    sma20 = float(np.mean(s.closes[-20:]))
-    if s.closes[-1] > sma20:
-        e=round(s.closes[-1],2); st=round(sma20-s.current_atr,2); risk=e-st
-        if risk<=0: return None
-        return _make(s,"Vol Compression Breakout",Bias.LONG,e,st,round(e+2*risk,2),0.58,
-                     f"Vol squeeze breakout (ATR ratio {r:.2f})",key_levels={"sma20":round(sma20,2)})
-    else:
-        e=round(s.closes[-1],2); st=round(sma20+s.current_atr,2); risk=st-e
-        if risk<=0: return None
-        return _make(s,"Vol Compression Breakout",Bias.SHORT,e,st,round(e-2*risk,2),0.58,
-                     f"Vol squeeze breakdown (ATR ratio {r:.2f})")
 
 def _detect_mean_reversion(s):
-    """Z-score extreme: buy at z < -2, sell at z > 2."""
-    if s.n < 25: return None
-    ma = float(np.mean(s.closes[-20:])); std = float(np.std(s.closes[-20:]))
+    """Mean Reversion — FIX: regime filter, 50-bar lookback, VWAP confluence, S/R stop."""
+    if s.n < 55 or s.current_atr <= 0: return None
+    # FIX: Regime filter — only in mean-reverting or mixed regimes
+    if s._regime in ("trending_bull", "trending_bear"): return None
+    # FIX: 50-bar lookback (was 20)
+    ma = float(np.mean(s.closes[-50:])); std = float(np.std(s.closes[-50:]))
     if std == 0: return None
     z = (s.closes[-1] - ma) / std
     if abs(z) < 2.0: return None
+    atr = s.current_atr
+    # FIX: VWAP confluence check
+    oi = s.day_open_idx
+    vwap = _compute_vwap(s, oi)
     if z < -2:
-        e=round(s.closes[-1],2); st=round(s.closes[-1]-s.current_atr*1.5,2); r=e-st
-        if r<=0: return None
-        return _make(s,"Mean Reversion",Bias.LONG,e,st,round(ma,2),0.55,
-                     f"Mean Reversion: z={z:.2f}, target MA {ma:.2f}")
+        # Oversold + below VWAP = stronger signal
+        if s.closes[-1] > vwap: return None  # FIX: Must be below VWAP for long mean reversion
+        # FIX: S/R based stop — find nearest support below
+        stop_level = s.closes[-1] - atr * 1.5
+        for lvl in s.sr_levels:
+            if lvl.price < s.closes[-1] - atr * 0.3:
+                stop_level = lvl.price - atr * 0.1; break
+        e = round(s.closes[-1], 2); st = round(stop_level, 2); r = e - st
+        if r <= 0: return None
+        return _make(s, "Mean Reversion", Bias.LONG, e, st, round(ma, 2), 0.55,
+                     f"Mean Reversion: z={z:.2f}, VWAP confluence, target MA {ma:.2f}")
     else:
-        e=round(s.closes[-1],2); st=round(s.closes[-1]+s.current_atr*1.5,2); r=st-e
-        if r<=0: return None
-        return _make(s,"Mean Reversion",Bias.SHORT,e,st,round(ma,2),0.55,
-                     f"Mean Reversion: z={z:.2f}, target MA {ma:.2f}")
+        if s.closes[-1] < vwap: return None  # Must be above VWAP for short
+        stop_level = s.closes[-1] + atr * 1.5
+        for lvl in s.sr_levels:
+            if lvl.price > s.closes[-1] + atr * 0.3:
+                stop_level = lvl.price + atr * 0.1; break
+        e = round(s.closes[-1], 2); st = round(stop_level, 2); r = st - e
+        if r <= 0: return None
+        return _make(s, "Mean Reversion", Bias.SHORT, e, st, round(ma, 2), 0.55,
+                     f"Mean Reversion: z={z:.2f}, VWAP confluence, target MA {ma:.2f}")
 
 def _detect_trend_pullback(s):
-    """Above 50 SMA + price pulled back near 21 EMA. Trend continuation."""
-    if s.n < 55: return None
+    """Trend Pullback — FIX: regime filter, VWAP requirement, tighter EMA proximity."""
+    if s.n < 55 or s.current_atr <= 0: return None
+    # FIX: Regime filter — only in trending markets
+    if s._regime not in ("trending_bull",): return None  # Only bull for longs
     sma50 = float(np.mean(s.closes[-50:])); e21 = ema_last(s.closes, 21)
     cur = s.closes[-1]
-    if cur < sma50: return None  # Must be in uptrend
-    # Price should be near 21 EMA (within 1 ATR)
-    if s.current_atr == 0: return None
+    if cur < sma50: return None
+    # FIX: Tighter EMA proximity — within 0.5 ATR (was 1.5)
     dist = abs(cur - e21) / s.current_atr
-    if dist > 1.5 or cur > e21 * 1.005: return None  # Must be pulling back TO ema, not above
-    # Check recent bar is bouncing (green after touching EMA)
+    if dist > 0.5 or cur > e21 * 1.005: return None
     if not _is_green(s.bars[-1]): return None
-    e=round(cur,2); st=round(e21 - s.current_atr,2); r=e-st
-    if r<=0: return None
-    return _make(s,"Trend Pullback",Bias.LONG,e,st,round(e+2*r,2),0.58,
-                 f"Trend Pullback: above 50 SMA, bounce off 21 EMA",
-                 key_levels={"sma50":round(sma50,2),"ema21":round(e21,2)})
+    # FIX: Must be above VWAP
+    vwap = _compute_vwap(s, s.day_open_idx)
+    if cur < vwap: return None
+    e = round(cur, 2); st = round(e21 - s.current_atr, 2); r = e - st
+    if r <= 0: return None
+    return _make(s, "Trend Pullback", Bias.LONG, e, st, round(e+2*r, 2), 0.58,
+                 f"Trend Pullback: above 50 SMA + VWAP, bounce off 21 EMA",
+                 key_levels={"sma50": round(sma50, 2), "ema21": round(e21, 2), "vwap": round(vwap, 2)})
 
 def _detect_gap_fade(s):
-    """Large gap (>2%) that's likely to retrace. Fade direction."""
+    """Gap Fade — FIX: better stop, time filter, regime filter."""
     if s.n < 5: return None
     oi = s.day_open_idx
     if oi == 0: return None
     pc = s.bars[oi-1].close; op = s.bars[oi].open
     gap_pct = (op - pc) / pc * 100
     if abs(gap_pct) < 2.0: return None
-    if gap_pct > 2.0:  # Gap up → short fade
-        e=round(s.closes[-1],2); st=round(s.highs[oi]+0.02,2); r=st-e
-        if r<=0: return None
-        t=round(pc,2)  # Target: fill gap
-        if (e-t)/r < 0.5: return None
-        return _make(s,"Gap Fade",Bias.SHORT,e,st,t,0.52,
+    # FIX: Regime filter — don't fade gaps in strong trends
+    if gap_pct > 2.0 and s._regime == "trending_bull": return None
+    if gap_pct < -2.0 and s._regime == "trending_bear": return None
+    # FIX: Time filter — only fade in first 60 minutes
+    if not _in_time(s.timestamps[-1], 9, 30, 10, 30): return None
+    gap_size = abs(op - pc)
+    if gap_pct > 2.0:
+        # FIX: Stop at gap open + 50% of gap (not day's high)
+        e = round(s.closes[-1], 2); st = round(op + gap_size * 0.5, 2)
+        r = st - e
+        if r <= 0: return None
+        t = round(pc, 2)
+        if (e - t) / r < 0.5: return None
+        return _make(s, "Gap Fade", Bias.SHORT, e, st, t, 0.52,
                      f"Gap Fade: {gap_pct:.1f}% gap up, target fill",
-                     key_levels={"prev_close":pc,"gap_open":op})
-    else:  # Gap down → long fade
-        e=round(s.closes[-1],2); st=round(s.lows[oi]-0.02,2); r=e-st
-        if r<=0: return None
-        t=round(pc,2)
-        if (t-e)/r < 0.5: return None
-        return _make(s,"Gap Fade",Bias.LONG,e,st,t,0.52,
+                     key_levels={"prev_close": pc, "gap_open": op})
+    else:
+        e = round(s.closes[-1], 2); st = round(op - gap_size * 0.5, 2)
+        r = e - st
+        if r <= 0: return None
+        t = round(pc, 2)
+        if (t - e) / r < 0.5: return None
+        return _make(s, "Gap Fade", Bias.LONG, e, st, t, 0.52,
                      f"Gap Fade: {gap_pct:.1f}% gap down, target fill",
-                     key_levels={"prev_close":pc,"gap_open":op})
+                     key_levels={"prev_close": pc, "gap_open": op})
 
-def _detect_relative_strength_break(s):
-    """Stock making 50-bar high while within 5% of 20-bar high. Strength signal."""
-    if s.n < 55: return None
-    h50 = float(np.max(s.highs[-51:-1])); h20 = float(np.max(s.highs[-21:-1]))
-    cur = s.closes[-1]
-    if cur <= h50: return None
-    # Additional: volume confirmation
+def _detect_vwap_reversion(s):
+    """VWAP Reversion — FIX: 2.5 ATR threshold, regime, volume, time filter."""
+    if s.n < 20 or s.current_atr <= 0: return None
+    oi = s.day_open_idx
+    if s.n - oi < 10: return None
+    # FIX: Regime filter
+    if s._regime in ("trending_bull", "trending_bear"): return None
+    # FIX: Time filter — VWAP reversion best mid-day
+    if not _in_time(s.timestamps[-1], 10, 30, 14, 0): return None
+    vwap = _compute_vwap(s, oi)
+    dist = (s.closes[-1] - vwap) / s.current_atr
+    if abs(dist) < 2.5: return None  # FIX: 2.5 ATR threshold (was 1.5)
+    # FIX: Volume at extreme — exhaustion signal
     avg_vol = float(np.mean(s.volumes[-20:]))
-    if s.volumes[-1] < avg_vol * 1.2: return None
-    l20 = float(np.min(s.lows[-20:]))
-    e=round(cur,2); st=round(l20,2); r=e-st
-    if r<=0: return None
-    return _make(s,"Relative Strength Break",Bias.LONG,e,st,round(e+r*1.5,2),0.55,
-                 f"50-bar high breakout with volume",key_levels={"50d_high":h50})
+    if avg_vol > 0 and s.volumes[-1] < avg_vol * 1.2: return None
+    if dist > 2.5:
+        e = round(s.closes[-1], 2); st = round(s.closes[-1]+s.current_atr, 2)
+        r = st - e
+        if r <= 0: return None
+        return _make(s, "VWAP Reversion", Bias.SHORT, e, st, round(vwap, 2), 0.55,
+                     f"VWAP Reversion: {dist:.1f} ATR above VWAP",
+                     key_levels={"vwap": round(vwap, 2)})
+    else:
+        e = round(s.closes[-1], 2); st = round(s.closes[-1]-s.current_atr, 2)
+        r = e - st
+        if r <= 0: return None
+        return _make(s, "VWAP Reversion", Bias.LONG, e, st, round(vwap, 2), 0.55,
+                     f"VWAP Reversion: {abs(dist):.1f} ATR below VWAP",
+                     key_levels={"vwap": round(vwap, 2)})
+
+
+# ==============================================================================
+# QUANT STRATEGY PATTERNS — Daily only (5)
+# These only fire when timeframe is "1d". On 5min/15min they return None.
+# ==============================================================================
+
+def _detect_momentum_breakout(s):
+    """Price > 20-bar high. On daily bars: 20-day breakout."""
+    if s.timeframe != "1d": return None  # Daily only
+    if s.n < 25: return None
+    h20 = float(np.max(s.highs[-21:-1])); l20 = float(np.min(s.lows[-20:]))
+    if s.closes[-1] <= h20: return None
+    e = round(s.closes[-1], 2); st = round(l20, 2); r = e - st
+    if r <= 0: return None
+    return _make(s, "Momentum Breakout", Bias.LONG, e, st, round(e+(h20-l20), 2), 0.55,
+                 f"20-day high breakout", key_levels={"20d_high": h20, "20d_low": l20})
+
+def _detect_vol_compression_breakout(s):
+    """Bollinger squeeze → expansion. Daily only."""
+    if s.timeframe != "1d": return None
+    if s.n < 30: return None
+    r = atr_ratio(s.highs, s.lows, s.closes, atr_period=14, baseline_lookback=40)
+    if r > 0.6: return None
+    sma20 = float(np.mean(s.closes[-20:]))
+    if s.closes[-1] > sma20:
+        e = round(s.closes[-1], 2); st = round(sma20-s.current_atr, 2); risk = e - st
+        if risk <= 0: return None
+        return _make(s, "Vol Compression Breakout", Bias.LONG, e, st, round(e+2*risk, 2), 0.58,
+                     f"Vol squeeze breakout (ATR ratio {r:.2f})", key_levels={"sma20": round(sma20, 2)})
+    else:
+        e = round(s.closes[-1], 2); st = round(sma20+s.current_atr, 2); risk = st - e
+        if risk <= 0: return None
+        return _make(s, "Vol Compression Breakout", Bias.SHORT, e, st, round(e-2*risk, 2), 0.58,
+                     f"Vol squeeze breakdown (ATR ratio {r:.2f})")
 
 def _detect_range_expansion(s):
-    """Today's range > 2x average range. Directional move starting."""
+    """Today's range > 2x average range. Daily only."""
+    if s.timeframe != "1d": return None
     if s.n < 15: return None
     avg_r = float(np.mean(s.highs[-15:-1] - s.lows[-15:-1]))
     if avg_r == 0: return None
@@ -909,73 +1045,52 @@ def _detect_range_expansion(s):
     if cur_r < avg_r * 2: return None
     rx = cur_r / avg_r
     if _is_green(s.bars[-1]):
-        e=round(s.closes[-1],2); st=round(s.lows[-1]-0.02,2); r=e-st
-        if r<=0: return None
-        return _make(s,"Range Expansion",Bias.LONG,e,st,round(e+r*1.5,2),0.52,
+        e = round(s.closes[-1], 2); st = round(s.lows[-1]-0.02, 2); r = e - st
+        if r <= 0: return None
+        return _make(s, "Range Expansion", Bias.LONG, e, st, round(e+r*1.5, 2), 0.52,
                      f"Range Expansion: {rx:.1f}x avg range (bullish)")
     else:
-        e=round(s.closes[-1],2); st=round(s.highs[-1]+0.02,2); r=st-e
-        if r<=0: return None
-        return _make(s,"Range Expansion",Bias.SHORT,e,st,round(e-r*1.5,2),0.52,
+        e = round(s.closes[-1], 2); st = round(s.highs[-1]+0.02, 2); r = st - e
+        if r <= 0: return None
+        return _make(s, "Range Expansion", Bias.SHORT, e, st, round(e-r*1.5, 2), 0.52,
                      f"Range Expansion: {rx:.1f}x avg range (bearish)")
 
 def _detect_volume_breakout(s):
-    """Volume > 3x average + directional close beyond recent range."""
+    """Volume > 3x average + directional close beyond recent range. Daily only."""
+    if s.timeframe != "1d": return None
     if s.n < 20: return None
     avg_v = float(np.mean(s.volumes[-20:-1]))
     if avg_v == 0 or s.volumes[-1] < avg_v * 3: return None
     h10 = float(np.max(s.highs[-11:-1])); l10 = float(np.min(s.lows[-11:-1]))
     cur = s.closes[-1]; vx = s.volumes[-1] / avg_v
     if cur > h10:
-        e=round(cur,2); st=round(l10,2); r=e-st
-        if r<=0: return None
-        return _make(s,"Volume Breakout",Bias.LONG,e,st,round(e+r,2),0.55,
-                     f"Volume Breakout: {vx:.0f}x vol, above 10-bar high")
+        e = round(cur, 2); st = round(l10, 2); r = e - st
+        if r <= 0: return None
+        return _make(s, "Volume Breakout", Bias.LONG, e, st, round(e+r, 2), 0.55,
+                     f"Volume Breakout: {vx:.0f}x vol, above 10-day high")
     elif cur < l10:
-        e=round(cur,2); st=round(h10,2); r=st-e
-        if r<=0: return None
-        return _make(s,"Volume Breakout",Bias.SHORT,e,st,round(e-r,2),0.55,
-                     f"Volume Breakout: {vx:.0f}x vol, below 10-bar low")
+        e = round(cur, 2); st = round(h10, 2); r = st - e
+        if r <= 0: return None
+        return _make(s, "Volume Breakout", Bias.SHORT, e, st, round(e-r, 2), 0.55,
+                     f"Volume Breakout: {vx:.0f}x vol, below 10-day low")
     return None
 
-def _detect_vwap_reversion(s):
-    """Price far from intraday VWAP → fade back toward VWAP."""
-    if s.n < 20: return None
-    oi = s.day_open_idx
-    if s.n - oi < 10: return None
-    cv, ctv = 0.0, 0.0
-    for i in range(oi, s.n):
-        tp = (s.highs[i]+s.lows[i]+s.closes[i])/3; cv += s.volumes[i]; ctv += tp*s.volumes[i]
-    vwap = ctv/cv if cv > 0 else s.closes[-1]
-    if s.current_atr == 0: return None
-    dist = (s.closes[-1] - vwap) / s.current_atr
-    if abs(dist) < 1.5: return None  # Must be >1.5 ATR from VWAP
-    if dist > 1.5:  # Too far above → short back to VWAP
-        e=round(s.closes[-1],2); st=round(s.closes[-1]+s.current_atr,2); r=st-e
-        if r<=0: return None
-        return _make(s,"VWAP Reversion",Bias.SHORT,e,st,round(vwap,2),0.55,
-                     f"VWAP Reversion: {dist:.1f} ATR above VWAP",key_levels={"vwap":round(vwap,2)})
-    else:  # Too far below → long back to VWAP
-        e=round(s.closes[-1],2); st=round(s.closes[-1]-s.current_atr,2); r=e-st
-        if r<=0: return None
-        return _make(s,"VWAP Reversion",Bias.LONG,e,st,round(vwap,2),0.55,
-                     f"VWAP Reversion: {abs(dist):.1f} ATR below VWAP",key_levels={"vwap":round(vwap,2)})
-
 def _detect_donchian_breakout(s):
-    """Donchian Channel: close > highest high of last 50 bars. Trend-following."""
+    """Donchian Channel: close > highest high of last 50 bars. Daily only."""
+    if s.timeframe != "1d": return None
     if s.n < 55: return None
     h50 = float(np.max(s.highs[-51:-1])); l50 = float(np.min(s.lows[-51:-1]))
     cur = s.closes[-1]
     if cur > h50:
-        mid = (h50+l50)/2; e=round(cur,2); st=round(mid,2); r=e-st
-        if r<=0: return None
-        return _make(s,"Donchian Breakout",Bias.LONG,e,st,round(e+r,2),0.53,
-                     f"Donchian 50-bar high breakout",key_levels={"50_high":h50,"50_low":l50})
+        mid = (h50+l50)/2; e = round(cur, 2); st = round(mid, 2); r = e - st
+        if r <= 0: return None
+        return _make(s, "Donchian Breakout", Bias.LONG, e, st, round(e+r, 2), 0.53,
+                     f"Donchian 50-day high breakout", key_levels={"50_high": h50, "50_low": l50})
     elif cur < l50:
-        mid = (h50+l50)/2; e=round(cur,2); st=round(mid,2); r=st-e
-        if r<=0: return None
-        return _make(s,"Donchian Breakout",Bias.SHORT,e,st,round(e-r,2),0.53,
-                     f"Donchian 50-bar low breakdown",key_levels={"50_high":h50,"50_low":l50})
+        mid = (h50+l50)/2; e = round(cur, 2); st = round(mid, 2); r = st - e
+        if r <= 0: return None
+        return _make(s, "Donchian Breakout", Bias.SHORT, e, st, round(e-r, 2), 0.53,
+                     f"Donchian 50-day low breakdown", key_levels={"50_high": h50, "50_low": l50})
     return None
 
 
@@ -998,22 +1113,23 @@ _ALL_DETECTORS = [
     _detect_hammer, _detect_shooting_star,
     _detect_doji, _detect_dragonfly_doji,
     _detect_three_white_soldiers, _detect_three_black_crows,
-    # SMB Scalps (11)
-    _detect_rubberband, _detect_hitchhiker,
+    # SMB Scalps (7)
+    _detect_rubberband,
     lambda s: _detect_orb(s, 15), lambda s: _detect_orb(s, 30),
-    _detect_second_chance, _detect_backside,
-    _detect_fashionably_late, _detect_spencer,
-    _detect_gap_give_and_go, _detect_tidal_wave, _detect_breaking_news,
-    # Quant (10)
+    _detect_second_chance,
+    _detect_fashionably_late,
+    _detect_gap_give_and_go, _detect_tidal_wave,
+    # Quant — Intraday (4)
+    _detect_mean_reversion, _detect_trend_pullback,
+    _detect_gap_fade, _detect_vwap_reversion,
+    # Quant — Daily only (5) — return None on 5min/15min
     _detect_momentum_breakout, _detect_vol_compression_breakout,
-    _detect_mean_reversion, _detect_trend_pullback, _detect_gap_fade,
-    _detect_relative_strength_break, _detect_range_expansion,
-    _detect_volume_breakout, _detect_vwap_reversion, _detect_donchian_breakout,
+    _detect_range_expansion, _detect_volume_breakout, _detect_donchian_breakout,
 ]
 
 
 def classify_all(bars: BarSeries) -> list[TradeSetup]:
-    """Run ALL 47 pattern detectors. Returns setups sorted by confidence."""
+    """Run ALL 42 pattern detectors. Returns setups sorted by confidence."""
     if len(bars.bars) < 15:
         return []
     s = extract_structures(bars)

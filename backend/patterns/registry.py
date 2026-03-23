@@ -1,5 +1,10 @@
 """
-patterns/registry.py — Pattern definitions, TradeSetup, and metadata for all 47 detectors.
+patterns/registry.py — Pattern definitions, TradeSetup, and metadata for all 42 detectors.
+
+v2.0 — Audit changes:
+  Removed: Breaking News, HitchHiker Scalp, Spencer Scalp, BackSide Scalp, Relative Strength Break
+  Added: timeframe_required field for daily-only strategies
+  Count: 42 (was 47)
 """
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -56,6 +61,7 @@ class TradeSetup:
 
 
 # Win rates from Bulkowski, Nison, and quant research
+# tf_req: required timeframe(s). None = runs on 5min/15min. "1d" = daily only.
 PATTERN_META = {
     # --- Classical Structural (16) ---
     "Head & Shoulders":     {"wr": 0.80, "type": "breakout", "cat": PatternCategory.CLASSICAL},
@@ -85,29 +91,25 @@ PATTERN_META = {
     "Three White Soldiers": {"wr": 0.62, "type": "momentum",       "cat": PatternCategory.CANDLESTICK},
     "Three Black Crows":    {"wr": 0.62, "type": "momentum",       "cat": PatternCategory.CANDLESTICK},
     "Dragonfly Doji":       {"wr": 0.55, "type": "mean_reversion", "cat": PatternCategory.CANDLESTICK},
-    # --- SMB Scalps (11) ---
+    # --- SMB Scalps (7) — removed: HitchHiker, Spencer, BackSide, Breaking News ---
     "RubberBand Scalp":     {"wr": 0.625, "type": "scalp", "cat": PatternCategory.SMB_SCALP},
-    "HitchHiker Scalp":     {"wr": 0.575, "type": "scalp", "cat": PatternCategory.SMB_SCALP},
     "ORB 15min":            {"wr": 0.55, "type": "scalp",  "cat": PatternCategory.SMB_SCALP},
     "ORB 30min":            {"wr": 0.55, "type": "scalp",  "cat": PatternCategory.SMB_SCALP},
     "Second Chance Scalp":  {"wr": 0.525, "type": "scalp", "cat": PatternCategory.SMB_SCALP},
-    "BackSide Scalp":       {"wr": 0.55, "type": "scalp",  "cat": PatternCategory.SMB_SCALP},
     "Fashionably Late":     {"wr": 0.60, "type": "scalp",  "cat": PatternCategory.SMB_SCALP},
-    "Spencer Scalp":        {"wr": 0.55, "type": "scalp",  "cat": PatternCategory.SMB_SCALP},
     "Gap Give & Go":        {"wr": 0.55, "type": "scalp",  "cat": PatternCategory.SMB_SCALP},
     "Tidal Wave":           {"wr": 0.55, "type": "scalp",  "cat": PatternCategory.SMB_SCALP},
-    "Breaking News":        {"wr": 0.50, "type": "scalp",  "cat": PatternCategory.SMB_SCALP},
-    # --- Quant Strategies (10) ---
-    "Momentum Breakout":       {"wr": 0.58, "type": "momentum",       "cat": PatternCategory.QUANT},
-    "Vol Compression Breakout": {"wr": 0.60, "type": "breakout",      "cat": PatternCategory.QUANT},
+    # --- Quant Strategies (9) — removed: Relative Strength Break ---
     "Mean Reversion":          {"wr": 0.62, "type": "mean_reversion", "cat": PatternCategory.QUANT},
     "Trend Pullback":          {"wr": 0.64, "type": "momentum",       "cat": PatternCategory.QUANT},
     "Gap Fade":                {"wr": 0.58, "type": "mean_reversion", "cat": PatternCategory.QUANT},
-    "Relative Strength Break": {"wr": 0.57, "type": "momentum",       "cat": PatternCategory.QUANT},
-    "Range Expansion":         {"wr": 0.56, "type": "breakout",       "cat": PatternCategory.QUANT},
-    "Volume Breakout":         {"wr": 0.58, "type": "breakout",       "cat": PatternCategory.QUANT},
     "VWAP Reversion":          {"wr": 0.60, "type": "mean_reversion", "cat": PatternCategory.QUANT},
-    "Donchian Breakout":       {"wr": 0.56, "type": "momentum",       "cat": PatternCategory.QUANT},
+    # --- Daily-only strategies (run on 1d bars, skip on 5min/15min) ---
+    "Momentum Breakout":       {"wr": 0.58, "type": "momentum",  "cat": PatternCategory.QUANT, "tf_req": "1d"},
+    "Vol Compression Breakout": {"wr": 0.60, "type": "breakout", "cat": PatternCategory.QUANT, "tf_req": "1d"},
+    "Range Expansion":         {"wr": 0.56, "type": "breakout",  "cat": PatternCategory.QUANT, "tf_req": "1d"},
+    "Volume Breakout":         {"wr": 0.58, "type": "breakout",  "cat": PatternCategory.QUANT, "tf_req": "1d"},
+    "Donchian Breakout":       {"wr": 0.56, "type": "momentum",  "cat": PatternCategory.QUANT, "tf_req": "1d"},
 }
 
 
