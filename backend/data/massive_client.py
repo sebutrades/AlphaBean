@@ -29,7 +29,7 @@ ALL_TIMEFRAMES = {
     "1d":    (1, "day"),
 }
 
-SCANNER_TIMEFRAMES = ["5min", "15min"]
+SCANNER_TIMEFRAMES = ["5min", "15min","1h"]  # All timeframes for backtesting, but scanner can use 5min + 15min at once
 
 
 def get_client() -> RESTClient:
