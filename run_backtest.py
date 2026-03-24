@@ -277,8 +277,12 @@ def backtest_symbol_tf(
     classify_all() handles TF routing — it only runs patterns whose
     registry "tf" field includes this timeframe.
     """
+    # Daily patterns need 250+ trading days for 50 SMA etc.
+    # Auto-expand to 365 calendar days minimum for 1d timeframe
+    fetch_days = max(days_back, 365) if timeframe == "1d" else days_back
+
     try:
-        bars_data = fetch_bars(symbol, timeframe, days_back)
+        bars_data = fetch_bars(symbol, timeframe, fetch_days)
     except Exception as e:
         if verbose: print(f"        ✗ {timeframe} FETCH ERROR: {e}")
         return []

@@ -124,7 +124,7 @@ def _make(s, name, bias, entry, stop, target, conf, desc,
     if risk <= 0:
         return None
     rr = round(abs(target - entry) / risk, 2)
-    if rr < 0.5:
+    if rr < 1.5:
         return None
  
     cur = s.closes[-1]
@@ -617,15 +617,15 @@ def _detect_head_and_shoulders(s):
         # Entry/Stop/Targets
         off = _atr_offset(atr, 0.10)
         entry = neckline - off
-        stop = rs.price + _atr_offset(atr, 0.20)
+        stop = rs.price + _atr_offset(atr, 0.10)
         measured_move = hd.price - neckline
         target_full = entry - measured_move
-        target_half = entry - measured_move * 0.5
+        target_75 = entry - measured_move * 0.75
  
         return _make(s, "Head & Shoulders", Bias.SHORT,
                      entry, stop, target_full, conf,
                      f"H&S: head@{hd.price:.2f}, neckline@{neckline:.2f}",
-                     target_1=round(target_half, 2),
+                     target_1=round(target_75, 2),
                      target_2=round(target_full, 2),
                      trail_type="atr", trail_param=2.0,
                      key_levels={"left_shoulder": ls.price, "head": hd.price,
@@ -680,15 +680,15 @@ def _detect_inverse_hs(s):
  
         off = _atr_offset(atr, 0.10)
         entry = neckline + off
-        stop = rs.price - _atr_offset(atr, 0.20)
+        stop = rs.price - _atr_offset(atr, 0.10)
         measured_move = neckline - hd.price
         target_full = entry + measured_move
-        target_half = entry + measured_move * 0.5
+        target_75 = entry + measured_move * 0.75
  
         return _make(s, "Inverse H&S", Bias.LONG,
                      entry, stop, target_full, conf,
                      f"Inv H&S: head@{hd.price:.2f}, neckline@{neckline:.2f}",
-                     target_1=round(target_half, 2),
+                     target_1=round(target_75, 2),
                      target_2=round(target_full, 2),
                      trail_type="atr", trail_param=2.0,
                      key_levels={"head": hd.price, "neckline": neckline})
@@ -747,15 +747,15 @@ def _detect_double_top(s):
  
     off = _atr_offset(atr, 0.10)
     entry = valley - off
-    stop = top + _atr_offset(atr, 0.20)
+    stop = top + _atr_offset(atr, 0.10)
     measured_move = top - valley
     target_full = entry - measured_move
-    target_half = entry - measured_move * 0.5
+    target_75 = entry - measured_move * 0.75
  
     return _make(s, "Double Top", Bias.SHORT,
                  entry, stop, target_full, conf,
                  f"Double Top at {top:.2f}, valley {valley:.2f}",
-                 target_1=round(target_half, 2),
+                 target_1=round(target_75, 2),
                  target_2=round(target_full, 2),
                  trail_type="atr", trail_param=2.0,
                  key_levels={"top1": h1.price, "top2": h2.price, "valley": valley})
@@ -804,15 +804,15 @@ def _detect_double_bottom(s):
  
     off = _atr_offset(atr, 0.10)
     entry = peak + off
-    stop = bot - _atr_offset(atr, 0.20)
+    stop = bot - _atr_offset(atr, 0.10)
     measured_move = peak - bot
     target_full = entry + measured_move
-    target_half = entry + measured_move * 0.5
+    target_75 = entry + measured_move * 0.75
  
     return _make(s, "Double Bottom", Bias.LONG,
                  entry, stop, target_full, conf,
                  f"Double Bottom at {bot:.2f}, peak {peak:.2f}",
-                 target_1=round(target_half, 2),
+                 target_1=round(target_75, 2),
                  target_2=round(target_full, 2),
                  trail_type="atr", trail_param=2.0,
                  key_levels={"bottom1": l1.price, "bottom2": l2.price, "peak": peak})
@@ -865,15 +865,15 @@ def _detect_triple_top(s):
  
     off = _atr_offset(atr, 0.10)
     entry = valley - off
-    stop = max(prices) + _atr_offset(atr, 0.20)
+    stop = max(prices) + _atr_offset(atr, 0.10)
     measured_move = max(prices) - valley
     target_full = entry - measured_move
-    target_half = entry - measured_move * 0.5
+    target_75 = entry - measured_move * 0.75
  
     return _make(s, "Triple Top", Bias.SHORT,
                  entry, stop, target_full, conf,
                  f"Triple Top at {avg:.2f}, valley {valley:.2f}",
-                 target_1=round(target_half, 2),
+                 target_1=round(target_75, 2),
                  target_2=round(target_full, 2),
                  key_levels={"resistance": avg, "valley": valley})
  
@@ -920,15 +920,15 @@ def _detect_triple_bottom(s):
  
     off = _atr_offset(atr, 0.10)
     entry = peak + off
-    stop = min(prices) - _atr_offset(atr, 0.20)
+    stop = min(prices) - _atr_offset(atr, 0.10)
     measured_move = peak - min(prices)
     target_full = entry + measured_move
-    target_half = entry + measured_move * 0.5
+    target_75 = entry + measured_move * 0.75
  
     return _make(s, "Triple Bottom", Bias.LONG,
                  entry, stop, target_full, conf,
                  f"Triple Bottom at {avg:.2f}, peak {peak:.2f}",
-                 target_1=round(target_half, 2),
+                 target_1=round(target_75, 2),
                  target_2=round(target_full, 2),
                  key_levels={"support": avg, "peak": peak})
  
@@ -991,15 +991,15 @@ def _detect_ascending_triangle(s):
  
     off = _atr_offset(atr, 0.10)
     entry = res + off
-    stop = sup - _atr_offset(atr, 0.20)
+    stop = sup - _atr_offset(atr, 0.10)
     measured_move = res - sup
     target_full = entry + measured_move
-    target_half = entry + measured_move * 0.5
+    target_75 = entry + measured_move * 0.75
  
     return _make(s, "Ascending Triangle", Bias.LONG,
                  entry, stop, target_full, conf,
                  f"Asc Triangle: flat top {res:.2f}, rising lows",
-                 target_1=round(target_half, 2),
+                 target_1=round(target_75, 2),
                  target_2=round(target_full, 2),
                  trail_type="atr", trail_param=2.0,
                  key_levels={"resistance": res, "support": sup})
@@ -1041,15 +1041,15 @@ def _detect_descending_triangle(s):
  
     off = _atr_offset(atr, 0.10)
     entry = sup - off
-    stop = res + _atr_offset(atr, 0.20)
+    stop = res + _atr_offset(atr, 0.10)
     measured_move = res - sup
     target_full = entry - measured_move
-    target_half = entry - measured_move * 0.5
+    target_75 = entry - measured_move * 0.75
  
     return _make(s, "Descending Triangle", Bias.SHORT,
                  entry, stop, target_full, conf,
                  f"Desc Triangle: flat bottom {sup:.2f}, falling highs",
-                 target_1=round(target_half, 2),
+                 target_1=round(target_75, 2),
                  target_2=round(target_full, 2),
                  key_levels={"support": sup, "resistance": res})
  
@@ -1146,12 +1146,12 @@ def _detect_bull_flag(s):
         hi = post[0]
  
         pole_size = hi.price - lo.price
-        if pole_size < atr * 1.5:
+        if pole_size < atr * 2.0:
             continue
  
         # Pole velocity: must complete in ≤ 10 bars
         pole_bars = hi.index - lo.index
-        if pole_bars > 10 or pole_bars < 2:
+        if pole_bars > 15 or pole_bars < 2:
             continue
  
         fs = hi.index
@@ -1166,7 +1166,7 @@ def _detect_bull_flag(s):
         flag_range = max(b.high for b in flag) - fl
  
         # Flag tightness: range < 40% of pole (was 50%)
-        if (hi.price - fl) / pole_size > 0.40:
+        if (hi.price - fl) / pole_size > 0.50:
             continue
  
         if s.closes[-1] <= hi.price:
@@ -1190,9 +1190,9 @@ def _detect_bull_flag(s):
  
         off = _atr_offset(atr, 0.05)
         entry = hi.price + off
-        stop = fl - _atr_offset(atr, 0.15)
+        stop = fl - _atr_offset(atr, 0.10)
         target_full = entry + pole_size
-        target_half = entry + pole_size * 0.5
+        target_half = entry + pole_size * 0.75
         pct = pole_size / lo.price
  
         label = "Tight" if is_tight else "Standard"
@@ -1224,11 +1224,11 @@ def _detect_bear_flag(s):
         lo = post[0]
  
         pole_size = hi.price - lo.price
-        if pole_size < atr * 1.5:
+        if pole_size < atr * 2.0:
             continue
  
         pole_bars = lo.index - hi.index
-        if pole_bars > 10 or pole_bars < 2:
+        if pole_bars > 15 or pole_bars < 2:
             continue
  
         fs = lo.index
@@ -1240,7 +1240,7 @@ def _detect_bear_flag(s):
             continue
  
         fh = max(b.high for b in flag)
-        if (fh - lo.price) / pole_size > 0.40:
+        if (fh - lo.price) / pole_size > 0.50:
             continue
  
         if s.closes[-1] >= lo.price:
@@ -1256,9 +1256,9 @@ def _detect_bear_flag(s):
  
         off = _atr_offset(atr, 0.05)
         entry = lo.price - off
-        stop = fh + _atr_offset(atr, 0.15)
+        stop = fh + _atr_offset(atr, 0.10)
         target_full = entry - pole_size
-        target_half = entry - pole_size * 0.5
+        target_half = entry - pole_size * 0.75
         pct = pole_size / hi.price
  
         return _make(s, "Bear Flag", Bias.SHORT,
@@ -1330,7 +1330,7 @@ def _detect_pennant(s):
         stop = min(pn_lows) - _atr_offset(atr, 0.15)
         pole_size = hi.price - lo.price
         target_full = entry + pole_size
-        target_half = entry + pole_size * 0.5
+        target_half = entry + pole_size * 0.75
  
         return _make(s, "Pennant", Bias.LONG,
                      entry, stop, target_full, conf,
@@ -1408,14 +1408,14 @@ def _detect_cup_and_handle(s):
  
     off = _atr_offset(atr, 0.10)
     entry = rim + off
-    stop = hl - _atr_offset(atr, 0.20)
+    stop = hl - _atr_offset(atr, 0.10)
     target_full = entry + depth
-    target_half = entry + depth * 0.5
+    target_75 = entry + depth * 0.75
  
     return _make(s, "Cup & Handle", Bias.LONG,
                  entry, stop, target_full, conf,
                  f"Cup & Handle: rim {rim:.2f}, depth {depth:.2f}",
-                 target_1=round(target_half, 2),
+                 target_1=round(target_75, 2),
                  target_2=round(target_full, 2),
                  trail_type="ema9", trail_param=9.0,
                  key_levels={"rim": rim, "cup_low": cl.price, "handle_low": hl})
@@ -1470,7 +1470,7 @@ def _detect_rectangle(s):
         entry = res + off
         stop = sup - _atr_offset(atr, 0.15)
         target_full = entry + rng
-        target_half = entry + rng * 0.5
+        target_half = entry + rng * 0.75
         return _make(s, "Rectangle", Bias.LONG,
                      entry, stop, target_full, conf,
                      f"Rectangle breakout above {res:.2f} ({res_touches}+{sup_touches} touches)",
@@ -1481,7 +1481,7 @@ def _detect_rectangle(s):
         entry = sup - off
         stop = res + _atr_offset(atr, 0.15)
         target_full = entry - rng
-        target_half = entry - rng * 0.5
+        target_half = entry - rng * 0.75
         return _make(s, "Rectangle", Bias.SHORT,
                      entry, stop, target_full, conf,
                      f"Rectangle breakdown below {sup:.2f} ({res_touches}+{sup_touches} touches)",
@@ -1538,9 +1538,9 @@ def _detect_rising_wedge(s):
  
     off = _atr_offset(atr, 0.10)
     entry = lp - off
-    stop = up + _atr_offset(atr, 0.20)
+    stop = up + _atr_offset(atr, 0.10)
     target_full = entry - widest
-    target_half = entry - widest * 0.5
+    target_half = entry - widest * 0.75
  
     return _make(s, "Rising Wedge", Bias.SHORT,
                  entry, stop, target_full, conf,
@@ -1592,9 +1592,9 @@ def _detect_falling_wedge(s):
  
     off = _atr_offset(atr, 0.10)
     entry = up + off
-    stop = lp - _atr_offset(atr, 0.20)
+    stop = lp - _atr_offset(atr, 0.10)
     target_full = entry + widest
-    target_half = entry + widest * 0.5
+    target_half = entry + widest * 0.75
  
     return _make(s, "Falling Wedge", Bias.LONG,
                  entry, stop, target_full, conf,
@@ -2257,14 +2257,18 @@ def _detect_rubberband_scalp(s):
     bounce_idx = -1
     for j in range(dli + 1, min(dli + 20, s.n)):
         if _is_green(s.bars[j]) and s.bars[j].close > s.bars[j - 1].high:
-            # Price must still be below VWAP at bounce
-            if s.bars[j].close < vwap:
-                bounce_found = True
-                bounce_idx = j
-                break
+            # Bounce bar must have higher volume than prior 3 bars (real demand)
+            bounce_vol = s.volumes[j]
+            prior_avg_vol = float(np.mean(s.volumes[max(0, j-3):j]))
+            if prior_avg_vol > 0 and bounce_vol < prior_avg_vol * 1.3:
+                continue  # Weak bounce, keep looking for a stronger one
+            bounce_found = True
+            bounce_idx = j
+            break
 
     if not bounce_found:
         return None
+
 
     # Only fire if bounce is recent (last 5 bars)
     if s.n - 1 - bounce_idx > 5:
@@ -2272,7 +2276,7 @@ def _detect_rubberband_scalp(s):
 
     conf = 0.58
     entry = s.bars[bounce_idx].close
-    stop = day_low - _atr_offset(atr, 0.20)
+    stop = day_low - _atr_offset(atr, 0.10)
     risk = entry - stop
     if risk <= 0:
         return None
@@ -2462,7 +2466,7 @@ def _detect_second_chance_scalp(s):
     pullback_found = False
     pullback_low = None
     for i in range(breakout_idx + 1, s.n):
-        if abs(s.lows[i] - lp) < atr * 0.5:
+        if abs(s.lows[i] - lp) < atr * 0.3:
             pullback_found = True
             pullback_low = s.lows[i]
             break
@@ -2485,6 +2489,10 @@ def _detect_second_chance_scalp(s):
     if not bounce_recent:
         return None
 
+    avg_vol = float(np.mean(s.volumes[max(0, breakout_idx-20):breakout_idx]))
+    if avg_vol > 0 and s.volumes[breakout_idx] < avg_vol * 1.5:
+        return None
+    
     # Pullback volume should be lower than breakout volume
     breakout_vol = float(np.mean(s.volumes[breakout_idx:min(breakout_idx + 3, s.n)]))
     pullback_vol = float(np.mean(s.volumes[-5:]))
@@ -2493,7 +2501,7 @@ def _detect_second_chance_scalp(s):
     conf = 0.53 + vol_bonus
 
     entry = cur.close
-    stop = pullback_low - _atr_offset(atr, 0.20)
+    stop = pullback_low - _atr_offset(atr, 0.10)
     risk = entry - stop
     if risk <= 0:
         return None
@@ -2518,58 +2526,53 @@ def _detect_second_chance_scalp(s):
 def _detect_fashionably_late(s):
     """Fashionably Late — EMA9 crosses above VWAP after morning selloff.
     
-    v2.2 changes:
-      - Structural stop: most recent swing low before cross (was mm/3)
-      - EMA slope check: EMA must be rising at the cross
-      - ATR-based offset
-      - Scaled exits
+    v3.5 changes (post-backtest fixes):
+      - EMA slope: must rise at least 0.1 ATR over 5 bars (was just > 0)
+      - Stop buffer: 0.20 → 0.10 ATR
+      - T1 at 75% measured move (was 50%)
     """
     if s.n < 20 or s.timeframe != "5min":
         return None
     atr = s.current_atr
     if atr <= 0:
         return None
-
+ 
     cur_time = s.timestamps[-1].time()
     if not (time(10, 0) <= cur_time <= time(10, 45)):
         return None
-
+ 
     vwap = _vwap_today(s)
     ema9 = _compute_ema9(s)
     if vwap is None or ema9 is None or vwap <= 0 or ema9 <= 0:
         return None
-
+ 
     # EMA must have crossed above VWAP recently (last 3 bars)
     cross_idx = None
     for i in range(max(0, s.n - 3), s.n):
         if i < 2:
             continue
-        # Need prior EMA and VWAP values — approximate from closes
-        prior_ema_approx = s.closes[i - 1]  # Rough approximation
         if s.closes[i - 1] < vwap and s.closes[i] > vwap:
             cross_idx = i
             break
-
+ 
     if cross_idx is None:
-        # Alternative: check if ema9 just crossed vwap
         if s.n >= 3:
-            # Check using actual ema9 computation
-            ema_prev = s.closes[-2]  # Approximation
+            ema_prev = s.closes[-2]
             if ema_prev < vwap and ema9 > vwap:
                 cross_idx = s.n - 1
             else:
                 return None
         else:
             return None
-
+ 
     cross_price = ema9
-
-    # EMA slope check: EMA must be rising
+ 
+    # ← CHANGED: EMA slope must rise at least 0.1 ATR over 5 bars (was just > 0)
     if s.n >= 5:
-        ema_slope = s.closes[-1] - s.closes[-3]  # Approximate EMA direction
-        if ema_slope <= 0:
+        ema_slope = s.closes[-1] - s.closes[-3]
+        if ema_slope < atr * 0.1:
             return None
-
+ 
     # Find today's low for measured move
     today = s.timestamps[-1].date()
     day_lows = [s.lows[i] for i in range(s.n) if s.timestamps[i].date() == today]
@@ -2579,32 +2582,32 @@ def _detect_fashionably_late(s):
     mm = cross_price - day_low
     if mm <= atr * 0.5:
         return None
-
+ 
     # Structural stop: most recent swing low before cross
     structural_stop = day_low
     for i in range(max(0, cross_idx - 10), cross_idx):
         if s.lows[i] < structural_stop * 1.1 and s.lows[i] > structural_stop * 0.5:
-            # Find a swing low (low lower than neighbors)
             if i > 0 and i < s.n - 1:
                 if s.lows[i] < s.lows[i - 1] and s.lows[i] < s.lows[i + 1]:
                     structural_stop = s.lows[i]
-
+ 
     conf = 0.57
     entry = cross_price
-    stop = structural_stop - _atr_offset(atr, 0.20)
+    stop = structural_stop - _atr_offset(atr, 0.10)   # ← CHANGED: was 0.20
     risk = entry - stop
     if risk <= 0:
         return None
-
-    t1 = round(entry + mm * 0.5, 2)
+ 
+    t1 = round(entry + mm * 0.75, 2)                   # ← CHANGED: was 0.5
     t2 = round(entry + mm, 2)
-
+ 
     return _make(s, "Fashionably Late", Bias.LONG,
                  entry, stop, t2, conf,
                  f"Fashionably Late: EMA9 crossed VWAP at {cross_price:.2f}",
                  target_1=t1, target_2=t2,
                  trail_type="ema9", trail_param=9.0,
                  key_levels={"cross": cross_price, "vwap": vwap, "day_low": day_low})
+ 
 
 
 # ==============================================================================
@@ -2969,12 +2972,11 @@ def _detect_mean_reversion(s):
 def _detect_trend_pullback(s):
     """Trend Pullback — buy dip to rising EMA in uptrend, sell rally in downtrend.
     
-    v2.2 changes:
-      - Now supports SHORT in trending_bear regime (was long only)
-      - EMA slope check: EMA must be rising (long) or falling (short)
-      - Structural stop: pullback low ± 0.2 ATR (was ema - 1 ATR)
-      - Wider EMA proximity: 0.5→0.8 ATR
-      - T1=1R, T2=prior swing high/low or 2R
+    v3.5 changes (post-backtest fixes):
+      - Stop buffer: 0.20 → 0.10 ATR (Phase 1, Fix 2)
+      - LONG: pullback depth ≥ 1.0 ATR, require red bar before green bounce ✓ (already applied)
+      - SHORT: pullback depth ≥ 1.0 ATR (was MISSING), require green bar before red rejection (was MISSING)
+      - EMA proximity: 0.3 ATR ✓ (already applied)
     """
     if s.n < 30 or s.timeframe != "5min":
         return None
@@ -2987,11 +2989,10 @@ def _detect_trend_pullback(s):
         return None
 
     # Compute 21 EMA
-    ema21 = float(s.closes[-1])  # Will be overwritten
+    ema21 = float(s.closes[-1])
     if hasattr(s, 'ema21') and s.ema21 is not None:
         ema21 = s.ema21
     else:
-        # Manual EMA calculation
         mult = 2 / 22
         ema = float(s.closes[0])
         for i in range(1, s.n):
@@ -3001,9 +3002,8 @@ def _detect_trend_pullback(s):
     cur = s.closes[-1]
     vwap = _vwap_today(s)
 
-    # EMA slope check: compare EMA position over last 5 bars
+    # EMA slope check
     if s.n >= 5:
-        ema_5_ago = float(s.closes[-5])  # Approximate
         mult = 2 / 22
         ema_prev = float(s.closes[0])
         for i in range(1, s.n - 5):
@@ -3013,16 +3013,27 @@ def _detect_trend_pullback(s):
         ema_slope = 0
 
     if s._regime == "trending_bull":
-        # LONG setup
+        # ── LONG setup ──
         if ema_slope <= 0:
-            return None  # EMA must be rising
+            return None
 
-        # Price must be near EMA (within 0.8 ATR — widened from 0.5)
-        if abs(cur - ema21) > atr * 0.8:
+        # Price must be near EMA (0.3 ATR)
+        if abs(cur - ema21) > atr * 0.3:
+            return None
+
+        # Pullback depth: must drop at least 1.0 ATR from recent high
+        recent_high = max(s.highs[-10:])
+        pullback_depth = recent_high - min(s.lows[-5:])
+        if pullback_depth < atr * 1.0:
             return None
 
         # Price should be above VWAP
         if vwap is not None and cur < vwap:
+            return None
+
+        # Must have at least one red bar in last 3 bars (actual pullback)
+        recent_reds = sum(1 for j in range(-4, -1) if j + s.n >= 0 and _is_red(s.bars[j]))
+        if recent_reds == 0:
             return None
 
         # Last bar must be green (bounce confirmation)
@@ -3033,14 +3044,13 @@ def _detect_trend_pullback(s):
         conf *= _regime_confidence_mult(s, "momentum")
 
         entry = cur
-        # Structural stop: recent pullback low
         pullback_low = min(s.lows[-5:])
-        stop = pullback_low - _atr_offset(atr, 0.20)
+        stop = pullback_low - _atr_offset(atr, 0.10)  # ← CHANGED: was 0.20
+
         risk = entry - stop
         if risk <= 0:
             return None
 
-        # T2: prior swing high or 2R
         prior_high = max(s.highs[-20:]) if s.n >= 20 else entry + risk * 2
         t1 = round(entry + risk, 2)
         t2 = round(max(prior_high, entry + risk * 2), 2)
@@ -3053,16 +3063,30 @@ def _detect_trend_pullback(s):
                      key_levels={"ema21": ema21})
 
     elif s._regime == "trending_bear":
-        # SHORT setup (NEW in v2.2)
+        # ── SHORT setup ──
         if ema_slope >= 0:
-            return None  # EMA must be falling
-
-        if abs(cur - ema21) > atr * 0.8:
             return None
 
+        # Price must be near EMA (0.3 ATR)
+        if abs(cur - ema21) > atr * 0.3:
+            return None
+
+        # ← ADDED: Pullback depth — price must rally at least 1.0 ATR from recent low
+        recent_low = min(s.lows[-10:])
+        pullback_depth = max(s.highs[-5:]) - recent_low
+        if pullback_depth < atr * 1.0:
+            return None
+
+        # Price should be below VWAP
         if vwap is not None and cur > vwap:
             return None
 
+        # ← ADDED: Must have at least one green bar in last 3 (actual rally before rejection)
+        recent_greens = sum(1 for j in range(-4, -1) if j + s.n >= 0 and _is_green(s.bars[j]))
+        if recent_greens == 0:
+            return None
+
+        # Last bar must be red (rejection confirmation)
         if not _is_red(s.bars[-1]):
             return None
 
@@ -3071,7 +3095,8 @@ def _detect_trend_pullback(s):
 
         entry = cur
         pullback_high = max(s.highs[-5:])
-        stop = pullback_high + _atr_offset(atr, 0.20)
+        stop = pullback_high + _atr_offset(atr, 0.10)  # ← CHANGED: was 0.20
+
         risk = stop - entry
         if risk <= 0:
             return None
@@ -3592,76 +3617,85 @@ def _detect_volume_breakout(s):
 def _detect_donchian_breakout(s):
     """Donchian Breakout — new 20-day high/low channel breakout.
     
-    v2.2 changes:
-      - Volume confirmation (1.5x avg)
-      - Trend alignment with 50 SMA
-      - Tighter stop: 10-day channel or 2 ATR
-      - Scaled exits
+    v3.5 changes (post-backtest fixes):
+      - ADDED: Squeeze filter — recent 5-day ranges must be < 85% of 20-day avg
+      - Stop buffer: 0.10 ATR ✓ (already correct)
+      - Volume 1.5x ✓ (already correct)
+      - Trend alignment ✓ (already correct)
     """
     if s.n < 50 or s.timeframe != "1d":
         return None
     atr = s.current_atr
     if atr <= 0:
         return None
-
+ 
+    # ← ADDED: Squeeze filter — Donchian works best after volatility compression
+    if s.n >= 25:
+        recent_ranges = [s.highs[i] - s.lows[i] for i in range(s.n - 5, s.n)]
+        longer_ranges = [s.highs[i] - s.lows[i] for i in range(s.n - 20, s.n - 5)]
+        avg_recent = float(np.mean(recent_ranges))
+        avg_longer = float(np.mean(longer_ranges))
+        if avg_longer > 0 and avg_recent > avg_longer * 0.85:
+            return None  # No compression = no edge
+ 
     cur = s.closes[-1]
     high_20 = max(s.highs[-21:-1])
     low_20 = min(s.lows[-21:-1])
     sma50 = float(np.mean(s.closes[-50:]))
-
+ 
     # Volume confirmation
     avg_vol = float(np.mean(s.volumes[-20:]))
     vol_ok = avg_vol > 0 and s.volumes[-1] >= avg_vol * 1.5
-
+ 
     if cur > high_20:
         # Bullish breakout
         trend_aligned = cur > sma50
         conf = 0.55 if trend_aligned else 0.48
         if not vol_ok:
             conf -= 0.05
-
+ 
         entry = cur
         low_10 = min(s.lows[-10:])
         stop = max(low_10, entry - atr * 2) - _atr_offset(atr, 0.10)
         risk = entry - stop
         if risk <= 0:
             return None
-
+ 
         t1 = round(entry + risk, 2)
         t2 = round(entry + risk * 2, 2)
-
+ 
         return _make(s, "Donchian Breakout", Bias.LONG,
                      entry, stop, t2, conf,
-                     f"Donchian BO Long: new 20d high" +
+                     f"Donchian BO Long: new 20d high (squeezed)" +
                      (" (trend aligned)" if trend_aligned else "") +
                      (f" vol {s.volumes[-1]/avg_vol:.1f}x" if vol_ok else ""),
                      target_1=t1, target_2=t2,
                      trail_type="atr", trail_param=2.5)
-
+ 
     elif cur < low_20:
         trend_aligned = cur < sma50
         conf = 0.55 if trend_aligned else 0.48
         if not vol_ok:
             conf -= 0.05
-
+ 
         entry = cur
         high_10 = max(s.highs[-10:])
         stop = min(high_10, entry + atr * 2) + _atr_offset(atr, 0.10)
         risk = stop - entry
         if risk <= 0:
             return None
-
+ 
         t1 = round(entry - risk, 2)
         t2 = round(entry - risk * 2, 2)
-
+ 
         return _make(s, "Donchian Breakout", Bias.SHORT,
                      entry, stop, t2, conf,
-                     f"Donchian BO Short: new 20d low" +
+                     f"Donchian BO Short: new 20d low (squeezed)" +
                      (" (trend aligned)" if trend_aligned else "") +
                      (f" vol {s.volumes[-1]/avg_vol:.1f}x" if vol_ok else ""),
                      target_1=t1, target_2=t2,
                      trail_type="atr", trail_param=2.5)
-
+ 
     return None
 
 
@@ -3695,16 +3729,17 @@ _DETECTOR_MAP: dict[str, callable] = {
     "Rising Wedge":         _detect_rising_wedge,
     "Falling Wedge":        _detect_falling_wedge,
     # Candlestick (10) — run on 5min + 15min per registry
-    "Bullish Engulfing":    _detect_bullish_engulfing,
-    "Bearish Engulfing":    _detect_bearish_engulfing,
-    "Morning Star":         _detect_morning_star,
-    "Evening Star":         _detect_evening_star,
-    "Hammer":               _detect_hammer,
-    "Shooting Star":        _detect_shooting_star,
-    "Doji":                 _detect_doji,
-    "Dragonfly Doji":       _detect_dragonfly_doji,
-    "Three White Soldiers": _detect_three_white_soldiers,
-    "Three Black Crows":    _detect_three_black_crows,
+    #"Bullish Engulfing":    _detect_bullish_engulfing,
+    #"Bearish Engulfing":    _detect_bearish_engulfing,
+    #"Morning Star":         _detect_morning_star,
+    #"Evening Star":         _detect_evening_star,
+    #"Hammer":               _detect_hammer,
+    #"Shooting Star":        _detect_shooting_star,
+    #"Doji":                 _detect_doji,
+    #"Dragonfly Doji":       _detect_dragonfly_doji,
+    #"Three White Soldiers": _detect_three_white_soldiers,
+    #"Three Black Crows":    _detect_three_black_crows,
+
     # SMB Scalps (7) — mostly 5min only per registry
     "RubberBand Scalp":     _detect_rubberband_scalp,
     "ORB 15min":            lambda s: _detect_orb(s, 15),

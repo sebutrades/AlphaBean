@@ -1,198 +1,176 @@
 """
-fetch_symbols.py — Fetch top US stocks by trading volume
+fetch_symbols.py — Fetch top N US equities ranked by dollar volume.
 
-Uses Massive.com (Polygon) grouped daily endpoint to get all US stocks
-for a recent trading day, sorts by volume, saves top N.
+Uses Massive.com (Polygon) API:
+  1. get_snapshot_all("stocks") → all tickers with prev_day price/volume
+  2. Filter: common stocks, price >= $5, volume >= 500K
+  3. Rank by dollar volume (close * volume)
+  4. Cache to cache/top_symbols.json
 
 Usage:
-  python fetch_symbols.py              # Top 300, saves to cache/
-  python fetch_symbols.py --count 500  # Top 500
-  python fetch_symbols.py --list       # Just print the cached list
-
-Output: cache/top_symbols.json
+  python fetch_symbols.py                # Top 500 (default)
+  python fetch_symbols.py --count 200    # Top 200
+  python fetch_symbols.py --refresh      # Force refresh
 """
 import argparse
 import json
-import os
 import sys
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 
+from massive import RESTClient
+import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
 CACHE_PATH = Path("cache/top_symbols.json")
-
-# Fallback: top ~300 US stocks by typical volume (March 2025)
-# These cover mega-cap + high-volume mid-cap across all sectors
-FALLBACK_SYMBOLS = [
-    # Mega Tech
-    "AAPL", "MSFT", "NVDA", "GOOGL", "GOOG", "AMZN", "META", "TSLA", "AVGO", "ORCL",
-    "ADBE", "CRM", "AMD", "INTC", "CSCO", "QCOM", "TXN", "MU", "AMAT", "LRCX",
-    "KLAC", "MRVL", "ADI", "NXPI", "SNPS", "CDNS", "FTNT", "PANW", "CRWD", "ZS",
-    "NET", "DDOG", "SNOW", "MDB", "PLTR", "PALANTIR", "DELL", "HPE", "IBM",
-    # Semis Extended
-    "SMCI", "ARM", "ON", "SWKS", "MCHP", "MPWR", "ENTG", "ASML", "TSM",
-    # Consumer Tech / Internet
-    "NFLX", "SHOP", "SQ", "PYPL", "COIN", "HOOD", "SOFI", "AFRM", "BILL", "TOST",
-    "DASH", "UBER", "LYFT", "ABNB", "BKNG", "EXPE", "TRIP", "ETSY", "EBAY", "MELI",
-    "SE", "GRAB", "NU", "PINS", "SNAP", "RDDT", "RBLX", "TTWO", "EA", "ATVI",
-    # AI / Growth
-    "AI", "PATH", "S", "IONQ", "RGTI", "QUBT", "BBAI", "SOUN", "VNET",
-    # Biotech / Pharma
-    "LLY", "UNH", "JNJ", "ABBV", "MRK", "PFE", "BMY", "AMGN", "GILD", "REGN",
-    "VRTX", "BIIB", "MRNA", "BNTX", "ISRG", "DXCM", "IDXX", "ZTS", "ALGN", "HOLX",
-    "ILMN", "EW", "SYK", "MDT", "ABT", "TMO", "DHR", "A", "BDX", "BAX",
-    # Financials
-    "JPM", "BAC", "WFC", "C", "GS", "MS", "SCHW", "BLK", "ICE", "CME",
-    "SPGI", "MCO", "AXP", "V", "MA", "COF", "DFS", "SYF", "ALLY",
-    # Energy
-    "XOM", "CVX", "COP", "SLB", "EOG", "MPC", "VLO", "PSX", "OXY", "DVN",
-    "HAL", "FANG", "PXD", "HES", "APA", "EQT", "AR", "RRC",
-    # Industrials
-    "BA", "CAT", "DE", "HON", "GE", "RTX", "LMT", "NOC", "GD", "TDG",
-    "FDX", "UPS", "UNP", "CSX", "NSC", "DAL", "UAL", "AAL", "LUV",
-    # Consumer
-    "COST", "WMT", "TGT", "HD", "LOW", "NKE", "LULU", "SBUX", "MCD", "CMG",
-    "DPZ", "YUM", "QSR", "DRI", "WYNN", "LVS", "MGM", "CZR", "DKNG",
-    "PG", "KO", "PEP", "MNST", "CELH", "PM", "MO", "STZ", "DEO", "BUD",
-    # Auto / EV
-    "GM", "F", "RIVN", "LCID", "NIO", "XPEV", "LI", "RACE",
-    # Real Estate / REITs
-    "AMT", "PLD", "CCI", "EQIX", "SPG", "O", "DLR", "PSA",
-    # Crypto Adjacent
-    "MSTR", "MARA", "RIOT", "CLSK", "HUT", "BITF",
-    # China ADRs
-    "BABA", "JD", "PDD", "BIDU", "NIO", "XPEV", "LI", "BILI", "TME",
-    # ETFs (for market context)
-    "SPY", "QQQ", "IWM", "DIA", "XLF", "XLE", "XLK", "XLV", "XLI", "XLP",
-    "GLD", "SLV", "TLT", "HYG", "VXX", "ARKK", "ARKW", "SMH", "SOXX", "XBI",
-    "KWEB", "EEM", "FXI", "EWZ",
-    # Additional high-volume
-    "PARA", "WBD", "CMCSA", "DIS", "T", "VZ", "TMUS",
-    "ROKU", "TTD", "ZM", "DOCU", "OKTA", "TWLO", "VEEV", "HUBS", "WDAY",
-    "NOW", "TEAM", "ZI", "CFLT", "GTLB", "ESTC", "MNDY", "U",
-    "ENPH", "SEDG", "FSLR", "RUN", "NOVA",
-    "FCX", "NEM", "GOLD", "AEM",
-    "CHWY", "W", "CAVA", "BROS", "SHAK",
-    "SMMT", "ASTS", "LUNR", "RKLB",
-    "APP", "DUOL", "INTA",
-]
+MIN_PRICE = 5.0
+MIN_VOLUME = 500_000
 
 
-def fetch_top_symbols(count: int = 300) -> list[str]:
-    """
-    Fetch top US stocks by volume from Massive.com API.
-    Falls back to hardcoded list if API fails.
-    """
-    print(f"\n  Fetching top {count} symbols by volume...")
-
-    try:
-        api_key = os.getenv("MASSIVE_API_KEY")
-        if not api_key:
-            raise ValueError("No API key")
-
-        # Try grouped daily endpoint for a recent trading day
-        import requests
-
-        # Find most recent weekday
-        today = datetime.now()
-        check_date = today - timedelta(days=1)
-        while check_date.weekday() >= 5:  # Skip weekends
-            check_date -= timedelta(days=1)
-        date_str = check_date.strftime("%Y-%m-%d")
-
-        print(f"  Querying grouped daily for {date_str}...")
-        url = f"https://api.polygon.io/v2/grouped/locale/us/market/stocks/{date_str}"
-        resp = requests.get(url, params={"apiKey": api_key}, timeout=30)
-
-        if resp.status_code == 200:
-            data = resp.json()
-            results = data.get("results", [])
-            if results:
-                # Filter: only regular stocks/ETFs, price > $5, volume > 500k
-                filtered = [
-                    r for r in results
-                    if r.get("v", 0) > 500000
-                    and r.get("c", 0) > 5.0
-                    and len(r.get("T", "")) <= 5  # Skip long tickers (warrants, etc)
-                    and "." not in r.get("T", "")  # Skip preferred shares
-                ]
-
-                # Sort by volume descending
-                filtered.sort(key=lambda x: x.get("v", 0), reverse=True)
-                symbols = [r["T"] for r in filtered[:count]]
-
-                print(f"  ✓ Found {len(symbols)} symbols from API (filtered from {len(results)} total)")
-                return symbols
-            else:
-                print(f"  ✗ API returned empty results, using fallback list")
-        else:
-            print(f"  ✗ API returned {resp.status_code}, using fallback list")
-
-    except Exception as e:
-        print(f"  ✗ API error: {e}, using fallback list")
-
-    # Fallback: deduplicated hardcoded list
-    seen = set()
-    unique = []
-    for s in FALLBACK_SYMBOLS:
-        if s not in seen:
-            seen.add(s)
-            unique.append(s)
-    symbols = unique[:count]
-    print(f"  Using fallback list: {len(symbols)} symbols")
-    return symbols
+def get_client() -> RESTClient:
+    api_key = os.getenv("MASSIVE_API_KEY")
+    if not api_key:
+        raise ValueError("MASSIVE_API_KEY not found in .env file")
+    return RESTClient(api_key=api_key)
 
 
-def save_symbols(symbols: list[str]):
-    """Save symbol list to cache."""
+def is_valid_ticker(ticker: str) -> bool:
+    """Keep only clean common-stock tickers (1-5 uppercase letters)."""
+    if not ticker or len(ticker) > 5:
+        return False
+    if not ticker.isalpha():
+        return False
+    if len(ticker) > 1 and ticker[-1] in ("W", "U", "R"):
+        return False
+    return True
+
+
+def fetch_top_symbols(count: int = 500, verbose: bool = True) -> list[dict]:
+    client = get_client()
+
+    if verbose:
+        print(f"\n  Fetching all US stock snapshots...")
+
+    snapshots = client.get_snapshot_all("stocks")
+
+    if verbose:
+        print(f"  Got {len(snapshots)} ticker snapshots")
+
+    ranked = []
+    skipped = {"no_prev": 0, "low_price": 0, "low_vol": 0, "bad_ticker": 0}
+
+    for snap in snapshots:
+        ticker = snap.ticker
+        if not is_valid_ticker(ticker):
+            skipped["bad_ticker"] += 1
+            continue
+
+        prev = snap.prev_day
+        if prev is None:
+            skipped["no_prev"] += 1
+            continue
+
+        close = prev.close or 0
+        volume = prev.volume or 0
+
+        if close < MIN_PRICE:
+            skipped["low_price"] += 1
+            continue
+        if volume < MIN_VOLUME:
+            skipped["low_vol"] += 1
+            continue
+
+        dollar_vol = close * volume
+        ranked.append({
+            "symbol": ticker,
+            "close": round(close, 2),
+            "volume": int(volume),
+            "dollar_volume": round(dollar_vol, 0),
+            "vwap": round(prev.vwap, 2) if prev.vwap else None,
+            "change_pct": round(snap.todays_change_percent, 2) if snap.todays_change_percent else None,
+        })
+
+    ranked.sort(key=lambda x: x["dollar_volume"], reverse=True)
+    top = ranked[:count]
+
+    if verbose:
+        print(f"  Filtered: {len(ranked)} valid stocks "
+              f"(skipped: {skipped['bad_ticker']} bad ticker, "
+              f"{skipped['no_prev']} no data, "
+              f"{skipped['low_price']} < ${MIN_PRICE}, "
+              f"{skipped['low_vol']} < {MIN_VOLUME:,} vol)")
+
+        print(f"\n  Top {min(count, len(top))} by dollar volume:")
+        print(f"  {'─' * 64}")
+        print(f"  {'#':>4}  {'Symbol':<8}  {'Close':>10}  {'Volume':>14}  {'$ Volume':>16}")
+        print(f"  {'─' * 64}")
+        for i, r in enumerate(top[:25]):
+            print(f"  {i+1:>4}  {r['symbol']:<8}  ${r['close']:>9,.2f}  "
+                  f"{r['volume']:>14,}  ${r['dollar_volume']:>14,.0f}")
+        if len(top) > 25:
+            print(f"  {'...':>4}")
+            for r in top[-3:]:
+                idx = top.index(r) + 1
+                print(f"  {idx:>4}  {r['symbol']:<8}  ${r['close']:>9,.2f}  "
+                      f"{r['volume']:>14,}  ${r['dollar_volume']:>14,.0f}")
+        print(f"  {'─' * 64}")
+
+    return top
+
+
+def save_symbols(top: list[dict]):
     CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    symbols = [r["symbol"] for r in top]
     data = {
         "symbols": symbols,
         "count": len(symbols),
         "fetched_at": datetime.now().isoformat(),
+        "min_price": MIN_PRICE,
+        "min_volume": MIN_VOLUME,
+        "details": top,
     }
     CACHE_PATH.write_text(json.dumps(data, indent=2))
-    print(f"  Saved {len(symbols)} symbols to {CACHE_PATH}")
-
-
-def load_symbols() -> list[str]:
-    """Load cached symbol list."""
-    if not CACHE_PATH.exists():
-        return []
-    try:
-        data = json.loads(CACHE_PATH.read_text())
-        return data.get("symbols", [])
-    except (json.JSONDecodeError, KeyError):
-        return []
+    print(f"\n  ✓ Saved {len(symbols)} symbols to {CACHE_PATH}")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Fetch top US stocks by volume")
-    parser.add_argument("--count", type=int, default=300, help="Number of symbols (default: 300)")
-    parser.add_argument("--list", action="store_true", help="Just show cached list")
+    parser = argparse.ArgumentParser(description="Fetch top US stocks by dollar volume")
+    parser.add_argument("--count", type=int, default=500)
+    parser.add_argument("--refresh", action="store_true")
+    parser.add_argument("--quiet", action="store_true")
     args = parser.parse_args()
 
-    if args.list:
-        symbols = load_symbols()
-        if not symbols:
-            print("No cached symbols. Run without --list first.")
-            return
-        print(f"\n  Cached symbols ({len(symbols)}):")
-        for i in range(0, len(symbols), 10):
-            chunk = symbols[i:i+10]
-            print(f"    {', '.join(chunk)}")
-        return
+    if not args.refresh and CACHE_PATH.exists():
+        try:
+            cached = json.loads(CACHE_PATH.read_text())
+            cached_count = cached.get("count", 0)
+            cached_at = cached.get("fetched_at", "unknown")
+            if cached_count >= args.count:
+                print(f"\n  Using cached symbols ({cached_count} from {cached_at})")
+                print(f"  Use --refresh to update")
+                return
+        except Exception:
+            pass
 
-    symbols = fetch_top_symbols(args.count)
-    save_symbols(symbols)
+    if not args.quiet:
+        print(f"\n  ╔══════════════════════════════════════════╗")
+        print(f"  ║  Juicer — Fetch Top {args.count:<4} Symbols         ║")
+        print(f"  ╠══════════════════════════════════════════╣")
+        print(f"  ║  Source:     Massive.com snapshots        ║")
+        print(f"  ║  Min price:  ${MIN_PRICE:<29}║")
+        print(f"  ║  Min vol:    {MIN_VOLUME:>10,}                  ║")
+        print(f"  ║  Ranked by:  Dollar volume                ║")
+        print(f"  ╚══════════════════════════════════════════╝")
 
-    print(f"\n  Top 20: {', '.join(symbols[:20])}")
-    print(f"  Total: {len(symbols)} symbols ready for backtest")
-    print(f"\n  Next: python run_backtest.py --from-cache --days 90")
+    t0 = time.time()
+    top = fetch_top_symbols(count=args.count, verbose=not args.quiet)
+    save_symbols(top)
+
+    if not args.quiet:
+        print(f"  Time: {time.time() - t0:.1f}s\n")
 
 
 if __name__ == "__main__":
