@@ -1,12 +1,14 @@
 """
-run_backtest.py — Walk-Forward Backtest Engine v3.3
+run_backtest.py — Walk-Forward Backtest Engine v3.4
 
-v3.3 changes:
-  - 4 timeframes: 5min, 15min, 1h, 1d (was just 5min+15min)
-  - Patterns only run on their designated TFs (from registry "tf" field)
-  - Per-pattern cooldown (cd) and max_hold (mh) from registry
-  - Composite cooldown key (pattern + bias + price bucket)
-  - 1h structural patterns: cleaner geometry, fewer false signals
+v3.4 changes (v2.2 infrastructure integration):
+  - PendingTrade: check_resolution method name fixed (was check_resolution_CORRECTED)
+  - PendingTrade: timeout_resolve() properly returns (outcome, r) tuple
+  - ATR computed from bar data and passed to PendingTrade for slippage
+  - target_1/target_2/position_splits passed from TradeSetup to PendingTrade
+  - Outcome counting handles "partial_win" correctly
+  - _compute_pattern_stats counts partial_win as win
+  - Stats now include t1_hit_rate and t2_hit_rate columns
 
 Usage:
   python run_backtest.py                                  # Quick: 10 symbols, 30 days
@@ -28,6 +30,7 @@ from backend.data.massive_client import fetch_bars
 from backend.data.schemas import BarSeries, Bar
 from backend.patterns.classifier import classify_all
 from backend.patterns.registry import PATTERN_META, PatternCategory, get_patterns_for_timeframe
+from backend.structures.indicators import wilder_atr
 
 
 # ==============================================================================
@@ -98,8 +101,28 @@ def _max_hold_bars(pattern_name: str, timeframe: str) -> int:
     return max(1, int(mh_min / bar_min))
 
 
+def _compute_atr_at(bars: list, idx: int, period: int = 14) -> float:
+    """Compute ATR at a specific bar index using Wilder's method.
+    
+    Returns 0.0 if not enough data.
+    """
+    start = max(0, idx - period - 5)
+    end = idx + 1
+    if end - start < period:
+        return 0.0
+
+    highs = np.array([b.high for b in bars[start:end]], dtype=np.float64)
+    lows = np.array([b.low for b in bars[start:end]], dtype=np.float64)
+    closes = np.array([b.close for b in bars[start:end]], dtype=np.float64)
+
+    atr_vals = wilder_atr(highs, lows, closes, period=period)
+    if len(atr_vals) == 0 or np.isnan(atr_vals[-1]):
+        return 0.0
+    return float(atr_vals[-1])
+
+
 # ==============================================================================
-# PENDING TRADE
+# PENDING TRADE (v2.2 — scaled exits, slippage, correct stop R)
 # ==============================================================================
 
 class PendingTrade:
@@ -109,12 +132,12 @@ class PendingTrade:
       1. Entry: Full position opened at entry ± slippage
       2. T1 hit: Exit position_splits[0] (default 50%) at target_1
       3. T2 hit: Exit position_splits[1] (default 30%) at target_2
-      4. Trail/timeout: Remaining position_splits[2] (default 20%) exits at trailing stop or timeout
+      4. Trail/timeout: Remaining position_splits[2] (default 20%) exits
       5. Stop hit at any point: ALL remaining position exits at stop
     
     The realized_r is the weighted-average R across all exits.
     """
- 
+
     def __init__(self, pattern_name, strategy_type, symbol, bias,
                  entry, target, stop, bar_idx, max_hold,
                  target_1=0.0, target_2=0.0,
@@ -125,75 +148,64 @@ class PendingTrade:
         self.symbol = symbol
         self.bias = bias
         self.stop = stop
-        self.target = target  # Full measured move (backward compat)
+        self.target = target
         self.bar_idx = bar_idx
         self.max_hold = max_hold
         self.atr = atr
- 
+
         # Apply slippage to entry (0.05 ATR adverse)
         slippage = atr * 0.05 if atr > 0 else 0.0
         if bias == "long":
-            self.entry = entry + slippage  # Buy slightly higher
+            self.entry = entry + slippage
         else:
-            self.entry = entry - slippage  # Sell slightly lower
- 
+            self.entry = entry - slippage
+
         self.risk = abs(self.entry - stop)
- 
+
         # Scaled exit targets
-        self.target_1 = target_1 if target_1 > 0 else target  # Fallback to single target
+        self.target_1 = target_1 if target_1 > 0 else target
         self.target_2 = target_2 if target_2 > 0 else target
         self.splits = position_splits
- 
+
         # State tracking
         self.t1_hit = False
         self.t2_hit = False
-        self.partial_rs = []  # List of (weight, realized_r) for each exit
-        self.remaining_weight = 1.0  # How much position is still open
- 
-    def check_resolution_CORRECTED(self, bar):
+        self.partial_rs = []
+        self.remaining_weight = 1.0
+
+    def check_resolution(self, bar: Bar):
         """Check if any exit conditions are met on this bar.
         
-        Returns (outcome, realized_r) when trade is FULLY resolved,
+        Returns (outcome_str, realized_r) when trade is FULLY resolved,
         or None if position still open.
-        
-        BUGFIX: Stop R is now calculated at actual stop price,
-        not hardcoded to -1.0. This matters because:
-        - Before T1: stop at original level → R ≈ -1.0 (correct)
-        - After T1:  stop at breakeven → R = 0.0 (was incorrectly -1.0)
         """
         if self.risk <= 0:
             return ("loss", -1.0)
-    
+
         is_long = self.bias == "long"
-    
-        # ── STOP CHECK (always first) ──
+
+        # ── STOP CHECK (always first — protects capital) ──
         stop_hit = False
         if is_long and bar.low <= self.stop:
             stop_hit = True
         elif not is_long and bar.high >= self.stop:
             stop_hit = True
-    
+
         if stop_hit:
-            # Calculate actual R at the stop price
-            if self.risk > 0:
-                if is_long:
-                    stop_r = (self.stop - self.entry) / self.risk
-                else:
-                    stop_r = (self.entry - self.stop) / self.risk
+            # Calculate actual R at the stop price (not hardcoded -1.0)
+            # After T1, stop = entry → R = 0.0. Before T1, stop = original → R ≈ -1.0
+            if is_long:
+                stop_r = (self.stop - self.entry) / self.risk
             else:
-                stop_r = -1.0
+                stop_r = (self.entry - self.stop) / self.risk
             self.partial_rs.append((self.remaining_weight, round(stop_r, 3)))
             self.remaining_weight = 0.0
             return self._finalize()
-    
+
         # ── TARGET 1 CHECK ──
         if not self.t1_hit:
-            t1_hit = False
             if (is_long and bar.high >= self.target_1) or \
-            (not is_long and bar.low <= self.target_1):
-                t1_hit = True
-    
-            if t1_hit:
+               (not is_long and bar.low <= self.target_1):
                 self.t1_hit = True
                 t1_r = abs(self.target_1 - self.entry) / self.risk
                 self.partial_rs.append((self.splits[0], round(t1_r, 3)))
@@ -201,65 +213,55 @@ class PendingTrade:
                 self.stop = self.entry  # Move stop to breakeven
                 if self.remaining_weight <= 0.01:
                     return self._finalize()
-    
+
         # ── TARGET 2 CHECK (only if T1 already hit) ──
         if self.t1_hit and not self.t2_hit:
-            t2_hit = False
             if (is_long and bar.high >= self.target_2) or \
-            (not is_long and bar.low <= self.target_2):
-                t2_hit = True
-    
-            if t2_hit:
+               (not is_long and bar.low <= self.target_2):
                 self.t2_hit = True
                 t2_r = abs(self.target_2 - self.entry) / self.risk
                 self.partial_rs.append((self.splits[1], round(t2_r, 3)))
                 self.remaining_weight -= self.splits[1]
                 if self.remaining_weight <= 0.01:
                     return self._finalize()
-    
+
         return None  # Trade still open
- 
+
     def timeout_resolve(self, current_price: float) -> tuple[str, float]:
-        """Resolve remaining position at current price (timeout or EOD).
-        
-        Called when max_hold bars reached or end of data.
-        """
+        """Resolve remaining position at current price (timeout or EOD)."""
         if self.risk <= 0:
             return ("timeout", 0.0)
- 
-        # Close remaining position at market
+
         if self.bias == "long":
             remaining_r = (current_price - self.entry) / self.risk
         else:
             remaining_r = (self.entry - current_price) / self.risk
- 
-        self.partial_rs.append((self.remaining_weight, remaining_r))
+
+        self.partial_rs.append((self.remaining_weight, round(remaining_r, 3)))
         self.remaining_weight = 0.0
         return self._finalize()
- 
+
     def _finalize(self) -> tuple[str, float]:
         """Calculate final weighted-average R and determine outcome string."""
         if not self.partial_rs:
             return ("loss", -1.0)
- 
-        # Weighted average R
+
         total_weight = sum(w for w, _ in self.partial_rs)
         if total_weight <= 0:
             return ("loss", -1.0)
- 
+
         weighted_r = sum(w * r for w, r in self.partial_rs) / total_weight
         weighted_r = round(weighted_r, 3)
- 
-        # Classify outcome
+
         if self.t1_hit and self.t2_hit:
-            outcome = "win"          # Both targets hit
+            outcome = "win"
         elif self.t1_hit:
-            outcome = "partial_win"  # T1 hit, stopped at BE or timed out on rest
+            outcome = "partial_win"
         elif weighted_r > 0:
-            outcome = "timeout"      # No targets hit but net positive
+            outcome = "timeout"
         else:
             outcome = "loss"
- 
+
         return (outcome, weighted_r)
 
 
@@ -294,14 +296,17 @@ def backtest_symbol_tf(
     outcomes: list[TradeOutcome] = []
     pending: list[PendingTrade] = []
     last_fired: dict[str, int] = {}
-    wins = 0; losses = 0; timeouts = 0; signals_found = 0
+    wins = 0; losses = 0; partial_wins = 0; timeouts = 0; signals_found = 0
 
     for i in range(min_bars, n):
-        # Check pending trades (each has per-pattern max_hold)
+        # ── Resolve pending trades ──
         still_pending = []
         for trade in pending:
             bars_held = i - trade.bar_idx
+
+            # Check bar-by-bar resolution (T1, T2, stop)
             result = trade.check_resolution(bars[i])
+
             if result is not None:
                 outcome_str, realized_r = result
                 outcomes.append(TradeOutcome(
@@ -311,15 +316,21 @@ def backtest_symbol_tf(
                     outcome=outcome_str, realized_r=realized_r,
                     timestamp=bars[i].timestamp.isoformat(),
                 ))
-                if outcome_str == "win": wins += 1
-                else: losses += 1
+                if outcome_str == "win":
+                    wins += 1
+                elif outcome_str == "partial_win":
+                    partial_wins += 1
+                else:
+                    losses += 1
+
             elif bars_held >= trade.max_hold:
-                timeout_r = trade.timeout_r(bars[i].close)
+                # Timeout: resolve remaining position at market
+                outcome_str, realized_r = trade.timeout_resolve(bars[i].close)
                 outcomes.append(TradeOutcome(
                     pattern_name=trade.pattern_name, strategy_type=trade.strategy_type,
                     symbol=symbol, bias=trade.bias,
                     entry_price=trade.entry, target_price=trade.target, stop_price=trade.stop,
-                    outcome="timeout", realized_r=timeout_r,
+                    outcome=outcome_str, realized_r=realized_r,
                     timestamp=bars[i].timestamp.isoformat(),
                 ))
                 timeouts += 1
@@ -327,15 +338,18 @@ def backtest_symbol_tf(
                 still_pending.append(trade)
         pending = still_pending
 
-        # Scan at intervals
+        # ── Scan for new setups at intervals ──
         if (i - min_bars) % scan_interval != 0:
             continue
 
         window = BarSeries(symbol=symbol, timeframe=timeframe, bars=bars[:i+1])
         try:
-            setups = classify_all(window)  # TF routing happens inside
+            setups = classify_all(window)
         except Exception:
             continue
+
+        # Compute ATR at current bar for slippage
+        current_atr = _compute_atr_at(bars, i)
 
         for setup in setups:
             # Composite cooldown: pattern + bias + price level
@@ -344,40 +358,48 @@ def backtest_symbol_tf(
 
             cd_bars = _cooldown_bars(setup.pattern_name, timeframe)
             lf = last_fired.get(cooldown_key, -9999)
-            if i - lf < cd_bars: continue
-            if any(p.pattern_name == setup.pattern_name for p in pending): continue
+            if i - lf < cd_bars:
+                continue
+            if any(p.pattern_name == setup.pattern_name for p in pending):
+                continue
 
             mh_bars = _max_hold_bars(setup.pattern_name, timeframe)
             signals_found += 1
             last_fired[cooldown_key] = i
+
             pending.append(PendingTrade(
-                pattern_name=setup.pattern_name, strategy_type=setup.strategy_type,
-                symbol=symbol, bias=setup.bias.value,
-                entry=setup.entry_price, target=setup.target_price, stop=setup.stop_loss,
-                bar_idx=i, max_hold=mh_bars,
+                pattern_name=setup.pattern_name,
+                strategy_type=setup.strategy_type,
+                symbol=symbol,
+                bias=setup.bias.value,
+                entry=setup.entry_price,
+                target=setup.target_price,
+                stop=setup.stop_loss,
+                bar_idx=i,
+                max_hold=mh_bars,
                 target_1=getattr(setup, 'target_1', 0.0),
                 target_2=getattr(setup, 'target_2', 0.0),
-                position_splits=getattr(setup, 'position_splits', (0.5, 0.3, 0.2)),
-                atr=s.current_atr if hasattr(setup, 'current_atr') else 0.0,
+                position_splits=tuple(getattr(setup, 'position_splits', (0.5, 0.3, 0.2))),
+                atr=current_atr,
             ))
-        
-    # Resolve remaining
+
+    # ── Resolve remaining trades at end of data ──
     for trade in pending:
-        timeout_r = trade.timeout_r(bars[-1].close)
+        outcome_str, realized_r = trade.timeout_resolve(bars[-1].close)
         outcomes.append(TradeOutcome(
             pattern_name=trade.pattern_name, strategy_type=trade.strategy_type,
             symbol=symbol, bias=trade.bias,
             entry_price=trade.entry, target_price=trade.target, stop_price=trade.stop,
-            outcome="timeout", realized_r=timeout_r,
+            outcome=outcome_str, realized_r=realized_r,
             timestamp=bars[-1].timestamp.isoformat(),
         ))
         timeouts += 1
 
-    total = wins + losses + timeouts
+    total = wins + partial_wins + losses + timeouts
     if verbose and total > 0:
-        wr = wins / total * 100
+        wr = (wins + partial_wins) / total * 100
         print(f"        {timeframe:>5}: {signals_found} signals → "
-              f"W:{wins} L:{losses} T:{timeouts} ({wr:.0f}% WR)")
+              f"W:{wins} PW:{partial_wins} L:{losses} T:{timeouts} ({wr:.0f}% WR)")
 
     return outcomes
 
@@ -415,10 +437,12 @@ def run_full_backtest(
     remaining = [s for s in symbols if s not in completed_symbols]
 
     print(f"\n{'═' * 72}")
-    print(f"  Juicer v2.1 — Walk-Forward Backtest Engine")
+    print(f"  Juicer v3.4 — Walk-Forward Backtest Engine (Scaled Exits)")
     print(f"  {len(symbols)} symbols × {len(timeframes)} TFs × 42 patterns (TF-routed)")
     print(f"  Timeframes: {', '.join(timeframes)}")
     print(f"  Lookback: {days_back} days | Per-pattern cooldown + max_hold")
+    print(f"  Exits: T1 (50%) → BE stop → T2 (30%) → Trail (20%)")
+    print(f"  Slippage: 0.05 ATR adverse per entry")
     print(f"{'═' * 72}")
 
     per_sym = len(timeframes) * (8 if days_back <= 30 else 15)
@@ -442,7 +466,6 @@ def run_full_backtest(
               f"({pct:.0f}%) eta:{eta/60:.1f}m")
 
         for tf in timeframes:
-            # How many patterns will run on this TF?
             n_patterns = len(get_patterns_for_timeframe(tf))
             if n_patterns == 0:
                 continue
@@ -451,7 +474,7 @@ def run_full_backtest(
             sym_outcomes.extend(outcomes)
 
         sym_time = time.time() - sym_start
-        sym_wins = sum(1 for o in sym_outcomes if o.outcome == "win")
+        sym_wins = sum(1 for o in sym_outcomes if o.outcome in ("win", "partial_win"))
         sym_total = len(sym_outcomes)
         sym_wr = sym_wins / sym_total * 100 if sym_total > 0 else 0
 
@@ -488,10 +511,10 @@ def run_full_backtest(
         stats = _compute_pattern_stats(pattern_name, trades)
         pattern_stats[pattern_name] = stats
 
-    print(f"\n{'─' * 100}")
+    print(f"\n{'─' * 108}")
     print(f"  {'Pattern':<28} {'Cat':<10} {'TFs':<10} {'N':>5} {'WR':>6} {'PF':>6} "
           f"{'Exp':>8} {'AvgW':>6} {'AvgL':>6} {'Edge':>5} {'Gr':<3}")
-    print(f"{'─' * 100}")
+    print(f"{'─' * 108}")
 
     sorted_patterns = sorted(pattern_stats.items(), key=lambda x: x[1]["edge_score"], reverse=True)
 
@@ -544,6 +567,15 @@ def run_full_backtest(
     for tf in timeframes:
         print(f"    {tf:>5}: {tf_counts.get(tf, 0)} signals")
 
+    # Partial win stats
+    pw_count = sum(1 for o in all_outcomes if o.outcome == "partial_win")
+    w_count = sum(1 for o in all_outcomes if o.outcome == "win")
+    if pw_count + w_count > 0:
+        print(f"\n  Scaled exit breakdown:")
+        print(f"    Full wins (T1+T2):  {w_count}")
+        print(f"    Partial wins (T1):  {pw_count}")
+        print(f"    T1 hit rate:        {(w_count + pw_count) / len(all_outcomes) * 100:.1f}%" if all_outcomes else "")
+
     # Evaluator
     evaluator = StrategyEvaluator()
     evaluator.record_batch(all_outcomes)
@@ -558,21 +590,24 @@ def run_full_backtest(
 
     # Save
     total_time = time.time() - t_start
-    total_wins = sum(1 for o in all_outcomes if o.outcome == "win")
+    total_wins = sum(1 for o in all_outcomes if o.outcome in ("win", "partial_win"))
 
     results = {
-        "version": "3.3",
+        "version": "3.4",
         "run_date": datetime.now().isoformat(),
         "config": {
             "symbols": list(completed_symbols),
             "symbol_count": len(completed_symbols),
             "days_back": days_back,
             "timeframes": timeframes,
+            "exit_model": "scaled_T1_T2_trail",
+            "slippage_model": "0.05_ATR_adverse",
         },
         "summary": {
             "total_symbols": len(completed_symbols),
             "total_signals": len(all_outcomes),
-            "total_wins": total_wins,
+            "total_wins": sum(1 for o in all_outcomes if o.outcome == "win"),
+            "total_partial_wins": sum(1 for o in all_outcomes if o.outcome == "partial_win"),
             "total_losses": sum(1 for o in all_outcomes if o.outcome == "loss"),
             "total_timeouts": sum(1 for o in all_outcomes if o.outcome == "timeout"),
             "overall_win_rate": round(total_wins / len(all_outcomes) * 100, 1) if all_outcomes else 0,
@@ -590,7 +625,7 @@ def run_full_backtest(
         CHECKPOINT_PATH.unlink()
 
     print(f"\n{'═' * 72}")
-    print(f"  BACKTEST COMPLETE")
+    print(f"  BACKTEST COMPLETE — v3.4 (Scaled Exits)")
     print(f"{'═' * 72}")
     print(f"  Symbols:      {len(completed_symbols)}")
     print(f"  Timeframes:   {', '.join(timeframes)}")
@@ -604,19 +639,23 @@ def run_full_backtest(
 
 
 # ==============================================================================
-# STATS
+# STATS (v2.2 — handles partial_win, tracks T1/T2 hit rates)
 # ==============================================================================
 
 def _compute_pattern_stats(pattern_name: str, trades: list[TradeOutcome]) -> dict:
     n = len(trades)
     if n == 0:
-        return {"total_signals": 0, "wins": 0, "losses": 0, "timeouts": 0,
-                "win_rate": 0, "profit_factor": 0, "expectancy": 0,
+        return {"total_signals": 0, "wins": 0, "partial_wins": 0, "losses": 0,
+                "timeouts": 0, "win_rate": 0, "profit_factor": 0, "expectancy": 0,
                 "avg_win_r": 0, "avg_loss_r": 0, "best_r": 0, "worst_r": 0,
-                "edge_score": 0, "sample_size": 0}
+                "edge_score": 0, "sample_size": 0, "t1_hit_rate": 0, "avg_r": 0}
 
+    # partial_win counts as a WIN for win-rate (T1 was hit, trade was profitable)
     wins = [t for t in trades if t.outcome in ("win", "partial_win")]
+    full_wins = [t for t in trades if t.outcome == "win"]
+    partial_wins_list = [t for t in trades if t.outcome == "partial_win"]
     losses = [t for t in trades if t.outcome == "loss"]
+    timeouts_list = [t for t in trades if t.outcome == "timeout"]
 
     n_wins = len(wins)
     wr = n_wins / n
@@ -627,6 +666,7 @@ def _compute_pattern_stats(pattern_name: str, trades: list[TradeOutcome]) -> dic
 
     avg_win_r = float(np.mean(win_rs)) if win_rs else 0
     avg_loss_r = float(np.mean(loss_rs)) if loss_rs else 0
+    avg_r = float(np.mean(all_r))
 
     gross_win = sum(win_rs) if win_rs else 0
     gross_loss = sum(loss_rs) if loss_rs else 0
@@ -634,6 +674,12 @@ def _compute_pattern_stats(pattern_name: str, trades: list[TradeOutcome]) -> dic
 
     expectancy = (wr * avg_win_r) - ((1 - wr) * avg_loss_r)
 
+    # T1 hit rate = (wins + partial_wins) / total
+    t1_hit_rate = round(n_wins / n * 100, 1) if n > 0 else 0
+    # T2 hit rate = full wins only
+    t2_hit_rate = round(len(full_wins) / n * 100, 1) if n > 0 else 0
+
+    # Edge score (unchanged formula)
     wr_score = max(0, min(100, (wr - 0.35) / 0.35 * 100))
     pf_score = max(0, min(100, (min(pf, 5.0) - 0.5) / 2.5 * 100))
     exp_score = max(0, min(100, (expectancy + 0.5) / 1.5 * 100))
@@ -646,13 +692,23 @@ def _compute_pattern_stats(pattern_name: str, trades: list[TradeOutcome]) -> dic
     edge = round(max(0, min(100, edge)), 1)
 
     return {
-        "total_signals": n, "wins": n_wins, "losses": len(losses),
-        "timeouts": len([t for t in trades if t.outcome == "timeout"]),
-        "win_rate": round(wr * 100, 1), "profit_factor": round(min(pf, 99.0), 2),
+        "total_signals": n,
+        "wins": len(full_wins),
+        "partial_wins": len(partial_wins_list),
+        "losses": len(losses),
+        "timeouts": len(timeouts_list),
+        "win_rate": round(wr * 100, 1),
+        "t1_hit_rate": t1_hit_rate,
+        "t2_hit_rate": t2_hit_rate,
+        "profit_factor": round(min(pf, 99.0), 2),
         "expectancy": round(expectancy, 3),
-        "avg_win_r": round(avg_win_r, 2), "avg_loss_r": round(avg_loss_r, 2),
-        "best_r": round(max(all_r), 2), "worst_r": round(min(all_r), 2),
-        "edge_score": edge, "sample_size": n,
+        "avg_win_r": round(avg_win_r, 2),
+        "avg_loss_r": round(avg_loss_r, 2),
+        "avg_r": round(avg_r, 3),
+        "best_r": round(max(all_r), 2),
+        "worst_r": round(min(all_r), 2),
+        "edge_score": edge,
+        "sample_size": n,
     }
 
 
@@ -681,7 +737,7 @@ def _load_cached_symbols() -> list[str]:
 # ==============================================================================
 
 def main():
-    parser = argparse.ArgumentParser(description="Juicer v2.1 Walk-Forward Backtest")
+    parser = argparse.ArgumentParser(description="Juicer v3.4 Walk-Forward Backtest")
     parser.add_argument("--symbols", type=str, default=None)
     parser.add_argument("--count", type=int, default=10)
     parser.add_argument("--days", type=int, default=30)
@@ -703,13 +759,14 @@ def main():
     tfs = TIMEFRAMES + (["1d"] if args.daily else [])
 
     print(f"\n  ╔══════════════════════════════════════════════════════════╗")
-    print(f"  ║  Juicer v2.1 — Walk-Forward Backtest                   ║")
+    print(f"  ║  Juicer v3.4 — Walk-Forward Backtest (Scaled Exits)    ║")
     print(f"  ╠══════════════════════════════════════════════════════════╣")
     print(f"  ║  Symbols:     {len(symbols):<42}║")
     print(f"  ║  Days back:   {args.days:<42}║")
     print(f"  ║  Timeframes:  {', '.join(tfs):<42}║")
     print(f"  ║  Patterns:    42 (TF-routed per registry)              ║")
-    print(f"  ║  Method:      Strict walk-forward, per-pattern params  ║")
+    print(f"  ║  Exits:       T1 (50%) → BE → T2 (30%) → Trail (20%)  ║")
+    print(f"  ║  Slippage:    0.05 ATR adverse                         ║")
     print(f"  ╚══════════════════════════════════════════════════════════╝")
 
     run_full_backtest(symbols, days_back=args.days, verbose=not args.quiet,

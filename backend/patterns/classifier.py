@@ -229,6 +229,7 @@ def _compute_vwap(s, start_idx: int) -> float:
         cv += s.volumes[i]; ctv += tp * s.volumes[i]
     return ctv / cv if cv > 0 else s.closes[-1]
 
+
 def _vwap_today(s):
     """Convenience wrapper: compute VWAP from today's first bar."""
     today = s.timestamps[-1].date()
@@ -236,6 +237,17 @@ def _vwap_today(s):
         if s.timestamps[i].date() == today:
             return _compute_vwap(s, i)
     return _compute_vwap(s, 0)
+
+
+def _compute_ema9(s) -> float | None:
+    """Compute 9-period EMA of closes. Returns current value or None."""
+    if s.n < 10:
+        return None
+    mult = 2.0 / 10.0  # 2 / (period + 1)
+    ema = float(s.closes[0])
+    for i in range(1, s.n):
+        ema = s.closes[i] * mult + ema * (1 - mult)
+    return ema
 # ==============================================================================
 # ATR-BASED OFFSET (replaces ALL $0.02 fixed offsets)
 # ==============================================================================
