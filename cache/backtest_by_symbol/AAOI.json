@@ -1,0 +1,149 @@
+{
+  "symbol": "AAOI",
+  "patterns": {
+    "Trend Pullback": {
+      "signals": 70,
+      "wins": 25,
+      "losses": 45,
+      "win_rate": 35.714285714285715,
+      "profit_factor": 1.6,
+      "expectancy": 0.3845,
+      "avg_win_r": 2.88,
+      "avg_loss_r": 1.0,
+      "edge_score": 58.0
+    },
+    "Mean Reversion": {
+      "signals": 69,
+      "wins": 13,
+      "losses": 56,
+      "win_rate": 18.84057971014493,
+      "profit_factor": 0.72,
+      "expectancy": -0.2291,
+      "avg_win_r": 3.09,
+      "avg_loss_r": 1.0,
+      "edge_score": 30.1
+    },
+    "Second Chance Scalp": {
+      "signals": 56,
+      "wins": 15,
+      "losses": 41,
+      "win_rate": 26.785714285714285,
+      "profit_factor": 2.17,
+      "expectancy": 0.8532,
+      "avg_win_r": 5.92,
+      "avg_loss_r": 1.0,
+      "edge_score": 69.4
+    },
+    "Fashionably Late": {
+      "signals": 17,
+      "wins": 8,
+      "losses": 9,
+      "win_rate": 47.05882352941176,
+      "profit_factor": 3.04,
+      "expectancy": 1.0808,
+      "avg_win_r": 3.42,
+      "avg_loss_r": 1.0,
+      "edge_score": 86.2
+    },
+    "RubberBand Scalp": {
+      "signals": 4,
+      "wins": 0,
+      "losses": 4,
+      "win_rate": 0.0,
+      "profit_factor": 0.0,
+      "expectancy": -1.0,
+      "avg_win_r": 0.0,
+      "avg_loss_r": 1.0,
+      "edge_score": -16.0
+    },
+    "VWAP Reversion": {
+      "signals": 36,
+      "wins": 4,
+      "losses": 32,
+      "win_rate": 11.11111111111111,
+      "profit_factor": 1.25,
+      "expectancy": 0.2202,
+      "avg_win_r": 9.98,
+      "avg_loss_r": 1.0,
+      "edge_score": 41.3
+    },
+    "Tidal Wave": {
+      "signals": 2,
+      "wins": 1,
+      "losses": 1,
+      "win_rate": 50.0,
+      "profit_factor": 4.33,
+      "expectancy": 1.6667,
+      "avg_win_r": 4.33,
+      "avg_loss_r": 1.0,
+      "edge_score": 85.3
+    },
+    "Rising Wedge": {
+      "signals": 72,
+      "wins": 28,
+      "losses": 44,
+      "win_rate": 38.88888888888889,
+      "profit_factor": 1.61,
+      "expectancy": 0.3754,
+      "avg_win_r": 2.54,
+      "avg_loss_r": 1.0,
+      "edge_score": 59.2
+    },
+    "Bear Flag": {
+      "signals": 63,
+      "wins": 21,
+      "losses": 42,
+      "win_rate": 33.33333333333333,
+      "profit_factor": 1.2,
+      "expectancy": 0.132,
+      "avg_win_r": 2.4,
+      "avg_loss_r": 1.0,
+      "edge_score": 48.0
+    },
+    "Inverse H&S": {
+      "signals": 4,
+      "wins": 1,
+      "losses": 3,
+      "win_rate": 25.0,
+      "profit_factor": 0.73,
+      "expectancy": -0.2057,
+      "avg_win_r": 2.18,
+      "avg_loss_r": 1.0,
+      "edge_score": 17.1
+    },
+    "Bull Flag": {
+      "signals": 59,
+      "wins": 27,
+      "losses": 32,
+      "win_rate": 45.76271186440678,
+      "profit_factor": 1.8,
+      "expectancy": 0.4338,
+      "avg_win_r": 2.13,
+      "avg_loss_r": 1.0,
+      "edge_score": 65.0
+    },
+    "Pennant": {
+      "signals": 15,
+      "wins": 8,
+      "losses": 7,
+      "win_rate": 53.333333333333336,
+      "profit_factor": 1.98,
+      "expectancy": 0.4554,
+      "avg_win_r": 1.73,
+      "avg_loss_r": 1.0,
+      "edge_score": 65.2
+    },
+    "Head & Shoulders": {
+      "signals": 4,
+      "wins": 0,
+      "losses": 4,
+      "win_rate": 0.0,
+      "profit_factor": 0.0,
+      "expectancy": -1.0,
+      "avg_win_r": 0.0,
+      "avg_loss_r": 1.0,
+      "edge_score": -16.0
+    }
+  },
+  "cached_at": 1774383019.3522484
+}

@@ -1,190 +1,358 @@
 {
-  "cached_at": 1774143724.1636276,
+  "cached_at": 1774382109.9268034,
   "stocks": [
     {
-      "symbol": "GOLD",
+      "symbol": "CRCL",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 1
     },
     {
-      "symbol": "MRVL",
+      "symbol": "MSFT",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 2
     },
     {
-      "symbol": "NEE",
+      "symbol": "CRM",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 3
     },
     {
-      "symbol": "MO",
+      "symbol": "COIN",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 4
     },
     {
-      "symbol": "O",
+      "symbol": "TTD",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 5
     },
     {
-      "symbol": "F",
+      "symbol": "AAOI",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 6
     },
     {
-      "symbol": "CRDO",
+      "symbol": "RBNE",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 7
     },
     {
-      "symbol": "UUUU",
+      "symbol": "OKTA",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 8
     },
     {
-      "symbol": "DIS",
+      "symbol": "WDAY",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 9
     },
     {
-      "symbol": "UBER",
+      "symbol": "GOOGL",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 10
     },
     {
-      "symbol": "LMT",
+      "symbol": "EL",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 11
     },
     {
-      "symbol": "DJT",
+      "symbol": "PATH",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 12
     },
     {
-      "symbol": "PL",
+      "symbol": "ARM",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 13
     },
     {
-      "symbol": "PSNYW",
+      "symbol": "VCX",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 14
     },
     {
-      "symbol": "YSS",
+      "symbol": "FICO",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 15
     },
     {
-      "symbol": "LBTYB",
+      "symbol": "FEED",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 16
     },
     {
-      "symbol": "SEDG",
+      "symbol": "IBRX",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 17
     },
     {
-      "symbol": "SMCI",
+      "symbol": "PAVS",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 18
     },
     {
-      "symbol": "AAOI",
+      "symbol": "HPE",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 19
     },
     {
-      "symbol": "VICR",
+      "symbol": "AXON",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 20
     },
     {
-      "symbol": "VST",
+      "symbol": "CELH",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 21
     },
     {
-      "symbol": "FLOC",
+      "symbol": "GOOG",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 22
     },
     {
-      "symbol": "CMCSA",
+      "symbol": "DELL",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 23
     },
     {
-      "symbol": "NVDA",
+      "symbol": "ADMA",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 24
     },
     {
-      "symbol": "INTC",
+      "symbol": "MPC",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 25
     },
     {
-      "symbol": "RITM",
+      "symbol": "ANNA",
       "reason": "Trending today",
       "catalyst": "trending",
       "expected_direction": "volatile",
       "priority": 26
+    },
+    {
+      "symbol": "LI",
+      "reason": "Trending today",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 27
+    },
+    {
+      "symbol": "FOUR",
+      "reason": "Trending today",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 28
+    },
+    {
+      "symbol": "TEAM",
+      "reason": "Trending today",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 29
+    },
+    {
+      "symbol": "ETSY",
+      "reason": "Trending today",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 30
+    },
+    {
+      "symbol": "DG",
+      "reason": "Trending today",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 31
+    },
+    {
+      "symbol": "DOW",
+      "reason": "Trending today",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 32
+    },
+    {
+      "symbol": "ORBS",
+      "reason": "Trending today",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 33
+    },
+    {
+      "symbol": "CAR",
+      "reason": "Trending today",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 34
+    },
+    {
+      "symbol": "ACLS",
+      "reason": "Trending today",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 35
+    },
+    {
+      "symbol": "SOUN",
+      "reason": "Trending today",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 36
+    },
+    {
+      "symbol": "ZS",
+      "reason": "Trending today",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 37
+    },
+    {
+      "symbol": "APO",
+      "reason": "Trending today",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 38
+    },
+    {
+      "symbol": "ADBE",
+      "reason": "Trending today",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 39
+    },
+    {
+      "symbol": "EVTL",
+      "reason": "Trending today",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 40
+    },
+    {
+      "symbol": "HCC",
+      "reason": "Trending today",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 41
+    },
+    {
+      "symbol": "RDGT",
+      "reason": "Trending today",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 42
+    },
+    {
+      "symbol": "GEN",
+      "reason": "Trending today",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 43
+    },
+    {
+      "symbol": "KTOS",
+      "reason": "Trending today",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 44
+    },
+    {
+      "symbol": "HUBS",
+      "reason": "Trending today",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 45
+    },
+    {
+      "symbol": "FRPT",
+      "reason": "Trending today",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 46
+    },
+    {
+      "symbol": "ACHV",
+      "reason": "Trending today",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 47
+    },
+    {
+      "symbol": "ELAB",
+      "reason": "Trending today",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 48
+    },
+    {
+      "symbol": "WRD",
+      "reason": "Trending today",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 49
+    },
+    {
+      "symbol": "CC",
+      "reason": "Trending today",
+      "catalyst": "trending",
+      "expected_direction": "volatile",
+      "priority": 50
     }
   ],
-  "market_summary": "Top 26 trending stocks",
-  "generated_at": "2026-03-21T20:42:04.163489",
+  "market_summary": "Top 50 trending stocks",
+  "generated_at": "2026-03-24T14:55:09.926657",
   "source": "yahoo_scrape"
 }

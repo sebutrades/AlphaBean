@@ -124,7 +124,7 @@ def _make(s, name, bias, entry, stop, target, conf, desc,
     if risk <= 0:
         return None
     rr = round(abs(target - entry) / risk, 2)
-    if rr < 1.5:
+    if rr < 1.0:
         return None
  
     cur = s.closes[-1]
