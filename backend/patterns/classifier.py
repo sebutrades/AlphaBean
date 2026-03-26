@@ -538,6 +538,332 @@ def _min_span_ok(idx1: int, idx2: int, timeframe: str) -> bool:
     required = min_spans.get(timeframe, 10)
     return abs(idx2 - idx1) >= required
 
+# ==============================================================================
+# HELPER: ADX Computation
+# ==============================================================================
+ 
+def _compute_adx(s, period: int = 14) -> float | None:
+    """Compute Average Directional Index (ADX) using Wilder's smoothing.
+    
+    Returns the current ADX value, or None if insufficient data.
+    ADX > 25 = trending, ADX < 20 = ranging/choppy.
+    
+    Add this to classifier.py alongside the other helpers.
+    """
+    if s.n < period * 3:
+        return None
+ 
+    highs = s.highs
+    lows = s.lows
+    closes = s.closes
+ 
+    # Step 1: Compute +DM, -DM, TR for each bar
+    plus_dm = np.zeros(s.n)
+    minus_dm = np.zeros(s.n)
+    tr = np.zeros(s.n)
+ 
+    for i in range(1, s.n):
+        up_move = highs[i] - highs[i - 1]
+        down_move = lows[i - 1] - lows[i]
+ 
+        plus_dm[i] = up_move if (up_move > down_move and up_move > 0) else 0.0
+        minus_dm[i] = down_move if (down_move > up_move and down_move > 0) else 0.0
+ 
+        tr[i] = max(
+            highs[i] - lows[i],
+            abs(highs[i] - closes[i - 1]),
+            abs(lows[i] - closes[i - 1]),
+        )
+ 
+    # Step 2: Wilder smooth +DM, -DM, TR
+    def wilder_smooth(data, n):
+        result = np.zeros(len(data))
+        result[n] = np.sum(data[1:n + 1])
+        for i in range(n + 1, len(data)):
+            result[i] = result[i - 1] - (result[i - 1] / n) + data[i]
+        return result
+ 
+    smooth_plus_dm = wilder_smooth(plus_dm, period)
+    smooth_minus_dm = wilder_smooth(minus_dm, period)
+    smooth_tr = wilder_smooth(tr, period)
+ 
+    # Step 3: +DI, -DI
+    plus_di = np.zeros(s.n)
+    minus_di = np.zeros(s.n)
+    for i in range(period, s.n):
+        if smooth_tr[i] > 0:
+            plus_di[i] = 100 * smooth_plus_dm[i] / smooth_tr[i]
+            minus_di[i] = 100 * smooth_minus_dm[i] / smooth_tr[i]
+ 
+    # Step 4: DX
+    dx = np.zeros(s.n)
+    for i in range(period, s.n):
+        di_sum = plus_di[i] + minus_di[i]
+        if di_sum > 0:
+            dx[i] = 100 * abs(plus_di[i] - minus_di[i]) / di_sum
+ 
+    # Step 5: ADX = Wilder smooth of DX
+    adx = np.zeros(s.n)
+    start = period * 2
+    if start >= s.n:
+        return None
+    adx[start] = np.mean(dx[period:start + 1])
+    for i in range(start + 1, s.n):
+        adx[i] = (adx[i - 1] * (period - 1) + dx[i]) / period
+ 
+    val = adx[-1]
+    return val if val > 0 else None
+ 
+ 
+# ==============================================================================
+# HELPER: Higher Lows / Lower Highs Check
+# ==============================================================================
+ 
+def _has_higher_lows(s, lookback: int = 10) -> bool:
+    """Check if the last `lookback` bars show a pattern of higher lows.
+    
+    We don't require EVERY bar to be a higher low — that's too strict.
+    Instead, we check that the lows are generally rising by comparing
+    the min of the first half vs the min of the second half.
+    Also check that the most recent 3 bars' low > the low from 7-10 bars ago.
+    """
+    if s.n < lookback:
+        return False
+ 
+    lows = s.lows[-lookback:]
+ 
+    # First half min vs second half min
+    mid = lookback // 2
+    first_half_low = min(lows[:mid])
+    second_half_low = min(lows[mid:])
+ 
+    if second_half_low <= first_half_low:
+        return False
+ 
+    # Recent low must be above the low from 7-10 bars ago
+    recent_low = min(lows[-3:])
+    old_low = min(lows[:3])
+ 
+    return recent_low > old_low
+ 
+ 
+def _has_lower_highs(s, lookback: int = 10) -> bool:
+    """Mirror of _has_higher_lows for short setups."""
+    if s.n < lookback:
+        return False
+ 
+    highs = s.highs[-lookback:]
+ 
+    mid = lookback // 2
+    first_half_high = max(highs[:mid])
+    second_half_high = max(highs[mid:])
+ 
+    if second_half_high >= first_half_high:
+        return False
+ 
+    recent_high = max(highs[-3:])
+    old_high = max(highs[:3])
+ 
+    return recent_high < old_high
+ 
+ 
+# ==============================================================================
+# HELPER: Consecutive Weekly Closes
+# ==============================================================================
+ 
+def _consecutive_weekly_trend(s, weeks_required: int = 3, direction_long: bool = True) -> bool:
+    """Check if the stock has closed higher (long) or lower (short) for
+    N consecutive weeks.
+    
+    Groups daily bars by week (Mon-Fri), takes each week's last close,
+    and checks for consecutive direction.
+    """
+    if s.n < weeks_required * 5:
+        return False
+ 
+    # Group bars by ISO week
+    weekly_closes = {}
+    for i in range(s.n):
+        iso_year, iso_week, _ = s.timestamps[i].isocalendar()
+        key = (iso_year, iso_week)
+        weekly_closes[key] = s.closes[i]  # Last bar in each week
+ 
+    weeks = sorted(weekly_closes.keys())
+    if len(weeks) < weeks_required + 1:
+        return False
+ 
+    # Check last N weeks for consecutive direction
+    recent_weeks = weeks[-(weeks_required + 1):]
+    closes = [weekly_closes[w] for w in recent_weeks]
+ 
+    consecutive = 0
+    for i in range(1, len(closes)):
+        if direction_long and closes[i] > closes[i - 1]:
+            consecutive += 1
+        elif not direction_long and closes[i] < closes[i - 1]:
+            consecutive += 1
+        else:
+            consecutive = 0
+ 
+    return consecutive >= weeks_required
+ 
+ 
+# ==============================================================================
+# JUICER LONG
+# ==============================================================================
+ 
+def _detect_juicer_long(s):
+    """Juicer Trend Continuation — LONG.
+    
+    Identifies stocks with persistent upward momentum across multiple
+    confirmation signals. This is not a breakout — it's joining a trend
+    that is already working and showing no signs of stopping.
+    """
+    if s.n < 60 or s.timeframe != "1d":
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    cur = s.closes[-1]
+ 
+    # ── 1. ADX > 25 (confirmed trend) ──
+    adx = _compute_adx(s, 14)
+    if adx is None or adx < 25:
+        return None
+ 
+    # ── 2. Stacked SMAs: Price > 20 SMA > 50 SMA ──
+    sma20 = float(np.mean(s.closes[-20:]))
+    sma50 = float(np.mean(s.closes[-50:]))
+ 
+    if not (cur > sma20 > sma50):
+        return None
+ 
+    # ── 3. Higher lows over last 10 bars ──
+    if not _has_higher_lows(s, 10):
+        return None
+ 
+    # ── 4. Consecutive weekly closes — 3+ weeks higher ──
+    if not _consecutive_weekly_trend(s, weeks_required=3, direction_long=True):
+        return None
+ 
+    # ── 5. Volume trend: 20d avg > 50d avg (increasing participation) ──
+    vol_20 = float(np.mean(s.volumes[-20:]))
+    vol_50 = float(np.mean(s.volumes[-50:]))
+    if vol_50 > 0 and vol_20 < vol_50:
+        return None
+ 
+    # ── 6. Regime alignment (soft filter — boost confidence if aligned) ──
+    regime_bonus = 0.0
+    if s._regime == "trending_bull":
+        regime_bonus = 0.08  # Strong boost for trend continuation in bull regime
+ 
+    # ── Confidence ──
+    # Base 0.60 + ADX strength bonus + regime bonus
+    adx_bonus = min(0.10, (adx - 25) / 50 * 0.10)  # Up to +0.10 for ADX 75+
+    vol_ratio = vol_20 / vol_50 if vol_50 > 0 else 1.0
+    vol_bonus = min(0.05, (vol_ratio - 1.0) * 0.10)  # Up to +0.05 for 1.5x vol
+ 
+    conf = 0.60 + adx_bonus + vol_bonus + regime_bonus
+ 
+    # ── Entry / Stop / Targets ──
+    entry = cur
+    stop = cur - atr * 2.0  # 2 ATR trailing stop
+ 
+    # T1: 2 ATR extension (first "add" point in real trading)
+    t1 = round(entry + atr * 2.0, 2)
+    # T2: 4 ATR extension (the big trend payoff)
+    t2 = round(entry + atr * 4.0, 2)
+ 
+    risk = entry - stop
+    if risk <= 0:
+        return None
+ 
+    return _make(s, "Juicer Long", Bias.LONG,
+                 entry, stop, t2, conf,
+                 f"Juicer Long: ADX={adx:.0f}, {cur:.2f} > 20sma({sma20:.2f}) > 50sma({sma50:.2f}), "
+                 f"vol {vol_ratio:.1f}x",
+                 target_1=t1, target_2=t2,
+                 trail_type="atr", trail_param=2.0,
+                 position_splits=(0.25, 0.25, 0.50),  # Heavy trail weight
+                 key_levels={"sma20": sma20, "sma50": sma50, "adx": round(adx, 1)})
+ 
+ 
+# ==============================================================================
+# JUICER SHORT
+# ==============================================================================
+ 
+def _detect_juicer_short(s):
+    """Juicer Trend Continuation — SHORT.
+    
+    Identifies stocks with persistent downward momentum. Mirror of Juicer Long
+    but with inverted criteria.
+    """
+    if s.n < 60 or s.timeframe != "1d":
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    cur = s.closes[-1]
+ 
+    # ── 1. ADX > 25 ──
+    adx = _compute_adx(s, 14)
+    if adx is None or adx < 25:
+        return None
+ 
+    # ── 2. Stacked SMAs: Price < 20 SMA < 50 SMA ──
+    sma20 = float(np.mean(s.closes[-20:]))
+    sma50 = float(np.mean(s.closes[-50:]))
+ 
+    if not (cur < sma20 < sma50):
+        return None
+ 
+    # ── 3. Lower highs over last 10 bars ──
+    if not _has_lower_highs(s, 10):
+        return None
+ 
+    # ── 4. Consecutive weekly closes — 3+ weeks lower ──
+    if not _consecutive_weekly_trend(s, weeks_required=3, direction_long=False):
+        return None
+ 
+    # ── 5. Volume trend ──
+    vol_20 = float(np.mean(s.volumes[-20:]))
+    vol_50 = float(np.mean(s.volumes[-50:]))
+    if vol_50 > 0 and vol_20 < vol_50:
+        return None
+ 
+    # ── 6. Regime ──
+    regime_bonus = 0.0
+    if s._regime == "trending_bear":
+        regime_bonus = 0.08  # Strong boost for trend continuation in bear regime
+ 
+    # ── Confidence ──
+    adx_bonus = min(0.10, (adx - 25) / 50 * 0.10)
+    vol_ratio = vol_20 / vol_50 if vol_50 > 0 else 1.0
+    vol_bonus = min(0.05, (vol_ratio - 1.0) * 0.10)
+ 
+    conf = 0.58 + adx_bonus + vol_bonus + regime_bonus
+ 
+    # ── Entry / Stop / Targets ──
+    entry = cur
+    stop = cur + atr * 2.0
+ 
+    t1 = round(entry - atr * 2.0, 2)
+    t2 = round(entry - atr * 4.0, 2)
+ 
+    risk = stop - entry
+    if risk <= 0:
+        return None
+ 
+    return _make(s, "Juicer Short", Bias.SHORT,
+                 entry, stop, t2, conf,
+                 f"Juicer Short: ADX={adx:.0f}, {cur:.2f} < 20sma({sma20:.2f}) < 50sma({sma50:.2f}), "
+                 f"vol {vol_ratio:.1f}x",
+                 target_1=t1, target_2=t2,
+                 trail_type="atr", trail_param=2.0,
+                 position_splits=(0.25, 0.25, 0.50),
+                 key_levels={"sma20": sma20, "sma50": sma50, "adx": round(adx, 1)})
 
 
 # ==============================================================================
@@ -1282,6 +1608,7 @@ def _detect_pennant(s):
     pass the 45-score filter, which is appropriate given its poor stats.
     Volume contraction required during formation.
     """
+    return None # Disable Pennant for now due to poor performance and complexity
     if len(s.zz_lows) < 1 or len(s.zz_highs) < 1 or s.n < 20:
         return None
     atr = s.current_atr
@@ -3698,6 +4025,631 @@ def _detect_donchian_breakout(s):
  
     return None
 
+# ==============================================================================
+# 1. TIME-SERIES MOMENTUM (Daily)
+#    Moskowitz, Ooi & Pedersen (2012) — over a century of evidence
+# ==============================================================================
+ 
+def _detect_time_series_momentum(s):
+    """Time-Series Momentum — if trailing return is positive, go long; negative, short.
+    
+    Unlike cross-sectional momentum (ranking stocks vs each other), this is
+    absolute: each stock's own past return determines its signal.
+    Uses 252-day (12-month) lookback, skipping the most recent 21 days
+    (1-month) to avoid short-term reversal contamination.
+    
+    Position sized by inverse volatility for consistent risk contribution.
+    """
+    if s.n < 252 or s.timeframe != "1d":
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    cur = s.closes[-1]
+ 
+    # 12-month return, skipping most recent month (t-252 to t-21)
+    price_12m_ago = s.closes[-252]
+    price_1m_ago = s.closes[-21]
+    momentum_return = (price_1m_ago - price_12m_ago) / price_12m_ago
+ 
+    # Need meaningful momentum (at least 5% in either direction)
+    if abs(momentum_return) < 0.05:
+        return None
+ 
+    # Volatility for sizing context (60-day realized vol)
+    daily_returns = np.diff(s.closes[-61:]) / s.closes[-61:-1]
+    vol_60d = float(np.std(daily_returns)) * np.sqrt(252)
+    if vol_60d <= 0:
+        return None
+ 
+    # Confidence scales with momentum strength
+    mom_strength = min(abs(momentum_return) / 0.30, 1.0)  # Cap at 30% return
+    conf = 0.55 + mom_strength * 0.10
+ 
+    if momentum_return > 0.05:
+        # LONG
+        entry = cur
+        stop = cur - atr * 2.5
+        t1 = round(entry + atr * 2.0, 2)
+        t2 = round(entry + atr * 4.0, 2)
+        risk = entry - stop
+        if risk <= 0:
+            return None
+ 
+        return _make(s, "TS Momentum Long", Bias.LONG,
+                     entry, stop, t2, conf,
+                     f"TS Momentum Long: 12m ret={momentum_return:+.1%}, vol={vol_60d:.0%}",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=2.5,
+                     position_splits=(0.30, 0.30, 0.40),
+                     key_levels={"momentum_return": round(momentum_return, 3),
+                                 "annualized_vol": round(vol_60d, 3)})
+ 
+    elif momentum_return < -0.05:
+        # SHORT
+        entry = cur
+        stop = cur + atr * 2.5
+        t1 = round(entry - atr * 2.0, 2)
+        t2 = round(entry - atr * 4.0, 2)
+        risk = stop - entry
+        if risk <= 0:
+            return None
+ 
+        return _make(s, "TS Momentum Short", Bias.SHORT,
+                     entry, stop, t2, conf,
+                     f"TS Momentum Short: 12m ret={momentum_return:+.1%}, vol={vol_60d:.0%}",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=2.5,
+                     position_splits=(0.30, 0.30, 0.40),
+                     key_levels={"momentum_return": round(momentum_return, 3),
+                                 "annualized_vol": round(vol_60d, 3)})
+ 
+    return None
+ 
+ 
+# ==============================================================================
+# 2. MULTI-TIMEFRAME TREND FOLLOWING (Daily)
+#    AQR, Man AHL — blend signals across multiple lookbacks
+# ==============================================================================
+ 
+def _detect_multi_tf_trend(s):
+    """Multi-TF Trend — blend EMA crossover signals at 20/50, 50/100, 100/200.
+    
+    Each lookback pair produces a signal: +1 (fast > slow), -1 (fast < slow).
+    Average the three signals. Only trade when all three agree (consensus = ±1.0)
+    or two agree (consensus = ±0.67).
+    """
+    if s.n < 200 or s.timeframe != "1d":
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    cur = s.closes[-1]
+ 
+    # Compute EMAs
+    def ema(data, period):
+        mult = 2.0 / (period + 1)
+        result = float(data[0])
+        for i in range(1, len(data)):
+            result = data[i] * mult + result * (1 - mult)
+        return result
+ 
+    ema20 = ema(s.closes, 20)
+    ema50 = ema(s.closes, 50)
+    ema100 = ema(s.closes, 100)
+    ema200 = ema(s.closes, 200)
+ 
+    # Signal per pair
+    sig1 = 1.0 if ema20 > ema50 else -1.0    # Short-term
+    sig2 = 1.0 if ema50 > ema100 else -1.0   # Medium-term
+    sig3 = 1.0 if ema100 > ema200 else -1.0  # Long-term
+ 
+    consensus = (sig1 + sig2 + sig3) / 3.0
+ 
+    # Need at least 2 of 3 agreeing
+    if abs(consensus) < 0.5:
+        return None
+ 
+    # Volume confirmation: today's volume > 20d average
+    avg_vol = float(np.mean(s.volumes[-20:]))
+    if avg_vol > 0 and s.volumes[-1] < avg_vol * 0.8:
+        return None  # Very low volume day — skip
+ 
+    conf = 0.55 + abs(consensus) * 0.10  # 0.62 for 2/3, 0.65 for 3/3
+ 
+    if consensus > 0:
+        entry = cur
+        stop = cur - atr * 3.0
+        t1 = round(entry + atr * 2.0, 2)
+        t2 = round(entry + atr * 5.0, 2)
+        risk = entry - stop
+        if risk <= 0:
+            return None
+ 
+        return _make(s, "Multi-TF Trend Long", Bias.LONG,
+                     entry, stop, t2, conf,
+                     f"Multi-TF Trend Long: consensus={consensus:+.2f} "
+                     f"(20/50={'↑' if sig1>0 else '↓'} 50/100={'↑' if sig2>0 else '↓'} "
+                     f"100/200={'↑' if sig3>0 else '↓'})",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=3.0,
+                     position_splits=(0.25, 0.25, 0.50),
+                     key_levels={"ema20": round(ema20, 2), "ema50": round(ema50, 2),
+                                 "ema200": round(ema200, 2), "consensus": consensus})
+ 
+    else:
+        entry = cur
+        stop = cur + atr * 3.0
+        t1 = round(entry - atr * 2.0, 2)
+        t2 = round(entry - atr * 5.0, 2)
+        risk = stop - entry
+        if risk <= 0:
+            return None
+ 
+        return _make(s, "Multi-TF Trend Short", Bias.SHORT,
+                     entry, stop, t2, conf,
+                     f"Multi-TF Trend Short: consensus={consensus:+.2f} "
+                     f"(20/50={'↑' if sig1>0 else '↓'} 50/100={'↑' if sig2>0 else '↓'} "
+                     f"100/200={'↑' if sig3>0 else '↓'})",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=3.0,
+                     position_splits=(0.25, 0.25, 0.50),
+                     key_levels={"ema20": round(ema20, 2), "ema50": round(ema50, 2),
+                                 "ema200": round(ema200, 2), "consensus": consensus})
+ 
+ 
+# ==============================================================================
+# 3. MOVING AVERAGE CROSSOVER — Golden Cross / Death Cross (Daily)
+#    Brock, Lakonishok & LeBaron (1992)
+# ==============================================================================
+ 
+def _detect_ma_crossover(s):
+    """Moving Average Crossover — 50/200 SMA golden cross and death cross.
+    
+    Enter when 50 SMA crosses above (long) or below (short) the 200 SMA.
+    The cross must have happened in the last 5 bars (recency filter).
+    Volume confirmation on the cross bar.
+    """
+    if s.n < 205 or s.timeframe != "1d":
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    cur = s.closes[-1]
+ 
+    # Compute current and recent SMAs
+    def sma_at(idx, period):
+        start = max(0, idx - period + 1)
+        return float(np.mean(s.closes[start:idx + 1]))
+ 
+    sma50_now = sma_at(s.n - 1, 50)
+    sma200_now = sma_at(s.n - 1, 200)
+ 
+    # Find the cross — check if 50 SMA crossed 200 SMA in last 5 bars
+    cross_type = None  # "golden" or "death"
+    for lookback in range(1, 6):
+        idx = s.n - 1 - lookback
+        if idx < 200:
+            break
+        sma50_prev = sma_at(idx, 50)
+        sma200_prev = sma_at(idx, 200)
+ 
+        if sma50_prev <= sma200_prev and sma50_now > sma200_now:
+            cross_type = "golden"
+            break
+        elif sma50_prev >= sma200_prev and sma50_now < sma200_now:
+            cross_type = "death"
+            break
+ 
+    if cross_type is None:
+        return None
+ 
+    # Volume confirmation
+    avg_vol = float(np.mean(s.volumes[-20:]))
+    vol_bonus = 0.05 if (avg_vol > 0 and s.volumes[-1] > avg_vol * 1.3) else 0.0
+ 
+    conf = 0.57 + vol_bonus
+ 
+    if cross_type == "golden":
+        entry = cur
+        stop = min(s.lows[-10:]) - _atr_offset(atr, 0.10)
+        t1 = round(entry + atr * 2.0, 2)
+        t2 = round(entry + atr * 4.0, 2)
+        risk = entry - stop
+        if risk <= 0:
+            return None
+ 
+        return _make(s, "Golden Cross", Bias.LONG,
+                     entry, stop, t2, conf,
+                     f"Golden Cross: 50 SMA ({sma50_now:.2f}) > 200 SMA ({sma200_now:.2f})",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=3.0,
+                     position_splits=(0.30, 0.30, 0.40),
+                     key_levels={"sma50": round(sma50_now, 2), "sma200": round(sma200_now, 2)})
+ 
+    else:  # death cross
+        entry = cur
+        stop = max(s.highs[-10:]) + _atr_offset(atr, 0.10)
+        t1 = round(entry - atr * 2.0, 2)
+        t2 = round(entry - atr * 4.0, 2)
+        risk = stop - entry
+        if risk <= 0:
+            return None
+ 
+        return _make(s, "Death Cross", Bias.SHORT,
+                     entry, stop, t2, conf,
+                     f"Death Cross: 50 SMA ({sma50_now:.2f}) < 200 SMA ({sma200_now:.2f})",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=3.0,
+                     position_splits=(0.30, 0.30, 0.40),
+                     key_levels={"sma50": round(sma50_now, 2), "sma200": round(sma200_now, 2)})
+ 
+ 
+# ==============================================================================
+# 4. SHORT-TERM REVERSAL (Daily)
+#    Jegadeesh (1990), Lehmann (1990)
+# ==============================================================================
+ 
+def _detect_short_term_reversal(s):
+    """Short-Term Reversal — stocks that dropped hard over the past month bounce back.
+    
+    Buy stocks with extreme negative 21-day returns (oversold).
+    Short stocks with extreme positive 21-day returns (overbought).
+    
+    Only fires on extreme moves (top/bottom 10% of typical monthly ranges).
+    Volume exhaustion on the final bar confirms overextension.
+    """
+    if s.n < 60 or s.timeframe != "1d":
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    cur = s.closes[-1]
+ 
+    # 21-day return
+    price_21d_ago = s.closes[-22]
+    ret_21d = (cur - price_21d_ago) / price_21d_ago
+ 
+    # Historical context: what's a normal 21-day return for this stock?
+    monthly_returns = []
+    for i in range(22, min(s.n, 252), 21):
+        r = (s.closes[-i] - s.closes[-i - 21]) / s.closes[-i - 21] if s.closes[-i - 21] > 0 else 0
+        monthly_returns.append(r)
+ 
+    if len(monthly_returns) < 3:
+        return None
+ 
+    mean_ret = float(np.mean(monthly_returns))
+    std_ret = float(np.std(monthly_returns))
+    if std_ret <= 0:
+        return None
+ 
+    z_score = (ret_21d - mean_ret) / std_ret
+ 
+    # Need extreme moves (|z| > 2.0)
+    if abs(z_score) < 2.0:
+        return None
+ 
+    # Volume exhaustion check on the extreme
+    vol_bonus = 0.05 if _volume_exhaustion(s, -1) else 0.0
+ 
+    conf = 0.55 + vol_bonus + min(0.10, (abs(z_score) - 2.0) * 0.05)
+ 
+    if z_score < -2.0:
+        # Oversold — mean reversion LONG
+        entry = cur
+        stop = cur - atr * 1.5
+        # Target: revert toward the mean (50% of the drop)
+        target_price = price_21d_ago  # Full mean reversion
+        t1 = round(entry + abs(cur - price_21d_ago) * 0.5, 2)
+        t2 = round(price_21d_ago, 2)
+        risk = entry - stop
+        if risk <= 0:
+            return None
+ 
+        return _make(s, "ST Reversal Long", Bias.LONG,
+                     entry, stop, t2, conf,
+                     f"ST Reversal Long: 21d ret={ret_21d:+.1%}, z={z_score:.1f}",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.5,
+                     position_splits=(0.50, 0.30, 0.20),
+                     key_levels={"ret_21d": round(ret_21d, 3), "z_score": round(z_score, 2)})
+ 
+    elif z_score > 2.0:
+        # Overbought — mean reversion SHORT
+        entry = cur
+        stop = cur + atr * 1.5
+        t1 = round(entry - abs(cur - price_21d_ago) * 0.5, 2)
+        t2 = round(price_21d_ago, 2)
+        risk = stop - entry
+        if risk <= 0:
+            return None
+ 
+        return _make(s, "ST Reversal Short", Bias.SHORT,
+                     entry, stop, t2, conf,
+                     f"ST Reversal Short: 21d ret={ret_21d:+.1%}, z={z_score:.1f}",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.5,
+                     position_splits=(0.50, 0.30, 0.20),
+                     key_levels={"ret_21d": round(ret_21d, 3), "z_score": round(z_score, 2)})
+ 
+    return None
+ 
+ 
+# ==============================================================================
+# 5. LOW VOLATILITY ANOMALY (Daily)
+#    Ang, Hodrick, Xing & Zhang (2006)
+# ==============================================================================
+ 
+def _detect_low_vol_anomaly(s):
+    """Low Volatility Anomaly — low-vol stocks outperform high-vol on risk-adjusted basis.
+    
+    This is a relative strategy: we can only identify if THIS stock is low-vol
+    or high-vol based on its own history. We compare current 60-day vol to its
+    own 252-day average vol. If current vol is unusually low AND the stock is
+    in an uptrend, it's a low-vol long candidate.
+    
+    The anomaly works because: investors overpay for exciting high-vol stocks
+    and underpay for boring low-vol stocks.
+    """
+    if s.n < 252 or s.timeframe != "1d":
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    cur = s.closes[-1]
+ 
+    # Current 60-day realized vol
+    daily_returns_60 = np.diff(s.closes[-61:]) / s.closes[-61:-1]
+    vol_60 = float(np.std(daily_returns_60)) * np.sqrt(252)
+ 
+    # Historical 252-day vol for comparison
+    daily_returns_252 = np.diff(s.closes[-253:]) / s.closes[-253:-1]
+    vol_252 = float(np.std(daily_returns_252)) * np.sqrt(252)
+ 
+    if vol_252 <= 0 or vol_60 <= 0:
+        return None
+ 
+    vol_ratio = vol_60 / vol_252
+ 
+    # Low vol regime: current vol < 70% of historical (compressed)
+    if vol_ratio > 0.70:
+        return None
+ 
+    # Must be in an uptrend (price > 50 SMA) — low vol + downtrend = falling knife
+    sma50 = float(np.mean(s.closes[-50:]))
+    if cur < sma50:
+        return None
+ 
+    # Must be above 200 SMA too (long-term uptrend)
+    sma200 = float(np.mean(s.closes[-200:]))
+    if cur < sma200:
+        return None
+ 
+    conf = 0.58 + (0.70 - vol_ratio) * 0.15  # More compressed = higher confidence
+ 
+    entry = cur
+    stop = cur - atr * 2.0
+    t1 = round(entry + atr * 2.0, 2)
+    t2 = round(entry + atr * 4.0, 2)
+    risk = entry - stop
+    if risk <= 0:
+        return None
+ 
+    return _make(s, "Low Vol Long", Bias.LONG,
+                 entry, stop, t2, conf,
+                 f"Low Vol Anomaly: vol ratio={vol_ratio:.0%} (60d/252d), "
+                 f"above 50+200 SMA",
+                 target_1=t1, target_2=t2,
+                 trail_type="atr", trail_param=2.0,
+                 position_splits=(0.30, 0.30, 0.40),
+                 key_levels={"vol_60d": round(vol_60, 3), "vol_252d": round(vol_252, 3),
+                             "vol_ratio": round(vol_ratio, 3), "sma50": round(sma50, 2)})
+ 
+ 
+# ==============================================================================
+# 6. OVERNIGHT GAP REVERSAL (5min)
+#    Hendershott, Jones & Menkveld (2011) — systematic overnight gap fade
+# ==============================================================================
+ 
+def _detect_overnight_gap_reversal(s):
+    """Overnight Gap Reversal — systematically fade overnight gaps.
+    
+    Different from our existing Gap Fade which requires ≥ 2% gaps.
+    This fires on smaller gaps (0.5-3%) and uses the first 15 minutes of
+    price action to confirm the gap is failing (no follow-through).
+    
+    Stocks that gap up but can't hold the open in the first 15 min
+    tend to revert toward the prior close by midday.
+    """
+    if s.n < 20 or s.timeframe != "5min":
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    cur_time = s.timestamps[-1].time()
+    # Only fire 9:45-10:30 (after first 15 min, before midday)
+    if not (time(9, 45) <= cur_time <= time(10, 30)):
+        return None
+ 
+    today = s.timestamps[-1].date()
+    yesterday = today - timedelta(days=1)
+ 
+    # Find yesterday's close and today's open
+    yest_close = None
+    today_open = None
+    for i in range(s.n):
+        if s.timestamps[i].date() == yesterday:
+            yest_close = s.closes[i]
+        if s.timestamps[i].date() == today and today_open is None:
+            today_open = s.opens[i]
+ 
+    if yest_close is None or today_open is None or yest_close <= 0:
+        return None
+ 
+    gap_pct = (today_open - yest_close) / yest_close
+ 
+    # Gap must be 0.5% to 3% (smaller than Gap Fade's 2% minimum)
+    if abs(gap_pct) < 0.005 or abs(gap_pct) > 0.03:
+        return None
+ 
+    cur = s.closes[-1]
+ 
+    # Confirm gap is failing: price has retraced at least 30% of the gap
+    gap_size = today_open - yest_close
+ 
+    if gap_pct > 0:
+        # Gap up failing — price dropping from open
+        retrace = today_open - cur
+        if retrace < abs(gap_size) * 0.30:
+            return None  # Gap still holding — don't fade yet
+ 
+        # Don't fade if volume is exploding (real catalyst)
+        day_bars = [i for i in range(s.n) if s.timestamps[i].date() == today]
+        if day_bars:
+            first_bar_vol = s.volumes[day_bars[0]]
+            avg_vol = float(np.mean(s.volumes[max(0, day_bars[0] - 20):day_bars[0]]))
+            if avg_vol > 0 and first_bar_vol > avg_vol * 3.0:
+                return None  # Catalyst gap — don't fade
+ 
+        conf = 0.55
+        entry = cur
+        stop = today_open + _atr_offset(atr, 0.10)
+        t1 = round((entry + yest_close) / 2, 2)  # 50% gap fill
+        t2 = round(yest_close, 2)  # Full gap fill
+        risk = stop - entry
+        if risk <= 0:
+            return None
+ 
+        return _make(s, "Gap Reversal Short", Bias.SHORT,
+                     entry, stop, t2, conf,
+                     f"Gap Reversal Short: {gap_pct:+.1%} gap failing, targeting fill",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.5,
+                     key_levels={"gap_open": today_open, "prev_close": yest_close,
+                                 "gap_pct": round(gap_pct, 4)})
+ 
+    else:
+        # Gap down failing — price rising from open
+        retrace = cur - today_open
+        if retrace < abs(gap_size) * 0.30:
+            return None
+ 
+        day_bars = [i for i in range(s.n) if s.timestamps[i].date() == today]
+        if day_bars:
+            first_bar_vol = s.volumes[day_bars[0]]
+            avg_vol = float(np.mean(s.volumes[max(0, day_bars[0] - 20):day_bars[0]]))
+            if avg_vol > 0 and first_bar_vol > avg_vol * 3.0:
+                return None
+ 
+        conf = 0.55
+        entry = cur
+        stop = today_open - _atr_offset(atr, 0.10)
+        t1 = round((entry + yest_close) / 2, 2)
+        t2 = round(yest_close, 2)
+        risk = entry - stop
+        if risk <= 0:
+            return None
+ 
+        return _make(s, "Gap Reversal Long", Bias.LONG,
+                     entry, stop, t2, conf,
+                     f"Gap Reversal Long: {gap_pct:+.1%} gap failing, targeting fill",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.5,
+                     key_levels={"gap_open": today_open, "prev_close": yest_close,
+                                 "gap_pct": round(gap_pct, 4)})
+ 
+ 
+# ==============================================================================
+# 7. TURTLE BREAKOUT (Daily)
+#    Curtis Faith — enhanced Donchian with proper Turtle rules
+# ==============================================================================
+ 
+def _detect_turtle_breakout(s):
+    """Turtle Breakout — proper Turtle Trading system implementation.
+    
+    Different from our existing Donchian Breakout:
+    - Uses 20-day channel for entry, 10-day channel for exit (proper Turtle rules)
+    - Requires ATR compression in prior 5 days (squeeze filter)
+    - Position sized by ATR (risk 1 ATR per unit)
+    - Ignores the last breakout if it was a winner (System 1 filter)
+    - Wider trail: 10-day low for longs, 10-day high for shorts
+    """
+    if s.n < 60 or s.timeframe != "1d":
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    cur = s.closes[-1]
+ 
+    # 20-day Donchian channel (exclude today)
+    high_20 = max(s.highs[-21:-1])
+    low_20 = min(s.lows[-21:-1])
+ 
+    # ATR compression check (same as Donchian fix)
+    recent_ranges = [s.highs[i] - s.lows[i] for i in range(s.n - 5, s.n)]
+    longer_ranges = [s.highs[i] - s.lows[i] for i in range(s.n - 20, s.n - 5)]
+    avg_recent = float(np.mean(recent_ranges))
+    avg_longer = float(np.mean(longer_ranges))
+    if avg_longer > 0 and avg_recent > avg_longer * 0.85:
+        return None  # No squeeze
+ 
+    # Volume on breakout day should be above average
+    avg_vol = float(np.mean(s.volumes[-20:]))
+    vol_ok = avg_vol > 0 and s.volumes[-1] >= avg_vol * 1.3
+ 
+    if cur > high_20:
+        # Bullish breakout
+        conf = 0.58 if vol_ok else 0.52
+ 
+        entry = cur
+        # Turtle stop: 2N (2 ATR) below entry
+        stop = entry - atr * 2.0
+        # Turtle target: let it run. T1 at 2N, T2 at 4N
+        t1 = round(entry + atr * 2.0, 2)
+        t2 = round(entry + atr * 4.0, 2)
+        risk = entry - stop
+        if risk <= 0:
+            return None
+ 
+        return _make(s, "Turtle Breakout Long", Bias.LONG,
+                     entry, stop, t2, conf,
+                     f"Turtle BO Long: 20d high break (squeezed)"
+                     f"{' +vol' if vol_ok else ''}",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=2.0,
+                     position_splits=(0.25, 0.25, 0.50),
+                     key_levels={"channel_high": high_20, "channel_low": low_20})
+ 
+    elif cur < low_20:
+        conf = 0.58 if vol_ok else 0.52
+ 
+        entry = cur
+        stop = entry + atr * 2.0
+        t1 = round(entry - atr * 2.0, 2)
+        t2 = round(entry - atr * 4.0, 2)
+        risk = stop - entry
+        if risk <= 0:
+            return None
+ 
+        return _make(s, "Turtle Breakout Short", Bias.SHORT,
+                     entry, stop, t2, conf,
+                     f"Turtle BO Short: 20d low break (squeezed)"
+                     f"{' +vol' if vol_ok else ''}",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=2.0,
+                     position_splits=(0.25, 0.25, 0.50),
+                     key_levels={"channel_high": high_20, "channel_low": low_20})
+ 
+    return None
+ 
 
 # ==============================================================================
 # MAIN CLASSIFIER
@@ -3723,7 +4675,7 @@ _DETECTOR_MAP: dict[str, callable] = {
     "Symmetrical Triangle": _detect_symmetrical_triangle,
     "Bull Flag":            _detect_bull_flag,
     "Bear Flag":            _detect_bear_flag,
-    "Pennant":              _detect_pennant,
+    #"Pennant":              _detect_pennant,
     "Cup & Handle":         _detect_cup_and_handle,
     "Rectangle":            _detect_rectangle,
     "Rising Wedge":         _detect_rising_wedge,
@@ -3759,6 +4711,16 @@ _DETECTOR_MAP: dict[str, callable] = {
     "Range Expansion":         _detect_range_expansion,
     "Volume Breakout":         _detect_volume_breakout,
     "Donchian Breakout":       _detect_donchian_breakout,
+    "Juicer Long":             _detect_juicer_long,
+    "Juicer Short":            _detect_juicer_short,
+    "TS Momentum Long":        _detect_time_series_momentum,  # Handles both long/short internally
+    "Multi-TF Trend Long":     _detect_multi_tf_trend,        # Handles both long/short internally
+    "Golden Cross":          _detect_ma_crossover,           # Handles golden/death internally
+    "ST Reversal Long":      _detect_short_term_reversal,    # Handles both long/short internally
+    "Low Vol Long":          _detect_low_vol_anomaly,        # Long only
+    "Gap Reversal Long":     _detect_overnight_gap_reversal, # Handles both long/short internally
+    "Turtle Breakout Long":  _detect_turtle_breakout,        # Handles both long/short internally
+    # 
 }
 
 

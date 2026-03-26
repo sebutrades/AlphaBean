@@ -189,6 +189,44 @@ PATTERN_META = {
                                 "tf": ["1d"], "cd": 7200, "mh": 14400},
     "Donchian Breakout":       {"wr": 0.56, "type": "momentum",  "cat": PatternCategory.QUANT,
                                 "tf": ["1d"], "cd": 7200, "mh": 14400},
+
+    # =========================================================================
+    # My own ideas
+    # =========================================================================
+
+    "Juicer Long":   {"wr": 0.55, "type": "momentum", "cat": PatternCategory.QUANT,
+                  "tf": ["1d"], "cd": 14400, "mh": 99000},  # ~252 trading days
+    "Juicer Short":  {"wr": 0.50, "type": "momentum", "cat": PatternCategory.QUANT,
+                  "tf": ["1d"], "cd": 14400, "mh": 99000},
+
+    # NEW QUANTS
+     # Tier 1 — New strategies
+    "TS Momentum Long":     {"wr": 0.52, "type": "momentum",       "cat": PatternCategory.QUANT,
+                             "tf": ["1d"], "cd": 14400, "mh": 99000},
+    "TS Momentum Short":    {"wr": 0.48, "type": "momentum",       "cat": PatternCategory.QUANT,
+                             "tf": ["1d"], "cd": 14400, "mh": 99000},
+    "Multi-TF Trend Long":  {"wr": 0.52, "type": "momentum",       "cat": PatternCategory.QUANT,
+                             "tf": ["1d"], "cd": 14400, "mh": 99000},
+    "Multi-TF Trend Short": {"wr": 0.48, "type": "momentum",       "cat": PatternCategory.QUANT,
+                             "tf": ["1d"], "cd": 14400, "mh": 99000},
+    "Golden Cross":         {"wr": 0.55, "type": "momentum",       "cat": PatternCategory.QUANT,
+                             "tf": ["1d"], "cd": 28800, "mh": 99000},
+    "Death Cross":          {"wr": 0.50, "type": "momentum",       "cat": PatternCategory.QUANT,
+                             "tf": ["1d"], "cd": 28800, "mh": 99000},
+    "ST Reversal Long":     {"wr": 0.55, "type": "mean_reversion", "cat": PatternCategory.QUANT,
+                             "tf": ["1d"], "cd": 7200,  "mh": 14400},
+    "ST Reversal Short":    {"wr": 0.50, "type": "mean_reversion", "cat": PatternCategory.QUANT,
+                             "tf": ["1d"], "cd": 7200,  "mh": 14400},
+    "Low Vol Long":         {"wr": 0.55, "type": "momentum",       "cat": PatternCategory.QUANT,
+                             "tf": ["1d"], "cd": 14400, "mh": 99000},
+    "Gap Reversal Long":    {"wr": 0.52, "type": "mean_reversion", "cat": PatternCategory.QUANT,
+                             "tf": ["5min"], "cd": 480,  "mh": 240},
+    "Gap Reversal Short":   {"wr": 0.52, "type": "mean_reversion", "cat": PatternCategory.QUANT,
+                             "tf": ["5min"], "cd": 480,  "mh": 240},
+    "Turtle Breakout Long": {"wr": 0.52, "type": "breakout",       "cat": PatternCategory.QUANT,
+                             "tf": ["1d"], "cd": 14400, "mh": 99000},
+    "Turtle Breakout Short":{"wr": 0.48, "type": "breakout",       "cat": PatternCategory.QUANT,
+                             "tf": ["1d"], "cd": 14400, "mh": 99000},
 }
 
 
