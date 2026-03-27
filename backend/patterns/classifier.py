@@ -4040,7 +4040,7 @@ def _detect_time_series_momentum(s):
     
     Position sized by inverse volatility for consistent risk contribution.
     """
-    if s.n < 252 or s.timeframe != "1d":
+    if s.n < 126 or s.timeframe != "1d":
         return None
     atr = s.current_atr
     if atr <= 0:
@@ -4048,10 +4048,10 @@ def _detect_time_series_momentum(s):
  
     cur = s.closes[-1]
  
-    # 12-month return, skipping most recent month (t-252 to t-21)
-    price_12m_ago = s.closes[-252]
+    # 12-month return, skipping most recent month (t-126 to t-21)
+    price_6m_ago = s.closes[-126]
     price_1m_ago = s.closes[-21]
-    momentum_return = (price_1m_ago - price_12m_ago) / price_12m_ago
+    momentum_return = (price_1m_ago - price_6m_ago) / price_6m_ago
  
     # Need meaningful momentum (at least 5% in either direction)
     if abs(momentum_return) < 0.05:
@@ -4417,8 +4417,8 @@ def _detect_low_vol_anomaly(s):
  
     vol_ratio = vol_60 / vol_252
  
-    # Low vol regime: current vol < 70% of historical (compressed)
-    if vol_ratio > 0.70:
+    # Low vol regime: current vol < 75% of historical (compressed)
+    if vol_ratio > 0.75:
         return None
  
     # Must be in an uptrend (price > 50 SMA) — low vol + downtrend = falling knife
@@ -4650,6 +4650,1315 @@ def _detect_turtle_breakout(s):
  
     return None
  
+ # ==============================================================================
+# 1. BETTING AGAINST BETA (Daily)
+#    Frazzini & Pedersen (2014) — Sharpe ~0.78 in original study
+# ==============================================================================
+ 
+def _detect_bab(s):
+    """Betting Against Beta — long low-beta stocks in uptrend.
+ 
+    Low-beta stocks are underpriced because leverage-constrained investors
+    overweight high-beta. We identify stocks with beta < 0.7 vs the market
+    that are in uptrends (above 50 SMA). Long only — the short high-beta
+    leg needs cross-sectional ranking we don't have.
+ 
+    Beta estimated from 60-day rolling returns vs SPY proxy (the stock's
+    own correlation with its rolling average — a self-relative beta).
+    """
+    if s.n < 120 or s.timeframe != "1d":
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    cur = s.closes[-1]
+ 
+    # Compute realized volatility (60-day)
+    rets_60 = np.diff(s.closes[-61:]) / np.array(s.closes[-61:-1])
+    vol_60 = float(np.std(rets_60)) * np.sqrt(252)
+ 
+    # Low vol threshold — proxy for low beta
+    # Most stocks have annualized vol 25-50%. Below 20% = low vol/low beta.
+    if vol_60 > 0.25:
+        return None  # Not low-beta enough
+ 
+    # Must be in uptrend
+    sma50 = float(np.mean(s.closes[-50:]))
+    sma200 = float(np.mean(s.closes[-200:])) if s.n >= 200 else sma50
+    if cur < sma50 or cur < sma200:
+        return None
+ 
+    # Must have positive 3-month return
+    if s.n >= 63:
+        ret_3m = (cur - s.closes[-63]) / s.closes[-63]
+        if ret_3m < 0:
+            return None
+ 
+    conf = 0.58 + (0.25 - vol_60) * 0.20  # Lower vol = higher confidence
+ 
+    entry = cur
+    stop = cur - atr * 2.0
+    t1 = round(entry + atr * 2.0, 2)
+    t2 = round(entry + atr * 4.0, 2)
+    risk = entry - stop
+    if risk <= 0:
+        return None
+ 
+    return _make(s, "BAB Long", Bias.LONG,
+                 entry, stop, t2, conf,
+                 f"BAB Long: vol={vol_60:.0%}, above 50+200 SMA",
+                 target_1=t1, target_2=t2,
+                 trail_type="atr", trail_param=2.0,
+                 position_splits=(0.30, 0.30, 0.40),
+                 key_levels={"vol_60d": round(vol_60, 3), "sma50": round(sma50, 2)})
+ 
+ 
+# ==============================================================================
+# 2. 52-WEEK HIGH MOMENTUM (Daily)
+#    George & Hwang (2004) — stocks near 52w high outperform
+# ==============================================================================
+ 
+def _detect_52w_high_momentum(s):
+    """52-Week High Momentum — stocks within 5% of their 52-week high
+    continue to outperform. The proximity to the high is itself a
+    momentum signal (investors anchor to round numbers and prior peaks).
+    """
+    if s.n < 252 or s.timeframe != "1d":
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    cur = s.closes[-1]
+    high_52w = max(s.highs[-252:])
+ 
+    if high_52w <= 0:
+        return None
+ 
+    pct_from_high = (high_52w - cur) / high_52w
+ 
+    # Must be within 5% of 52-week high
+    if pct_from_high > 0.05 or pct_from_high < 0:
+        return None
+ 
+    # Volume confirmation: recent volume above average
+    avg_vol = float(np.mean(s.volumes[-20:]))
+    cur_vol = s.volumes[-1]
+    if avg_vol > 0 and cur_vol < avg_vol * 0.8:
+        return None
+ 
+    conf = 0.58 + (0.05 - pct_from_high) * 2.0  # Closer to high = higher conf
+ 
+    entry = cur
+    stop = cur - atr * 2.5
+    t1 = round(high_52w, 2)  # First target: the 52w high itself
+    t2 = round(high_52w + atr * 2.0, 2)  # Second: breakout beyond
+    risk = entry - stop
+    if risk <= 0:
+        return None
+ 
+    return _make(s, "52W High Momentum", Bias.LONG,
+                 entry, stop, t2, conf,
+                 f"52W High: {pct_from_high:.1%} from high (${high_52w:.2f})",
+                 target_1=t1, target_2=t2,
+                 trail_type="atr", trail_param=2.5,
+                 position_splits=(0.30, 0.30, 0.40),
+                 key_levels={"high_52w": round(high_52w, 2),
+                             "pct_from_high": round(pct_from_high, 4)})
+ 
+ 
+# ==============================================================================
+# 3. RELATIVE STRENGTH PERSISTENCE (Daily)
+#    Levy (1967), empirical — top RS stocks continue outperforming
+# ==============================================================================
+ 
+def _detect_relative_strength(s):
+    """Relative Strength Persistence — stocks outperforming their own
+    history continue outperforming.
+ 
+    RS = current price / 50-day SMA. RS > 1.05 means the stock is
+    running well above its recent average. Combined with volume expansion,
+    this signals institutional accumulation.
+    """
+    if s.n < 60 or s.timeframe != "1d":
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    cur = s.closes[-1]
+    sma50 = float(np.mean(s.closes[-50:]))
+    if sma50 <= 0:
+        return None
+ 
+    rs = cur / sma50
+ 
+    # RS must be strong (price > 5% above 50 SMA)
+    if rs < 1.05:
+        return None
+ 
+    # Must also be above 20 SMA (short-term confirmation)
+    sma20 = float(np.mean(s.closes[-20:]))
+    if cur < sma20:
+        return None
+ 
+    # Volume expansion: 20d avg > 50d avg
+    vol_20 = float(np.mean(s.volumes[-20:]))
+    vol_50 = float(np.mean(s.volumes[-50:]))
+    vol_expanding = vol_50 > 0 and vol_20 > vol_50
+ 
+    conf = 0.56
+    if vol_expanding:
+        conf += 0.05
+    if rs > 1.10:
+        conf += 0.05
+ 
+    entry = cur
+    stop = sma20 - _atr_offset(atr, 0.10)  # Stop below 20 SMA
+    t1 = round(entry + atr * 2.0, 2)
+    t2 = round(entry + atr * 4.0, 2)
+    risk = entry - stop
+    if risk <= 0:
+        return None
+ 
+    return _make(s, "RS Persistence Long", Bias.LONG,
+                 entry, stop, t2, conf,
+                 f"RS Persistence: RS={rs:.2f}, {'vol expanding' if vol_expanding else 'vol flat'}",
+                 target_1=t1, target_2=t2,
+                 trail_type="atr", trail_param=2.0,
+                 position_splits=(0.30, 0.30, 0.40),
+                 key_levels={"rs_ratio": round(rs, 3), "sma20": round(sma20, 2),
+                             "sma50": round(sma50, 2)})
+ 
+ 
+# ==============================================================================
+# 4. NR7 BREAKOUT (Daily)
+#    Crabel — narrowest range of last 7 days predicts expansion
+# ==============================================================================
+ 
+def _detect_nr7_breakout(s):
+    """NR7 Breakout — today's range is the narrowest of the last 7 days.
+    Volatility compression leads to expansion. Enter on breakout of NR7 bar.
+    """
+    if s.n < 10 or s.timeframe != "1d":
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    # Check if today's range is narrowest of last 7
+    ranges = [s.highs[i] - s.lows[i] for i in range(s.n - 7, s.n)]
+    today_range = ranges[-1]
+    if today_range <= 0:
+        return None
+ 
+    if today_range != min(ranges):
+        return None  # Not NR7
+ 
+    cur = s.closes[-1]
+ 
+    # Direction: bias toward the trend
+    sma20 = float(np.mean(s.closes[-20:])) if s.n >= 20 else cur
+    bias_long = cur > sma20
+ 
+    # Volume should be declining (compression)
+    vol_declining = s.volumes[-1] < s.volumes[-2] < s.volumes[-3] if s.n >= 3 else False
+    vol_bonus = 0.05 if vol_declining else 0.0
+ 
+    conf = 0.56 + vol_bonus
+ 
+    if bias_long:
+        entry = s.highs[-1] + _atr_offset(atr, 0.05)
+        stop = s.lows[-1] - _atr_offset(atr, 0.10)
+        t1 = round(entry + atr * 1.5, 2)
+        t2 = round(entry + atr * 3.0, 2)
+        risk = entry - stop
+        if risk <= 0:
+            return None
+        return _make(s, "NR7 Breakout Long", Bias.LONG,
+                     entry, stop, t2, conf,
+                     f"NR7 Breakout Long: range={today_range:.2f} (narrowest of 7)",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.5)
+    else:
+        entry = s.lows[-1] - _atr_offset(atr, 0.05)
+        stop = s.highs[-1] + _atr_offset(atr, 0.10)
+        t1 = round(entry - atr * 1.5, 2)
+        t2 = round(entry - atr * 3.0, 2)
+        risk = stop - entry
+        if risk <= 0:
+            return None
+        return _make(s, "NR7 Breakout Short", Bias.SHORT,
+                     entry, stop, t2, conf,
+                     f"NR7 Breakout Short: range={today_range:.2f} (narrowest of 7)",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.5)
+ 
+ 
+# ==============================================================================
+# 5. INSIDE BAR BREAKOUT (Daily)
+# ==============================================================================
+ 
+def _detect_inside_bar(s):
+    """Inside Bar Breakout — today's range is entirely within yesterday's range.
+    This is a consolidation signal. Enter on breakout direction.
+    """
+    if s.n < 5 or s.timeframe != "1d":
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    # Check if today is an inside bar
+    today_h = s.highs[-1]
+    today_l = s.lows[-1]
+    yest_h = s.highs[-2]
+    yest_l = s.lows[-2]
+ 
+    if today_h >= yest_h or today_l <= yest_l:
+        return None  # Not an inside bar
+ 
+    # Direction: close in upper half = bullish, lower half = bearish
+    mid = (yest_h + yest_l) / 2
+    cur = s.closes[-1]
+    bias_long = cur > mid
+ 
+    # Volume should be lower on inside bar (compression)
+    vol_bonus = 0.05 if s.volumes[-1] < s.volumes[-2] else 0.0
+ 
+    conf = 0.55 + vol_bonus
+ 
+    if bias_long:
+        entry = yest_h + _atr_offset(atr, 0.05)
+        stop = today_l - _atr_offset(atr, 0.10)
+        t1 = round(entry + atr * 1.5, 2)
+        t2 = round(entry + atr * 3.0, 2)
+        risk = entry - stop
+        if risk <= 0:
+            return None
+        return _make(s, "Inside Bar Long", Bias.LONG,
+                     entry, stop, t2, conf,
+                     f"Inside Bar Long: contained within ${yest_l:.2f}-${yest_h:.2f}",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.5)
+    else:
+        entry = yest_l - _atr_offset(atr, 0.05)
+        stop = today_h + _atr_offset(atr, 0.10)
+        t1 = round(entry - atr * 1.5, 2)
+        t2 = round(entry - atr * 3.0, 2)
+        risk = stop - entry
+        if risk <= 0:
+            return None
+        return _make(s, "Inside Bar Short", Bias.SHORT,
+                     entry, stop, t2, conf,
+                     f"Inside Bar Short: contained within ${yest_l:.2f}-${yest_h:.2f}",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.5)
+ 
+ 
+# ==============================================================================
+# 6. CONSECUTIVE DAYS REVERSAL (Daily)
+#    Mean reversion after extreme streaks
+# ==============================================================================
+ 
+def _detect_consecutive_reversal(s):
+    """Consecutive Days Reversal — 5+ consecutive up or down days tend to reverse.
+    Enter mean reversion in the opposite direction.
+    """
+    if s.n < 10 or s.timeframe != "1d":
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    # Count consecutive up or down closes
+    up_count = 0
+    dn_count = 0
+ 
+    for i in range(s.n - 1, max(s.n - 10, 0), -1):
+        if s.closes[i] > s.closes[i - 1]:
+            if dn_count > 0:
+                break
+            up_count += 1
+        elif s.closes[i] < s.closes[i - 1]:
+            if up_count > 0:
+                break
+            dn_count += 1
+        else:
+            break
+ 
+    cur = s.closes[-1]
+    conf_base = 0.55
+ 
+    if up_count >= 5:
+        # 5+ up days — fade with a short
+        streak_bonus = min(0.10, (up_count - 5) * 0.03)
+        conf = conf_base + streak_bonus
+ 
+        entry = cur
+        stop = max(s.highs[-up_count:]) + _atr_offset(atr, 0.10)
+        target_mean = float(np.mean(s.closes[-20:])) if s.n >= 20 else cur - atr * 2
+        t1 = round(entry - atr * 1.0, 2)
+        t2 = round(max(target_mean, entry - atr * 2.0), 2)
+        risk = stop - entry
+        if risk <= 0:
+            return None
+ 
+        return _make(s, "Streak Reversal Short", Bias.SHORT,
+                     entry, stop, t2, conf,
+                     f"Streak Reversal Short: {up_count} consecutive up days",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.5,
+                     key_levels={"streak": up_count})
+ 
+    elif dn_count >= 5:
+        streak_bonus = min(0.10, (dn_count - 5) * 0.03)
+        conf = conf_base + streak_bonus
+ 
+        entry = cur
+        stop = min(s.lows[-dn_count:]) - _atr_offset(atr, 0.10)
+        target_mean = float(np.mean(s.closes[-20:])) if s.n >= 20 else cur + atr * 2
+        t1 = round(entry + atr * 1.0, 2)
+        t2 = round(min(target_mean, entry + atr * 2.0), 2)
+        risk = entry - stop
+        if risk <= 0:
+            return None
+ 
+        return _make(s, "Streak Reversal Long", Bias.LONG,
+                     entry, stop, t2, conf,
+                     f"Streak Reversal Long: {dn_count} consecutive down days",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.5,
+                     key_levels={"streak": dn_count})
+ 
+    return None
+ 
+ 
+# ==============================================================================
+# 7. ATR EXPANSION TREND (Daily)
+#    Volatility expansion signals trend initiation
+# ==============================================================================
+ 
+def _detect_atr_expansion(s):
+    """ATR Expansion — current ATR > 1.8x the 20-day average ATR.
+    Volatility expansion often signals the start of a new trend.
+    Direction determined by the expansion day's close.
+    """
+    if s.n < 30 or s.timeframe != "1d":
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    # Today's range vs average range
+    today_range = s.highs[-1] - s.lows[-1]
+    avg_range = float(np.mean([s.highs[i] - s.lows[i] for i in range(s.n - 20, s.n - 1)]))
+ 
+    if avg_range <= 0:
+        return None
+ 
+    expansion = today_range / avg_range
+    if expansion < 1.8:
+        return None  # Not enough expansion
+ 
+    # Volume must confirm
+    avg_vol = float(np.mean(s.volumes[-20:]))
+    if avg_vol > 0 and s.volumes[-1] < avg_vol * 1.3:
+        return None
+ 
+    cur = s.closes[-1]
+    conf = 0.56 + min(0.10, (expansion - 1.8) * 0.05)
+ 
+    # Direction: close in upper 30% of day = bullish, lower 30% = bearish
+    day_pos = (cur - s.lows[-1]) / today_range if today_range > 0 else 0.5
+ 
+    if day_pos > 0.65:
+        entry = cur
+        stop = s.lows[-1] - _atr_offset(atr, 0.10)
+        t1 = round(entry + atr * 1.5, 2)
+        t2 = round(entry + atr * 3.0, 2)
+        risk = entry - stop
+        if risk <= 0:
+            return None
+        return _make(s, "ATR Expansion Long", Bias.LONG,
+                     entry, stop, t2, conf,
+                     f"ATR Expansion Long: range {expansion:.1f}x avg, closed in upper 30%",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=2.0)
+ 
+    elif day_pos < 0.35:
+        entry = cur
+        stop = s.highs[-1] + _atr_offset(atr, 0.10)
+        t1 = round(entry - atr * 1.5, 2)
+        t2 = round(entry - atr * 3.0, 2)
+        risk = stop - entry
+        if risk <= 0:
+            return None
+        return _make(s, "ATR Expansion Short", Bias.SHORT,
+                     entry, stop, t2, conf,
+                     f"ATR Expansion Short: range {expansion:.1f}x avg, closed in lower 30%",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=2.0)
+ 
+    return None
+ 
+ 
+# ==============================================================================
+# 8. BOLLINGER SQUEEZE BREAKOUT (Daily)
+#    Bollinger bandwidth contraction → expansion
+# ==============================================================================
+ 
+def _detect_bollinger_squeeze(s):
+    """Bollinger Squeeze — bandwidth (upper-lower)/middle contracts to 6-month low,
+    then price breaks out of the bands.
+    """
+    if s.n < 130 or s.timeframe != "1d":
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    # Compute Bollinger Bands (20, 2)
+    sma20 = float(np.mean(s.closes[-20:]))
+    std20 = float(np.std(s.closes[-20:]))
+    if sma20 <= 0 or std20 <= 0:
+        return None
+ 
+    upper = sma20 + 2 * std20
+    lower = sma20 - 2 * std20
+    bandwidth = (upper - lower) / sma20
+ 
+    # Compute historical bandwidth for comparison (last 126 days)
+    bandwidths = []
+    for j in range(20, min(s.n, 126)):
+        idx = s.n - j
+        m = float(np.mean(s.closes[idx - 20:idx]))
+        sd = float(np.std(s.closes[idx - 20:idx]))
+        if m > 0 and sd > 0:
+            bandwidths.append((m + 2 * sd - (m - 2 * sd)) / m)
+ 
+    if len(bandwidths) < 20:
+        return None
+ 
+    bw_pct = sum(1 for b in bandwidths if b > bandwidth) / len(bandwidths)
+ 
+    # Bandwidth must be in bottom 10% of recent history
+    if bw_pct > 0.10:
+        return None
+ 
+    cur = s.closes[-1]
+ 
+    # Breakout direction
+    if cur > upper:
+        conf = 0.58
+        entry = cur
+        stop = sma20 - _atr_offset(atr, 0.10)
+        t1 = round(entry + atr * 2.0, 2)
+        t2 = round(entry + atr * 4.0, 2)
+        risk = entry - stop
+        if risk <= 0:
+            return None
+        return _make(s, "BB Squeeze Long", Bias.LONG,
+                     entry, stop, t2, conf,
+                     f"BB Squeeze Long: bandwidth at {bw_pct:.0%} percentile, breaking upper band",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=2.0)
+ 
+    elif cur < lower:
+        conf = 0.56
+        entry = cur
+        stop = sma20 + _atr_offset(atr, 0.10)
+        t1 = round(entry - atr * 2.0, 2)
+        t2 = round(entry - atr * 4.0, 2)
+        risk = stop - entry
+        if risk <= 0:
+            return None
+        return _make(s, "BB Squeeze Short", Bias.SHORT,
+                     entry, stop, t2, conf,
+                     f"BB Squeeze Short: bandwidth at {bw_pct:.0%} percentile, breaking lower band",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=2.0)
+ 
+    return None
+ 
+ 
+# ==============================================================================
+# 9. ACCUMULATION / DISTRIBUTION DAY (Daily)
+#    IBD methodology — institutional buying/selling footprint
+# ==============================================================================
+ 
+def _detect_accumulation_day(s):
+    """Accumulation Day — price closes up on above-average volume.
+    3+ accumulation days in last 10 = institutional buying.
+ 
+    Distribution Day — price closes down on above-average volume.
+    3+ distribution days = institutional selling.
+    """
+    if s.n < 30 or s.timeframe != "1d":
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    avg_vol = float(np.mean(s.volumes[-50:])) if s.n >= 50 else float(np.mean(s.volumes[-20:]))
+    if avg_vol <= 0:
+        return None
+ 
+    # Count accumulation and distribution days in last 10
+    acc_days = 0
+    dist_days = 0
+    for i in range(max(0, s.n - 10), s.n):
+        if i == 0:
+            continue
+        price_up = s.closes[i] > s.closes[i - 1]
+        vol_above = s.volumes[i] > avg_vol
+        if price_up and vol_above:
+            acc_days += 1
+        elif not price_up and vol_above:
+            dist_days += 1
+ 
+    cur = s.closes[-1]
+ 
+    if acc_days >= 3 and dist_days <= 1:
+        # Institutional accumulation
+        sma50 = float(np.mean(s.closes[-50:])) if s.n >= 50 else cur
+        if cur < sma50:
+            return None  # Need uptrend context
+ 
+        conf = 0.56 + min(0.08, (acc_days - 3) * 0.03)
+        entry = cur
+        stop = min(s.lows[-5:]) - _atr_offset(atr, 0.10)
+        t1 = round(entry + atr * 2.0, 2)
+        t2 = round(entry + atr * 4.0, 2)
+        risk = entry - stop
+        if risk <= 0:
+            return None
+ 
+        return _make(s, "Accumulation Long", Bias.LONG,
+                     entry, stop, t2, conf,
+                     f"Accumulation: {acc_days} acc days vs {dist_days} dist days in last 10",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=2.0,
+                     key_levels={"acc_days": acc_days, "dist_days": dist_days})
+ 
+    elif dist_days >= 3 and acc_days <= 1:
+        sma50 = float(np.mean(s.closes[-50:])) if s.n >= 50 else cur
+        if cur > sma50:
+            return None
+ 
+        conf = 0.55 + min(0.08, (dist_days - 3) * 0.03)
+        entry = cur
+        stop = max(s.highs[-5:]) + _atr_offset(atr, 0.10)
+        t1 = round(entry - atr * 2.0, 2)
+        t2 = round(entry - atr * 4.0, 2)
+        risk = stop - entry
+        if risk <= 0:
+            return None
+ 
+        return _make(s, "Distribution Short", Bias.SHORT,
+                     entry, stop, t2, conf,
+                     f"Distribution: {dist_days} dist days vs {acc_days} acc days in last 10",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=2.0,
+                     key_levels={"acc_days": acc_days, "dist_days": dist_days})
+ 
+    return None
+ 
+ 
+# ==============================================================================
+# 10. OPENING DRIVE (5min)
+#     First 30 min direction predicts session
+# ==============================================================================
+ 
+def _detect_opening_drive(s):
+    """Opening Drive — if the first 30 min (6 bars on 5min) trends strongly
+    in one direction with volume, the rest of the session tends to follow.
+    """
+    if s.n < 20 or s.timeframe != "5min":
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    cur_time = s.timestamps[-1].time()
+    if not (time(10, 0) <= cur_time <= time(10, 15)):
+        return None
+ 
+    today = s.timestamps[-1].date()
+    today_bars = [i for i in range(s.n) if s.timestamps[i].date() == today]
+    if len(today_bars) < 6:
+        return None
+ 
+    first_6 = today_bars[:6]
+    open_price = s.opens[first_6[0]]
+    close_30m = s.closes[first_6[-1]]
+    drive = close_30m - open_price
+ 
+    if abs(drive) < atr * 0.5:
+        return None  # Not a strong enough drive
+ 
+    # Volume in first 30 min should be heavy
+    first_30_vol = sum(s.volumes[i] for i in first_6)
+    avg_bar_vol = float(np.mean(s.volumes[max(0, first_6[0] - 30):first_6[0]])) if first_6[0] > 30 else 0
+    if avg_bar_vol > 0 and first_30_vol < avg_bar_vol * 6 * 1.3:
+        return None  # Volume not confirming
+ 
+    cur = s.closes[-1]
+    conf = 0.56
+ 
+    if drive > 0:
+        entry = cur
+        stop = min(s.lows[i] for i in first_6) - _atr_offset(atr, 0.10)
+        t1 = round(entry + atr * 1.0, 2)
+        t2 = round(entry + atr * 2.0, 2)
+        risk = entry - stop
+        if risk <= 0:
+            return None
+        return _make(s, "Opening Drive Long", Bias.LONG,
+                     entry, stop, t2, conf,
+                     f"Opening Drive Long: first 30m +${drive:.2f}",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.5)
+    else:
+        entry = cur
+        stop = max(s.highs[i] for i in first_6) + _atr_offset(atr, 0.10)
+        t1 = round(entry - atr * 1.0, 2)
+        t2 = round(entry - atr * 2.0, 2)
+        risk = stop - entry
+        if risk <= 0:
+            return None
+        return _make(s, "Opening Drive Short", Bias.SHORT,
+                     entry, stop, t2, conf,
+                     f"Opening Drive Short: first 30m -${abs(drive):.2f}",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.5)
+ 
+ 
+# ==============================================================================
+# 11. POWER HOUR MOMENTUM (5min)
+#     3:00-3:30 PM entry — last hour has strongest directional moves
+# ==============================================================================
+ 
+def _detect_power_hour(s):
+    """Power Hour — enter in the direction of momentum at 3 PM.
+    The last trading hour has the highest volume and strongest trends
+    due to institutional closing flows.
+    """
+    if s.n < 30 or s.timeframe != "5min":
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    cur_time = s.timestamps[-1].time()
+    if not (time(15, 0) <= cur_time <= time(15, 30)):
+        return None
+ 
+    cur = s.closes[-1]
+    vwap = _vwap_today(s)
+    if vwap is None or vwap <= 0:
+        return None
+ 
+    # Determine direction: price above VWAP all afternoon = bullish
+    afternoon_bars = [i for i in range(s.n) if s.timestamps[i].time() >= time(13, 0)]
+    if len(afternoon_bars) < 10:
+        return None
+ 
+    above_vwap = sum(1 for i in afternoon_bars if s.closes[i] > vwap)
+    pct_above = above_vwap / len(afternoon_bars)
+ 
+    # Volume in last 30 min should be above average
+    recent_vol = float(np.mean(s.volumes[-6:]))
+    day_avg_vol = float(np.mean(s.volumes[-78:])) if s.n >= 78 else float(np.mean(s.volumes))
+    if day_avg_vol > 0 and recent_vol < day_avg_vol * 1.2:
+        return None
+ 
+    conf = 0.55
+ 
+    if pct_above > 0.70:
+        entry = cur
+        stop = vwap - _atr_offset(atr, 0.10)
+        t1 = round(entry + atr * 0.5, 2)
+        t2 = round(entry + atr * 1.0, 2)
+        risk = entry - stop
+        if risk <= 0:
+            return None
+        return _make(s, "Power Hour Long", Bias.LONG,
+                     entry, stop, t2, conf,
+                     f"Power Hour Long: {pct_above:.0%} of PM above VWAP",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.0)
+ 
+    elif pct_above < 0.30:
+        entry = cur
+        stop = vwap + _atr_offset(atr, 0.10)
+        t1 = round(entry - atr * 0.5, 2)
+        t2 = round(entry - atr * 1.0, 2)
+        risk = stop - entry
+        if risk <= 0:
+            return None
+        return _make(s, "Power Hour Short", Bias.SHORT,
+                     entry, stop, t2, conf,
+                     f"Power Hour Short: {pct_above:.0%} of PM above VWAP",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.0)
+ 
+    return None
+ 
+ 
+# ==============================================================================
+# 12. VOLUME CLIMAX REVERSAL (5min)
+#     Massive volume spike at extreme = exhaustion
+# ==============================================================================
+ 
+def _detect_volume_climax(s):
+    """Volume Climax — volume spikes to 3x+ average at a price extreme.
+    This signals exhaustion and a likely reversal.
+    """
+    if s.n < 30 or s.timeframe != "5min":
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    cur_time = s.timestamps[-1].time()
+    if not (time(9, 45) <= cur_time <= time(15, 30)):
+        return None
+ 
+    avg_vol = float(np.mean(s.volumes[-30:]))
+    if avg_vol <= 0:
+        return None
+ 
+    cur_vol = s.volumes[-1]
+    vol_ratio = cur_vol / avg_vol
+ 
+    if vol_ratio < 4.0:
+        return None  # Not a climax
+ 
+    cur = s.closes[-1]
+ 
+    # Must be at a price extreme (near 20-bar high or low)
+    high_20 = max(s.highs[-20:])
+    low_20 = min(s.lows[-20:])
+    at_high = s.highs[-1] >= high_20 * 0.998
+    at_low = s.lows[-1] <= low_20 * 1.002
+ 
+    if not at_high and not at_low:
+        return None
+ 
+    conf = 0.56 + min(0.10, (vol_ratio - 3.0) * 0.02)
+ 
+    if at_high and s.closes[-1] < s.opens[-1]:
+        # Climax at high with bearish close = reversal short
+        entry = cur
+        stop = s.highs[-1] + _atr_offset(atr, 0.10)
+        t1 = round(entry - atr * 1.0, 2)
+        t2 = round(entry - atr * 2.0, 2)
+        risk = stop - entry
+        if risk <= 0:
+            return None
+        return _make(s, "Volume Climax Short", Bias.SHORT,
+                     entry, stop, t2, conf,
+                     f"Volume Climax Short: {vol_ratio:.1f}x vol at 20-bar high",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.5)
+ 
+    elif at_low and s.closes[-1] > s.opens[-1]:
+        entry = cur
+        stop = s.lows[-1] - _atr_offset(atr, 0.10)
+        t1 = round(entry + atr * 1.0, 2)
+        t2 = round(entry + atr * 2.0, 2)
+        risk = entry - stop
+        if risk <= 0:
+            return None
+        return _make(s, "Volume Climax Long", Bias.LONG,
+                     entry, stop, t2, conf,
+                     f"Volume Climax Long: {vol_ratio:.1f}x vol at 20-bar low",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.5)
+ 
+    return None
+ 
+ 
+# ==============================================================================
+# 13. VWAP TREND FOLLOW (5min)
+#     Price holds above VWAP with pullbacks = continuation
+# ==============================================================================
+ 
+def _detect_vwap_trend(s):
+    """VWAP Trend Follow — price has stayed above (long) or below (short) VWAP
+    for 2+ hours with at least 2 successful VWAP tests. Enter on the next pull to VWAP.
+    """
+    if s.n < 40 or s.timeframe != "5min":
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    cur_time = s.timestamps[-1].time()
+    if not (time(10, 30) <= cur_time <= time(14, 30)):
+        return None
+ 
+    vwap = _vwap_today(s)
+    if vwap is None or vwap <= 0:
+        return None
+ 
+    cur = s.closes[-1]
+    today = s.timestamps[-1].date()
+    today_indices = [i for i in range(s.n) if s.timestamps[i].date() == today]
+    if len(today_indices) < 24:  # At least 2 hours of data
+        return None
+ 
+    # Count bars above/below VWAP
+    above = sum(1 for i in today_indices if s.closes[i] > vwap)
+    below = len(today_indices) - above
+    pct_above = above / len(today_indices)
+ 
+    # Count VWAP tests (price touches within 0.2 ATR then bounces)
+    vwap_tests = 0
+    for i in today_indices:
+        if abs(s.lows[i] - vwap) < atr * 0.3 and s.closes[i] > vwap:
+            vwap_tests += 1
+        elif abs(s.highs[i] - vwap) < atr * 0.3 and s.closes[i] < vwap:
+            vwap_tests += 1
+ 
+    if vwap_tests < 2:
+        return None
+ 
+    # Must be pulling back to VWAP now
+    near_vwap = abs(cur - vwap) < atr * 0.4
+ 
+    if not near_vwap:
+        return None
+ 
+    conf = 0.57
+ 
+    if pct_above > 0.75 and cur > vwap:
+        entry = cur
+        stop = vwap - _atr_offset(atr, 0.15)
+        t1 = round(entry + atr * 1.0, 2)
+        t2 = round(entry + atr * 2.0, 2)
+        risk = entry - stop
+        if risk <= 0:
+            return None
+        return _make(s, "VWAP Trend Long", Bias.LONG,
+                     entry, stop, t2, conf,
+                     f"VWAP Trend Long: {pct_above:.0%} above VWAP, {vwap_tests} tests held",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.0,
+                     key_levels={"vwap": round(vwap, 2)})
+ 
+    elif pct_above < 0.25 and cur < vwap:
+        entry = cur
+        stop = vwap + _atr_offset(atr, 0.15)
+        t1 = round(entry - atr * 1.0, 2)
+        t2 = round(entry - atr * 2.0, 2)
+        risk = stop - entry
+        if risk <= 0:
+            return None
+        return _make(s, "VWAP Trend Short", Bias.SHORT,
+                     entry, stop, t2, conf,
+                     f"VWAP Trend Short: {1 - pct_above:.0%} below VWAP, {vwap_tests} tests held",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.0,
+                     key_levels={"vwap": round(vwap, 2)})
+ 
+    return None
+ 
+ 
+# ==============================================================================
+# 14. RSI DIVERGENCE (5min)
+# ==============================================================================
+ 
+def _detect_rsi_divergence(s):
+    """RSI Divergence — price makes new high but RSI makes lower high (bearish),
+    or price makes new low but RSI makes higher low (bullish).
+    
+    v3.5: Added volume exhaustion confirmation.
+    """
+    if s.n < 30 or s.timeframe != "5min":
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+
+    cur_time = s.timestamps[-1].time()
+    if not (time(9, 45) <= cur_time <= time(15, 30)):
+        return None
+
+    # Compute RSI(14)
+    closes = np.array(s.closes[-20:], dtype=np.float64)
+    deltas = np.diff(closes)
+    gains = np.where(deltas > 0, deltas, 0)
+    losses = np.where(deltas < 0, -deltas, 0)
+    avg_gain = float(np.mean(gains[:14]))
+    avg_loss = float(np.mean(losses[:14]))
+    if avg_loss == 0:
+        return None
+    rs = avg_gain / avg_loss
+    rsi_prev = 100 - (100 / (1 + rs))
+
+    # Smooth forward
+    for i in range(14, len(deltas)):
+        avg_gain = (avg_gain * 13 + gains[i]) / 14
+        avg_loss = (avg_loss * 13 + losses[i]) / 14
+    if avg_loss == 0:
+        return None
+    rs = avg_gain / avg_loss
+    rsi_now = 100 - (100 / (1 + rs))
+
+    cur = s.closes[-1]
+
+    # Bearish divergence: price higher high, RSI lower high
+    price_hh = s.highs[-1] > max(s.highs[-10:-1])
+    rsi_lh = rsi_now < rsi_prev and rsi_now > 60
+
+    # Bullish divergence: price lower low, RSI higher low
+    price_ll = s.lows[-1] < min(s.lows[-10:-1])
+    rsi_hl = rsi_now > rsi_prev and rsi_now < 40
+
+    # ← ADDED: Volume must be declining (exhaustion confirms divergence)
+    avg_vol = float(np.mean(s.volumes[-10:]))
+    if avg_vol > 0 and s.volumes[-1] > avg_vol * 1.2:
+        return None  # Volume expanding contradicts exhaustion thesis
+
+    if price_hh and rsi_lh:
+        conf = 0.56
+        entry = cur
+        stop = s.highs[-1] + _atr_offset(atr, 0.10)
+        t1 = round(entry - atr * 1.0, 2)
+        t2 = round(entry - atr * 2.0, 2)
+        risk = stop - entry
+        if risk <= 0:
+            return None
+        return _make(s, "RSI Divergence Short", Bias.SHORT,
+                     entry, stop, t2, conf,
+                     f"RSI Div Short: price new high, RSI falling ({rsi_now:.0f})",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.5)
+
+    elif price_ll and rsi_hl:
+        conf = 0.56
+        entry = cur
+        stop = s.lows[-1] - _atr_offset(atr, 0.10)
+        t1 = round(entry + atr * 1.0, 2)
+        t2 = round(entry + atr * 2.0, 2)
+        risk = entry - stop
+        if risk <= 0:
+            return None
+        return _make(s, "RSI Divergence Long", Bias.LONG,
+                     entry, stop, t2, conf,
+                     f"RSI Div Long: price new low, RSI rising ({rsi_now:.0f})",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.5)
+
+    return None
+ 
+ 
+# ==============================================================================
+# 15. MIDDAY REVERSAL (5min)
+#     11:30-12:30 reversals of the morning trend
+# ==============================================================================
+ 
+def _detect_midday_reversal(s):
+    """Midday Reversal — if the morning trend is strong, the 11:30-12:30
+    window often produces a reversal as morning momentum exhausts.
+    """
+    if s.n < 30 or s.timeframe != "5min":
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    cur_time = s.timestamps[-1].time()
+    if not (time(11, 30) <= cur_time <= time(12, 30)):
+        return None
+ 
+    today = s.timestamps[-1].date()
+    morning = [i for i in range(s.n) if s.timestamps[i].date() == today
+               and s.timestamps[i].time() < time(11, 30)]
+    if len(morning) < 10:
+        return None
+ 
+    open_price = s.opens[morning[0]]
+    morning_close = s.closes[morning[-1]]
+    morning_move = morning_close - open_price
+    cur = s.closes[-1]
+ 
+    # Need strong morning move (> 1 ATR)
+    if abs(morning_move) < atr * 1.0:
+        return None
+ 
+    # Must show signs of reversal: current price retraced 30%+
+    if morning_move > 0:
+        retrace = morning_close - cur
+        if retrace < morning_move * 0.30:
+            return None
+        # Short the reversal
+        conf = 0.55
+        entry = cur
+        stop = max(s.highs[i] for i in morning) + _atr_offset(atr, 0.05)  # short
+        # NEW: Use ATR-based targets instead of measured move
+        t1 = round(entry - atr * 1.0, 2)
+        t2 = round(entry - atr * 2.0, 2)
+        risk = stop - entry
+        if risk <= 0:
+            return None
+        return _make(s, "Midday Reversal Short", Bias.SHORT,
+                     entry, stop, t2, conf,
+                     f"Midday Reversal Short: morning +${morning_move:.2f}, now reversing",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.0)
+    else:
+        retrace = cur - morning_close
+        if retrace < abs(morning_move) * 0.30:
+            return None
+        conf = 0.55
+        entry = cur
+        stop = min(s.lows[i] for i in morning) - _atr_offset(atr, 0.05)   # long
+        t1 = round(entry + atr * 1.0, 2)
+        t2 = round(entry + atr * 2.0, 2)
+        risk = entry - stop
+        if risk <= 0:
+            return None
+        return _make(s, "Midday Reversal Long", Bias.LONG,
+                     entry, stop, t2, conf,
+                     f"Midday Reversal Long: morning -${abs(morning_move):.2f}, now reversing",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.0)
+ 
+ 
+# ==============================================================================
+# 16. KELTNER CHANNEL BREAKOUT (15min, 1h)
+#     ATR-based channels — more stable than Bollinger
+# ==============================================================================
+ 
+def _detect_keltner_breakout(s):
+    """Keltner Channel Breakout — price breaks above/below EMA ± 2 ATR channel.
+    
+    v3.5: Added squeeze filter + volume 1.5x to reduce from 50K signals.
+    """
+    if s.n < 30 or s.timeframe not in ("15min", "1h"):
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+
+    # EMA(20) ± 2 ATR
+    ema20 = float(s.closes[0])
+    mult = 2.0 / 21.0
+    for i in range(1, s.n):
+        ema20 = s.closes[i] * mult + ema20 * (1 - mult)
+
+    upper = ema20 + 2 * atr
+    lower = ema20 - 2 * atr
+    cur = s.closes[-1]
+
+    # Must have been inside channel recently (not already broken out)
+    was_inside = any(lower < s.closes[i] < upper for i in range(s.n - 5, s.n - 1))
+    if not was_inside:
+        return None
+
+    # ← ADDED: Squeeze filter — recent ranges must be compressed
+    if s.n >= 25:
+        recent_ranges = [s.highs[i] - s.lows[i] for i in range(s.n - 5, s.n)]
+        longer_ranges = [s.highs[i] - s.lows[i] for i in range(s.n - 20, s.n - 5)]
+        avg_recent = float(np.mean(recent_ranges))
+        avg_longer = float(np.mean(longer_ranges))
+        if avg_longer > 0 and avg_recent > avg_longer * 0.80:
+            return None  # No compression = false breakout
+
+    # ← CHANGED: Volume must be 1.5x avg (was 1.3x, and wasn't a gate)
+    avg_vol = float(np.mean(s.volumes[-20:]))
+    if avg_vol > 0 and s.volumes[-1] < avg_vol * 1.5:
+        return None  # Not enough volume to confirm breakout
+
+    conf = 0.58
+
+    if cur > upper:
+        entry = cur
+        stop = ema20 - _atr_offset(atr, 0.10)
+        t1 = round(entry + atr * 1.5, 2)
+        t2 = round(entry + atr * 3.0, 2)
+        risk = entry - stop
+        if risk <= 0:
+            return None
+        return _make(s, "Keltner Breakout Long", Bias.LONG,
+                     entry, stop, t2, conf,
+                     f"Keltner BO Long: above EMA+2ATR ({upper:.2f}), squeezed",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=2.0)
+
+    elif cur < lower:
+        entry = cur
+        stop = ema20 + _atr_offset(atr, 0.10)
+        t1 = round(entry - atr * 1.5, 2)
+        t2 = round(entry - atr * 3.0, 2)
+        risk = stop - entry
+        if risk <= 0:
+            return None
+        return _make(s, "Keltner Breakout Short", Bias.SHORT,
+                     entry, stop, t2, conf,
+                     f"Keltner BO Short: below EMA-2ATR ({lower:.2f}), squeezed",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=2.0)
+
+    return None
+ 
+ 
+# ==============================================================================
+# 17. MACD HISTOGRAM REVERSAL (15min, 1h)
+# ==============================================================================
+ 
+def _detect_macd_reversal(s):
+    """MACD Histogram Reversal — histogram turns from negative to positive
+    (bullish) or positive to negative (bearish) with increasing magnitude.
+    """
+    if s.n < 35 or s.timeframe not in ("15min", "1h"):
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    # Compute MACD (12, 26, 9)
+    def ema_val(data, period):
+        k = 2.0 / (period + 1)
+        result = float(data[0])
+        for i in range(1, len(data)):
+            result = data[i] * k + result * (1 - k)
+        return result
+ 
+    # Need at least 5 bars of MACD history for the turn
+    hist_values = []
+    for j in range(5):
+        idx = s.n - 5 + j
+        ema12 = ema_val(s.closes[:idx + 1], 12)
+        ema26 = ema_val(s.closes[:idx + 1], 26)
+        macd_line = ema12 - ema26
+        # Signal line approximation
+        hist_values.append(macd_line)
+ 
+    if len(hist_values) < 5:
+        return None
+ 
+    # Detect histogram turn
+    prev_2 = hist_values[-3]
+    prev_1 = hist_values[-2]
+    curr = hist_values[-1]
+ 
+    cur = s.closes[-1]
+    conf = 0.55
+ 
+    # Bullish: histogram was falling, now rising (and crossing from neg to pos is best)
+    if prev_2 > prev_1 and curr > prev_1 and curr > 0 and prev_1 < 0:
+        entry = cur
+        stop = min(s.lows[-5:]) - _atr_offset(atr, 0.10)
+        t1 = round(entry + atr * 1.5, 2)
+        t2 = round(entry + atr * 3.0, 2)
+        risk = entry - stop
+        if risk <= 0:
+            return None
+        return _make(s, "MACD Turn Long", Bias.LONG,
+                     entry, stop, t2, conf,
+                     f"MACD Turn Long: histogram crossed zero",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.5)
+ 
+    # Bearish: histogram was rising, now falling (crossing from pos to neg)
+    elif prev_2 < prev_1 and curr < prev_1 and curr < 0 and prev_1 > 0:
+        entry = cur
+        stop = max(s.highs[-5:]) + _atr_offset(atr, 0.10)
+        t1 = round(entry - atr * 1.5, 2)
+        t2 = round(entry - atr * 3.0, 2)
+        risk = stop - entry
+        if risk <= 0:
+            return None
+        return _make(s, "MACD Turn Short", Bias.SHORT,
+                     entry, stop, t2, conf,
+                     f"MACD Turn Short: histogram crossed zero",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.5)
+ 
+    return None
+ 
+ 
+# ==============================================================================
+# 18. VOLUME-PRICE DIVERGENCE (15min, 1h)
+# ==============================================================================
+ 
+def _detect_vol_price_divergence(s):
+    """Volume-Price Divergence — price making new highs on declining volume
+    (bearish) or new lows on declining volume (bullish).
+    """
+    if s.n < 20 or s.timeframe not in ("15min", "1h"):
+        return None
+    atr = s.current_atr
+    if atr <= 0:
+        return None
+ 
+    cur = s.closes[-1]
+ 
+    # Check price trend over last 10 bars
+    price_10_ago = s.closes[-11]
+    price_trend = (cur - price_10_ago) / price_10_ago if price_10_ago > 0 else 0
+ 
+    # Check volume trend over same period
+    vol_first_half = float(np.mean(s.volumes[-10:-5]))
+    vol_second_half = float(np.mean(s.volumes[-5:]))
+ 
+    if vol_first_half <= 0:
+        return None
+ 
+    vol_declining = vol_second_half < vol_first_half * 0.6
+ 
+    if not vol_declining:
+        return None
+ 
+    # Price must be trending meaningfully
+    if abs(price_trend) < 0.02:
+        return None
+ 
+    conf = 0.55
+ 
+    if price_trend > 0.01 and vol_declining:
+        # Price up, volume declining = bearish divergence
+        # But only if price is at a relative high
+        if cur < max(s.highs[-10:]) * 0.995:
+            return None
+ 
+        entry = cur
+        stop = max(s.highs[-5:]) + _atr_offset(atr, 0.10)
+        t1 = round(entry - atr * 1.0, 2)
+        t2 = round(entry - atr * 2.0, 2)
+        risk = stop - entry
+        if risk <= 0:
+            return None
+        return _make(s, "VP Divergence Short", Bias.SHORT,
+                     entry, stop, t2, conf,
+                     f"VP Div Short: price up {price_trend:.1%} but vol declining {vol_second_half/vol_first_half:.0%}",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.5)
+ 
+    elif price_trend < -0.01 and vol_declining:
+        if cur > min(s.lows[-10:]) * 1.005:
+            return None
+ 
+        entry = cur
+        stop = min(s.lows[-5:]) - _atr_offset(atr, 0.10)
+        t1 = round(entry + atr * 1.0, 2)
+        t2 = round(entry + atr * 2.0, 2)
+        risk = entry - stop
+        if risk <= 0:
+            return None
+        return _make(s, "VP Divergence Long", Bias.LONG,
+                     entry, stop, t2, conf,
+                     f"VP Div Long: price down {price_trend:.1%} but vol declining {vol_second_half/vol_first_half:.0%}",
+                     target_1=t1, target_2=t2,
+                     trail_type="atr", trail_param=1.5)
+ 
+    return None
+ 
 
 # ==============================================================================
 # MAIN CLASSIFIER
@@ -4665,19 +5974,19 @@ def _detect_turtle_breakout(s):
 _DETECTOR_MAP: dict[str, callable] = {
     # Classical (16) — run on 15min + 1h per registry
     "Head & Shoulders":     _detect_head_and_shoulders,
-    "Inverse H&S":          _detect_inverse_hs,
-    "Double Top":           _detect_double_top,
+    #"Inverse H&S":          _detect_inverse_hs,
+    #"Double Top":           _detect_double_top,
     "Double Bottom":        _detect_double_bottom,
-    "Triple Top":           _detect_triple_top,
-    "Triple Bottom":        _detect_triple_bottom,
-    "Ascending Triangle":   _detect_ascending_triangle,
+    #"Triple Top":           _detect_triple_top,
+    #"Triple Bottom":        _detect_triple_bottom,
+    #"Ascending Triangle":   _detect_ascending_triangle,
     "Descending Triangle":  _detect_descending_triangle,
-    "Symmetrical Triangle": _detect_symmetrical_triangle,
-    "Bull Flag":            _detect_bull_flag,
-    "Bear Flag":            _detect_bear_flag,
+    #"Symmetrical Triangle": _detect_symmetrical_triangle,
+    #"Bull Flag":            _detect_bull_flag,
+    #"Bear Flag":            _detect_bear_flag,
     #"Pennant":              _detect_pennant,
     "Cup & Handle":         _detect_cup_and_handle,
-    "Rectangle":            _detect_rectangle,
+    #"Rectangle":            _detect_rectangle,
     "Rising Wedge":         _detect_rising_wedge,
     "Falling Wedge":        _detect_falling_wedge,
     # Candlestick (10) — run on 5min + 15min per registry
@@ -4702,25 +6011,47 @@ _DETECTOR_MAP: dict[str, callable] = {
     "Tidal Wave":           _detect_tidal_wave,
     # Quant — Intraday (4) — 5min only per registry
     "Mean Reversion":       _detect_mean_reversion,
-    "Trend Pullback":       _detect_trend_pullback,
+    #"Trend Pullback":       _detect_trend_pullback,
     "Gap Fade":             _detect_gap_fade,
     "VWAP Reversion":       _detect_vwap_reversion,
     # Quant — Daily (5) — 1d only per registry
     "Momentum Breakout":       _detect_momentum_breakout,
     "Vol Compression Breakout": _detect_vol_compression_breakout,
-    "Range Expansion":         _detect_range_expansion,
+    #"Range Expansion":         _detect_range_expansion,
     "Volume Breakout":         _detect_volume_breakout,
     "Donchian Breakout":       _detect_donchian_breakout,
     "Juicer Long":             _detect_juicer_long,
-    "Juicer Short":            _detect_juicer_short,
+    #"Juicer Short":            _detect_juicer_short,
     "TS Momentum Long":        _detect_time_series_momentum,  # Handles both long/short internally
     "Multi-TF Trend Long":     _detect_multi_tf_trend,        # Handles both long/short internally
-    "Golden Cross":          _detect_ma_crossover,           # Handles golden/death internally
+    #"Golden Cross":          _detect_ma_crossover,           # Handles golden/death internally
     "ST Reversal Long":      _detect_short_term_reversal,    # Handles both long/short internally
-    "Low Vol Long":          _detect_low_vol_anomaly,        # Long only
+    #"Low Vol Long":          _detect_low_vol_anomaly,        # Long only
     "Gap Reversal Long":     _detect_overnight_gap_reversal, # Handles both long/short internally
     "Turtle Breakout Long":  _detect_turtle_breakout,        # Handles both long/short internally
-    # 
+     # Batch 2 — Daily
+    "BAB Long":                _detect_bab,
+    "52W High Momentum":       _detect_52w_high_momentum,
+    "RS Persistence Long":     _detect_relative_strength,
+    #"NR7 Breakout Long":      _detect_nr7_breakout,
+    #"Inside Bar Long":        _detect_inside_bar,
+    "Streak Reversal Long":   _detect_consecutive_reversal,
+    "ATR Expansion Long":     _detect_atr_expansion,
+    "BB Squeeze Long":        _detect_bollinger_squeeze,
+    "Accumulation Long":      _detect_accumulation_day,
+ 
+    # Batch 2 — Intraday 5min
+    "Opening Drive Long":     _detect_opening_drive,
+    "Power Hour Long":        _detect_power_hour,
+    "Volume Climax Long":     _detect_volume_climax,
+    "VWAP Trend Long":        _detect_vwap_trend,
+    "RSI Divergence Long":    _detect_rsi_divergence,
+    "Midday Reversal Long":   _detect_midday_reversal,
+ 
+    # Batch 2 — Intraday 15min/1h
+    "Keltner Breakout Long":  _detect_keltner_breakout,
+    "MACD Turn Long":         _detect_macd_reversal,
+    "VP Divergence Long":     _detect_vol_price_divergence,
 }
 
 

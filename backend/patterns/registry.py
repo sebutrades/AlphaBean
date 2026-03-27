@@ -227,6 +227,44 @@ PATTERN_META = {
                              "tf": ["1d"], "cd": 14400, "mh": 99000},
     "Turtle Breakout Short":{"wr": 0.48, "type": "breakout",       "cat": PatternCategory.QUANT,
                              "tf": ["1d"], "cd": 14400, "mh": 99000},
+     # Batch 2 — Daily
+    "BAB Long":                {"wr": 0.55, "type": "momentum",       "cat": PatternCategory.QUANT, "tf": ["1d"], "cd": 14400, "mh": 99000},
+    "52W High Momentum":       {"wr": 0.55, "type": "momentum",       "cat": PatternCategory.QUANT, "tf": ["1d"], "cd": 14400, "mh": 99000},
+    "RS Persistence Long":     {"wr": 0.55, "type": "momentum",       "cat": PatternCategory.QUANT, "tf": ["1d"], "cd": 7200,  "mh": 99000},
+    "NR7 Breakout Long":      {"wr": 0.52, "type": "breakout",       "cat": PatternCategory.QUANT, "tf": ["1d"], "cd": 1440,  "mh": 7200},
+    "NR7 Breakout Short":     {"wr": 0.48, "type": "breakout",       "cat": PatternCategory.QUANT, "tf": ["1d"], "cd": 1440,  "mh": 7200},
+    "Inside Bar Long":        {"wr": 0.52, "type": "breakout",       "cat": PatternCategory.QUANT, "tf": ["1d"], "cd": 1440,  "mh": 7200},
+    "Inside Bar Short":       {"wr": 0.48, "type": "breakout",       "cat": PatternCategory.QUANT, "tf": ["1d"], "cd": 1440,  "mh": 7200},
+    "Streak Reversal Long":   {"wr": 0.52, "type": "mean_reversion", "cat": PatternCategory.QUANT, "tf": ["1d"], "cd": 7200,  "mh": 14400},
+    "Streak Reversal Short":  {"wr": 0.48, "type": "mean_reversion", "cat": PatternCategory.QUANT, "tf": ["1d"], "cd": 7200,  "mh": 14400},
+    "ATR Expansion Long":     {"wr": 0.52, "type": "breakout",       "cat": PatternCategory.QUANT, "tf": ["1d"], "cd": 1440,  "mh": 7200},
+    "ATR Expansion Short":    {"wr": 0.48, "type": "breakout",       "cat": PatternCategory.QUANT, "tf": ["1d"], "cd": 1440,  "mh": 7200},
+    "BB Squeeze Long":        {"wr": 0.52, "type": "breakout",       "cat": PatternCategory.QUANT, "tf": ["1d"], "cd": 7200,  "mh": 99000},
+    "BB Squeeze Short":       {"wr": 0.48, "type": "breakout",       "cat": PatternCategory.QUANT, "tf": ["1d"], "cd": 7200,  "mh": 99000},
+    "Accumulation Long":      {"wr": 0.55, "type": "momentum",       "cat": PatternCategory.QUANT, "tf": ["1d"], "cd": 7200,  "mh": 99000},
+    "Distribution Short":     {"wr": 0.50, "type": "momentum",       "cat": PatternCategory.QUANT, "tf": ["1d"], "cd": 7200,  "mh": 99000},
+ 
+    # Batch 2 — Intraday 5min
+    "Opening Drive Long":     {"wr": 0.52, "type": "momentum",       "cat": PatternCategory.QUANT, "tf": ["5min"], "cd": 480,  "mh": 240},
+    "Opening Drive Short":    {"wr": 0.48, "type": "momentum",       "cat": PatternCategory.QUANT, "tf": ["5min"], "cd": 480,  "mh": 240},
+    "Power Hour Long":        {"wr": 0.52, "type": "momentum",       "cat": PatternCategory.QUANT, "tf": ["5min"], "cd": 480,  "mh": 60},
+    "Power Hour Short":       {"wr": 0.48, "type": "momentum",       "cat": PatternCategory.QUANT, "tf": ["5min"], "cd": 480,  "mh": 60},
+    "Volume Climax Long":     {"wr": 0.52, "type": "mean_reversion", "cat": PatternCategory.QUANT, "tf": ["5min"], "cd": 240,  "mh": 240},
+    "Volume Climax Short":    {"wr": 0.48, "type": "mean_reversion", "cat": PatternCategory.QUANT, "tf": ["5min"], "cd": 240,  "mh": 240},
+    "VWAP Trend Long":        {"wr": 0.55, "type": "momentum",       "cat": PatternCategory.QUANT, "tf": ["5min"], "cd": 480,  "mh": 240},
+    "VWAP Trend Short":       {"wr": 0.50, "type": "momentum",       "cat": PatternCategory.QUANT, "tf": ["5min"], "cd": 480,  "mh": 240},
+    "RSI Divergence Long":    {"wr": 0.52, "type": "mean_reversion", "cat": PatternCategory.QUANT, "tf": ["5min"], "cd": 240,  "mh": 240},
+    "RSI Divergence Short":   {"wr": 0.48, "type": "mean_reversion", "cat": PatternCategory.QUANT, "tf": ["5min"], "cd": 240,  "mh": 240},
+    "Midday Reversal Long":   {"wr": 0.52, "type": "mean_reversion", "cat": PatternCategory.QUANT, "tf": ["5min"], "cd": 480,  "mh": 180},
+    "Midday Reversal Short":  {"wr": 0.48, "type": "mean_reversion", "cat": PatternCategory.QUANT, "tf": ["5min"], "cd": 480,  "mh": 180},
+ 
+    # Batch 2 — Intraday 15min/1h
+    "Keltner Breakout Long":  {"wr": 0.52, "type": "breakout",       "cat": PatternCategory.QUANT, "tf": ["15min", "1h"], "cd": 240, "mh": 480},
+    "Keltner Breakout Short": {"wr": 0.48, "type": "breakout",       "cat": PatternCategory.QUANT, "tf": ["15min", "1h"], "cd": 240, "mh": 480},
+    "MACD Turn Long":         {"wr": 0.52, "type": "momentum",       "cat": PatternCategory.QUANT, "tf": ["15min", "1h"], "cd": 240, "mh": 480},
+    "MACD Turn Short":        {"wr": 0.48, "type": "momentum",       "cat": PatternCategory.QUANT, "tf": ["15min", "1h"], "cd": 240, "mh": 480},
+    "VP Divergence Long":     {"wr": 0.52, "type": "mean_reversion", "cat": PatternCategory.QUANT, "tf": ["15min", "1h"], "cd": 240, "mh": 480},
+    "VP Divergence Short":    {"wr": 0.48, "type": "mean_reversion", "cat": PatternCategory.QUANT, "tf": ["15min", "1h"], "cd": 240, "mh": 480},
 }
 
 
