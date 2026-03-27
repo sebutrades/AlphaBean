@@ -1,0 +1,267 @@
+{
+  "cached_at": 1774628811.472842,
+  "items": [
+    {
+      "title": "If I Had $10,000 to Invest in Artificial Intelligence (AI) Right Now, I'd Split It Between These 3 Stocks",
+      "description": "The article recommends splitting a $10,000 AI investment equally among Nvidia, Palantir Technologies, and Taiwan Semiconductor Manufacturing. Nvidia offers comprehensive hardware and software solutions with its CUDA platform and strategic partnerships. Palantir's AI Platform excels at synthesizing data for enterprise and government use. Taiwan Semi manufactures advanced chips for all major AI players, positioning it as essential infrastructure.",
+      "published_utc": "2026-03-27T15:12:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/27/if-i-had-10000-to-invest-in-artificial-intelligenc/?source=iedfolrf0000001",
+      "tickers": [
+        "NVDA",
+        "PLTR",
+        "TSM"
+      ],
+      "keywords": [
+        "artificial intelligence",
+        "AI infrastructure",
+        "GPU",
+        "chip manufacturing",
+        "enterprise software",
+        "data processing",
+        "semiconductor"
+      ],
+      "author": "Adam Spatacco",
+      "insights": [
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "reasoning": "Praised for comprehensive end-to-end AI platform, CUDA software moat creating customer lock-in, strategic partnerships with Nokia and Lumentum, and full-stack approach demonstrating competitive edge with compounding benefits."
+        },
+        {
+          "ticker": "PLTR",
+          "sentiment": "positive",
+          "reasoning": "Highlighted for unique ability to synthesize disparate data sources, mission-critical AIP platform with automatic updates, proven validation in military and Fortune 500 applications, and premium pricing power due to reliability and lack of viable alternatives."
+        },
+        {
+          "ticker": "TSM",
+          "sentiment": "positive",
+          "reasoning": "Positioned as essential 'pick-and-shovel' vendor with dominant foundry capacity, serves all major AI chip designers, benefits regardless of which chip design wins, and has created virtually unreplicable flywheel through scale and continuous process improvements."
+        }
+      ]
+    },
+    {
+      "title": "Choosing an ETF for Tech Stock Exposure: Fidelity's FTEC vs. iShares' IYW",
+      "description": "Fidelity's FTEC and iShares' IYW both offer U.S. technology exposure but differ significantly in cost, diversification, and sector definition. FTEC charges a lower expense ratio (0.08% vs 0.38%), holds nearly twice as many companies (294 vs 139), and offers higher dividend yield, making it ideal for cost-conscious investors. IYW takes a broader approach to tech classification, including communication services stocks like Alphabet, and concentrates more heavily in mega-cap names. Both delivered similar one-year returns (~24%), though FTEC showed less volatility over five years.",
+      "published_utc": "2026-03-27T14:18:06Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/coverage/etfs/2026/03/27/choosing-an-etf-for-tech-stock-exposure-fidelity-s-ftec-vs-ishares-iyw/?source=iedfolrf0000001",
+      "tickers": [
+        "FTEC",
+        "IYW",
+        "NVDA",
+        "AAPL",
+        "MSFT",
+        "GOOG",
+        "GOOGL"
+      ],
+      "keywords": [
+        "tech ETF comparison",
+        "expense ratio",
+        "diversification",
+        "dividend yield",
+        "technology sector",
+        "mega-cap stocks",
+        "index funds"
+      ],
+      "author": "Robert Izquierdo",
+      "insights": [
+        {
+          "ticker": "FTEC",
+          "sentiment": "positive",
+          "reasoning": "Highlighted for significantly lower expense ratio (0.08%), broader diversification with 294 holdings, higher dividend yield (0.4%), lower maximum drawdown over 5 years (34.95%), and comparable returns to competitor, making it attractive for cost-conscious investors."
+        },
+        {
+          "ticker": "IYW",
+          "sentiment": "neutral",
+          "reasoning": "Presented as a viable alternative with broader sector definition that includes communication services (Alphabet), appealing to investors seeking exposure to mega-cap tech names, but disadvantaged by higher expense ratio (0.38%), fewer holdings (139), and greater concentration risk."
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as a top holding in both ETFs (18.25% in FTEC, leading position in IYW), indicating significant exposure to this mega-cap tech company in both funds."
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "reasoning": "Listed as a major holding in both ETFs (15.41% in FTEC, top 3 in IYW), representing substantial exposure to this mega-cap technology company."
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "neutral",
+          "reasoning": "Noted as a significant holding in FTEC (10.07%), representing meaningful exposure to this major technology company."
+        },
+        {
+          "ticker": "GOOG",
+          "sentiment": "neutral",
+          "reasoning": "Included in IYW's top holdings but excluded from FTEC due to different sector classification definitions, illustrating the key structural difference between the two ETFs."
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "neutral",
+          "reasoning": "Included in IYW's top holdings but excluded from FTEC due to different sector classification definitions, illustrating the key structural difference between the two ETFs."
+        }
+      ]
+    },
+    {
+      "title": "8 Stocks I'd Buy if I Were Starting a Tech Portfolio From Scratch Today",
+      "description": "The article recommends eight AI-focused technology stocks for building a foundational tech portfolio: Nvidia, AMD, Broadcom, Micron, TSMC, Alphabet, Meta Platforms, and ServiceNow. These companies are positioned to benefit from AI infrastructure buildout, custom chip development, advanced manufacturing, and AI integration into core business operations.",
+      "published_utc": "2026-03-27T12:15:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/27/stocks-buy-if-starting-tech-portfolio-today/?source=iedfolrf0000001",
+      "tickers": [
+        "NVDA",
+        "AMD",
+        "AVGO",
+        "MU",
+        "TSM",
+        "GOOG",
+        "GOOGL",
+        "META",
+        "NOW"
+      ],
+      "keywords": [
+        "AI infrastructure",
+        "GPU market",
+        "custom AI chips",
+        "semiconductor manufacturing",
+        "data center",
+        "agentic AI",
+        "tech portfolio"
+      ],
+      "author": "Geoffrey Seiler",
+      "insights": [
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "reasoning": "Described as the most dominant player in AI infrastructure with strong positioning in inference and agentic AI markets; acquisition of Groq and introduction of NemoClaw strengthen competitive moat."
+        },
+        {
+          "ticker": "AMD",
+          "sentiment": "positive",
+          "reasoning": "No. 2 GPU player with leading position in data center CPU market; positioned to benefit from agentic AI demand and recent deals with Meta and OpenAI."
+        },
+        {
+          "ticker": "AVGO",
+          "sentiment": "positive",
+          "reasoning": "Leader in ASIC technology with strong growth catalysts from custom AI chips and data center networking; helped develop Alphabet's TPUs."
+        },
+        {
+          "ticker": "MU",
+          "sentiment": "positive",
+          "reasoning": "One of three major HBM manufacturers with historically cheap valuation; positioned for strong secular growth from AI with long-term contracts providing visibility."
+        },
+        {
+          "ticker": "TSM",
+          "sentiment": "positive",
+          "reasoning": "Virtual monopoly on advanced chip manufacturing essential for AI infrastructure; expanding capacity with strong pricing power and high yields."
+        },
+        {
+          "ticker": "GOOG",
+          "sentiment": "positive",
+          "reasoning": "Internet search leader with large cloud business and proprietary TPUs providing cost advantages; using AI to enhance search and drive revenue growth."
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "positive",
+          "reasoning": "Internet search leader with large cloud business and proprietary TPUs providing cost advantages; using AI to enhance search and drive revenue growth."
+        },
+        {
+          "ticker": "META",
+          "sentiment": "positive",
+          "reasoning": "Effectively applying AI to core business to increase user engagement and ad effectiveness; improved recommendation engine and ad tools driving revenue growth."
+        },
+        {
+          "ticker": "NOW",
+          "sentiment": "positive",
+          "reasoning": "Despite SaaS sell-off, company maintains strong 20%+ growth with rapidly growing NowAssist AI suite and future opportunity with agentic AI orchestration platform."
+        }
+      ]
+    },
+    {
+      "title": "The Scrappy $949 GPU Taking Aim at Nvidia's Grip on Local AI",
+      "description": "Intel announced the Arc Pro B70, a $949 workstation GPU designed for running AI workloads locally. Priced significantly lower than Nvidia's RTX Pro 4000 ($1,800) and AMD's Radeon AI Pro R9700 ($1,299), the Arc Pro B70 features 32GB of GDDR6 RAM and claims superior performance metrics. The GPU positions Intel to benefit from a potential shift of AI computing away from mega data centers toward on-premises and local workstations.",
+      "published_utc": "2026-03-27T10:30:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/27/the-scrappy-949-gpu-taking-aim-at-nvidias-grip-on/?source=iedfolrf0000001",
+      "tickers": [
+        "INTC",
+        "NVDA",
+        "AMD"
+      ],
+      "keywords": [
+        "GPU",
+        "local AI",
+        "workstation",
+        "Arc Pro B70",
+        "AI inference",
+        "pricing",
+        "memory",
+        "data center alternatives"
+      ],
+      "author": "Timothy Green",
+      "insights": [
+        {
+          "ticker": "INTC",
+          "sentiment": "positive",
+          "reasoning": "Intel is launching a competitively priced GPU with strong performance claims and positioning itself well for the emerging local AI market. The company is advancing AI capabilities across its product line and appears well-positioned for a potential shift away from centralized data centers."
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "neutral",
+          "reasoning": "While Nvidia faces competition from Intel's lower-priced alternative, the article acknowledges Nvidia's continued advantage through its proprietary CUDA platform and dominant market position. The threat is positioned as emerging rather than immediate."
+        },
+        {
+          "ticker": "AMD",
+          "sentiment": "neutral",
+          "reasoning": "AMD is mentioned as a competitor with the Radeon AI Pro R9700, but receives minimal analysis. Intel's Arc Pro B70 is positioned as superior in value and performance, but AMD's competitive position is not substantially threatened in the article's narrative."
+        }
+      ]
+    },
+    {
+      "title": "Have Tech Stocks Finally Run Out of Road? Here's What the Data Actually Says.",
+      "description": "Tech stocks have pulled back from frothy valuations but remain priced for significant AI-driven earnings growth in 2026. While the sector's forward P/E of ~24x is reasonable historically, most popular AI stocks have no margin for error. Selective picking is essential, as disappointing earnings could trigger broader sector selloffs, though reasonably-priced non-AI tech stocks exist.",
+      "published_utc": "2026-03-27T10:16:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/27/have-tech-stocks-finally-run-out-of-road-data-says/?source=iedfolrf0000001",
+      "tickers": [
+        "NVDA",
+        "MSFT",
+        "AVGO",
+        "AMZN"
+      ],
+      "keywords": [
+        "tech stocks",
+        "AI earnings growth",
+        "valuation",
+        "price-to-earnings ratio",
+        "artificial intelligence",
+        "market pullback",
+        "investment risk"
+      ],
+      "author": "James Brumley",
+      "insights": [
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "reasoning": "Trading at forward P/E of less than 16x, described as 'a relative bargain' with strong growth expectations justifying current valuations despite high absolute price multiples."
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "positive",
+          "reasoning": "Valued at less than 20x forward earnings, characterized as 'arguably cheap' with solid projected earnings growth supporting current price levels."
+        },
+        {
+          "ticker": "AVGO",
+          "sentiment": "positive",
+          "reasoning": "Trading at ~18x forward earnings with expected 50%+ profit growth, representing reasonable valuation given strong revenue growth prospects."
+        },
+        {
+          "ticker": "AMZN",
+          "sentiment": "neutral",
+          "reasoning": "Trading at 30x trailing earnings, which is elevated but not explicitly criticized; mentioned as part of cap-weighted index concentration risk."
+        }
+      ]
+    }
+  ]
+}

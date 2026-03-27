@@ -1,0 +1,101 @@
+{
+  "cached_at": 1774628813.8860798,
+  "items": [
+    {
+      "title": "Arm\u2019s New Gambit: Building Chips to Challenge the AI Titans",
+      "description": "Arm Holdings announced its first in-house silicon product, the AGI CPU, marking a strategic shift from IP licensing to direct chip manufacturing for AI data centers. The 136-core processor, built on TSMC's 3nm process, targets energy efficiency in AI workloads. Meta is the lead partner and co-developer, with support from OpenAI, Cloudflare, and SAP. Arm's stock surged 15% on the announcement, with analyst upgrades citing potential $15 billion annual revenue by 2031, positioning the company as a disruptive competitor to Intel and AMD in the AI infrastructure market.",
+      "published_utc": "2026-03-27T11:53:00Z",
+      "source": "Investing.com",
+      "article_url": "https://www.investing.com/analysis/arms-new-gambit-building-chips-to-challenge-the-ai-titans-200677389",
+      "tickers": [
+        "ARM",
+        "META",
+        "INTC",
+        "AMD",
+        "TSM",
+        "NET",
+        "SAP"
+      ],
+      "keywords": [
+        "AI data centers",
+        "chip manufacturing",
+        "energy efficiency",
+        "AGI CPU",
+        "strategic pivot",
+        "business model transformation",
+        "server processors"
+      ],
+      "author": "Jeffrey Neal Johnson",
+      "insights": [
+        {
+          "ticker": "ARM",
+          "sentiment": "positive",
+          "reasoning": "Company announced transformative strategic shift into AI chip manufacturing with major partnership validation from Meta, analyst upgrades, and 15% stock surge. Positioned for significant revenue growth with $15B potential by 2031."
+        },
+        {
+          "ticker": "META",
+          "sentiment": "positive",
+          "reasoning": "Serves as lead partner and co-developer of Arm's AGI CPU, providing technological validation and guaranteed large-scale orders. Demonstrates Meta's commitment to optimizing AI infrastructure and reducing energy costs."
+        },
+        {
+          "ticker": "INTC",
+          "sentiment": "negative",
+          "reasoning": "Faces direct competition from Arm's new energy-efficient AGI CPU in the historically Intel-dominated data center market. Arm's focused approach on AI workloads and lower total cost of ownership threatens Intel's core value proposition."
+        },
+        {
+          "ticker": "AMD",
+          "sentiment": "negative",
+          "reasoning": "Competes with Arm in the x86 server processor market. Arm's specialized, energy-efficient AGI CPU directly challenges AMD's position in AI data center infrastructure."
+        },
+        {
+          "ticker": "TSM",
+          "sentiment": "positive",
+          "reasoning": "Provides cutting-edge 3-nanometer manufacturing process for Arm's AGI CPU, positioning TSMC as a critical partner in the growing AI chip production market."
+        },
+        {
+          "ticker": "NET",
+          "sentiment": "positive",
+          "reasoning": "Partnership commitment with Arm signals support for energy-efficient AI infrastructure, aligning with industry trends toward optimized data center operations."
+        },
+        {
+          "ticker": "SAP",
+          "sentiment": "positive",
+          "reasoning": "Commitment to Arm's AGI CPU ecosystem demonstrates enterprise software vendor support, expanding the platform's appeal and creating broader adoption incentives."
+        }
+      ]
+    },
+    {
+      "title": "This Brilliant Artificial Intelligence (AI) Stock Just Unveiled Plans to Reach a $9 Trillion Valuation by 2031 (Hint: Not Nvidia)",
+      "description": "Meta Platforms has announced ambitious plans to reach a $9 trillion market valuation by 2031, requiring 43% annual revenue growth and a 494% stock price increase. While the company is investing heavily in AI infrastructure ($115-135 billion in 2026) and showing strong financial results, analysts question whether the aggressive target is achievable given current growth projections of 18% annually.",
+      "published_utc": "2026-03-27T07:02:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/27/this-brilliant-artificial-intelligence-ai-stock-ju/?source=iedfolrf0000001",
+      "tickers": [
+        "META",
+        "NVDA"
+      ],
+      "keywords": [
+        "artificial intelligence",
+        "market valuation",
+        "AI models",
+        "executive incentive plan",
+        "capital expenditure",
+        "revenue growth",
+        "stock price target"
+      ],
+      "author": "Danny Vena, Cpa",
+      "insights": [
+        {
+          "ticker": "META",
+          "sentiment": "neutral",
+          "reasoning": "Meta shows strong fundamentals with 22% revenue growth and 24% EPS growth, plus aggressive AI investments. However, the $9 trillion goal requires unrealistic 43% annual revenue growth versus Wall Street's 18% expectation. Recent AI model (Llama 4) was poorly received, adding execution risk. The company is trading at a discount (25x earnings vs S&P 500's 28x), but the ambitious target appears challenging."
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "reasoning": "Nvidia is positioned as the undisputed AI winner with its GPUs becoming the gold standard for AI training. The company has achieved a $4.35 trillion market cap and 1,120% stock gains since early 2023, establishing it as the world's most valuable company and a primary beneficiary of the AI revolution."
+        }
+      ]
+    }
+  ]
+}

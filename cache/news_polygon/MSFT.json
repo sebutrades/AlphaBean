@@ -1,0 +1,78 @@
+{
+  "cached_at": 1774628816.301067,
+  "items": [
+    {
+      "title": "Crusoe Announces New 900 MW AI Factory Campus in Abilene, Texas to Support Microsoft AI Infrastructure",
+      "description": "Crusoe announced a new 900 MW AI factory campus in Abilene, Texas dedicated to supporting Microsoft's AI workloads. Combined with existing infrastructure, the full Abilene site will reach 2.1 GW capacity. The new campus features two buildings and an onsite power plant, with the first building expected to be energized in mid-2027. The project is expected to create thousands of jobs and significantly increase tax contributions to the Abilene community.",
+      "published_utc": "2026-03-27T13:00:00Z",
+      "source": "GlobeNewswire Inc.",
+      "article_url": "https://www.globenewswire.com/news-release/2026/03/27/3263786/0/en/Crusoe-Announces-New-900-MW-AI-Factory-Campus-in-Abilene-Texas-to-Support-Microsoft-AI-Infrastructure.html",
+      "tickers": [
+        "MSFT"
+      ],
+      "keywords": [
+        "AI infrastructure",
+        "data center",
+        "Abilene Texas",
+        "gigascale capacity",
+        "on-site power generation",
+        "GPU computing",
+        "liquid cooling systems",
+        "economic impact"
+      ],
+      "author": "Not Specified",
+      "insights": [
+        {
+          "ticker": "MSFT",
+          "sentiment": "positive",
+          "reasoning": "Microsoft is securing large-scale, reliable AI infrastructure to support growing customer demand for AI services. The partnership with Crusoe demonstrates Microsoft's commitment to building responsible, scalable infrastructure for next-generation AI workloads."
+        }
+      ]
+    },
+    {
+      "title": "Have Tech Stocks Finally Run Out of Road? Here's What the Data Actually Says.",
+      "description": "Tech stocks have pulled back from frothy valuations but remain priced for significant AI-driven earnings growth in 2026. While the sector's forward P/E of ~24x is reasonable historically, most popular AI stocks have no margin for error. Selective picking is essential, as disappointing earnings could trigger broader sector selloffs, though reasonably-priced non-AI tech stocks exist.",
+      "published_utc": "2026-03-27T10:16:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/27/have-tech-stocks-finally-run-out-of-road-data-says/?source=iedfolrf0000001",
+      "tickers": [
+        "NVDA",
+        "MSFT",
+        "AVGO",
+        "AMZN"
+      ],
+      "keywords": [
+        "tech stocks",
+        "AI earnings growth",
+        "valuation",
+        "price-to-earnings ratio",
+        "artificial intelligence",
+        "market pullback",
+        "investment risk"
+      ],
+      "author": "James Brumley",
+      "insights": [
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "reasoning": "Trading at forward P/E of less than 16x, described as 'a relative bargain' with strong growth expectations justifying current valuations despite high absolute price multiples."
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "positive",
+          "reasoning": "Valued at less than 20x forward earnings, characterized as 'arguably cheap' with solid projected earnings growth supporting current price levels."
+        },
+        {
+          "ticker": "AVGO",
+          "sentiment": "positive",
+          "reasoning": "Trading at ~18x forward earnings with expected 50%+ profit growth, representing reasonable valuation given strong revenue growth prospects."
+        },
+        {
+          "ticker": "AMZN",
+          "sentiment": "neutral",
+          "reasoning": "Trading at 30x trailing earnings, which is elevated but not explicitly criticized; mentioned as part of cap-weighted index concentration risk."
+        }
+      ]
+    }
+  ]
+}

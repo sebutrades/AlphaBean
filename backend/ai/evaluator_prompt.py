@@ -114,7 +114,7 @@ def evaluate_setup_v2(
     )
 
     # Build the prompt
-    prompt = f"{SYSTEM_PROMPT}\n\n--- FULL BRIEFING ---\n\n{context}\n\n--- YOUR EVALUATION ---"
+    prompt = f"{SYSTEM_PROMPT}\n\n--- FULL BRIEFING ---\n\n{context}\n\n--- YOUR EVALUATION --- /no_think"
 
     try:
         response = _call_ollama(prompt)
@@ -206,7 +206,7 @@ def _call_ollama(prompt: str) -> str:
         "stream": False,
         "options": {
             "temperature": 0.3,    # Low temp for consistent decisions
-            "num_predict": 400,    # More room for thinking + response
+            "num_predict": 2000,    # More room for thinking + response
             "top_p": 0.9,
         },
     }

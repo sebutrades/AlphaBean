@@ -1,0 +1,177 @@
+{
+  "cached_at": 1774628815.5112028,
+  "items": [
+    {
+      "title": "8 Stocks I'd Buy if I Were Starting a Tech Portfolio From Scratch Today",
+      "description": "The article recommends eight AI-focused technology stocks for building a foundational tech portfolio: Nvidia, AMD, Broadcom, Micron, TSMC, Alphabet, Meta Platforms, and ServiceNow. These companies are positioned to benefit from AI infrastructure buildout, custom chip development, advanced manufacturing, and AI integration into core business operations.",
+      "published_utc": "2026-03-27T12:15:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/27/stocks-buy-if-starting-tech-portfolio-today/?source=iedfolrf0000001",
+      "tickers": [
+        "NVDA",
+        "AMD",
+        "AVGO",
+        "MU",
+        "TSM",
+        "GOOG",
+        "GOOGL",
+        "META",
+        "NOW"
+      ],
+      "keywords": [
+        "AI infrastructure",
+        "GPU market",
+        "custom AI chips",
+        "semiconductor manufacturing",
+        "data center",
+        "agentic AI",
+        "tech portfolio"
+      ],
+      "author": "Geoffrey Seiler",
+      "insights": [
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "reasoning": "Described as the most dominant player in AI infrastructure with strong positioning in inference and agentic AI markets; acquisition of Groq and introduction of NemoClaw strengthen competitive moat."
+        },
+        {
+          "ticker": "AMD",
+          "sentiment": "positive",
+          "reasoning": "No. 2 GPU player with leading position in data center CPU market; positioned to benefit from agentic AI demand and recent deals with Meta and OpenAI."
+        },
+        {
+          "ticker": "AVGO",
+          "sentiment": "positive",
+          "reasoning": "Leader in ASIC technology with strong growth catalysts from custom AI chips and data center networking; helped develop Alphabet's TPUs."
+        },
+        {
+          "ticker": "MU",
+          "sentiment": "positive",
+          "reasoning": "One of three major HBM manufacturers with historically cheap valuation; positioned for strong secular growth from AI with long-term contracts providing visibility."
+        },
+        {
+          "ticker": "TSM",
+          "sentiment": "positive",
+          "reasoning": "Virtual monopoly on advanced chip manufacturing essential for AI infrastructure; expanding capacity with strong pricing power and high yields."
+        },
+        {
+          "ticker": "GOOG",
+          "sentiment": "positive",
+          "reasoning": "Internet search leader with large cloud business and proprietary TPUs providing cost advantages; using AI to enhance search and drive revenue growth."
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "positive",
+          "reasoning": "Internet search leader with large cloud business and proprietary TPUs providing cost advantages; using AI to enhance search and drive revenue growth."
+        },
+        {
+          "ticker": "META",
+          "sentiment": "positive",
+          "reasoning": "Effectively applying AI to core business to increase user engagement and ad effectiveness; improved recommendation engine and ad tools driving revenue growth."
+        },
+        {
+          "ticker": "NOW",
+          "sentiment": "positive",
+          "reasoning": "Despite SaaS sell-off, company maintains strong 20%+ growth with rapidly growing NowAssist AI suite and future opportunity with agentic AI orchestration platform."
+        }
+      ]
+    },
+    {
+      "title": "The Scrappy $949 GPU Taking Aim at Nvidia's Grip on Local AI",
+      "description": "Intel announced the Arc Pro B70, a $949 workstation GPU designed for running AI workloads locally. Priced significantly lower than Nvidia's RTX Pro 4000 ($1,800) and AMD's Radeon AI Pro R9700 ($1,299), the Arc Pro B70 features 32GB of GDDR6 RAM and claims superior performance metrics. The GPU positions Intel to benefit from a potential shift of AI computing away from mega data centers toward on-premises and local workstations.",
+      "published_utc": "2026-03-27T10:30:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/27/the-scrappy-949-gpu-taking-aim-at-nvidias-grip-on/?source=iedfolrf0000001",
+      "tickers": [
+        "INTC",
+        "NVDA",
+        "AMD"
+      ],
+      "keywords": [
+        "GPU",
+        "local AI",
+        "workstation",
+        "Arc Pro B70",
+        "AI inference",
+        "pricing",
+        "memory",
+        "data center alternatives"
+      ],
+      "author": "Timothy Green",
+      "insights": [
+        {
+          "ticker": "INTC",
+          "sentiment": "positive",
+          "reasoning": "Intel is launching a competitively priced GPU with strong performance claims and positioning itself well for the emerging local AI market. The company is advancing AI capabilities across its product line and appears well-positioned for a potential shift away from centralized data centers."
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "neutral",
+          "reasoning": "While Nvidia faces competition from Intel's lower-priced alternative, the article acknowledges Nvidia's continued advantage through its proprietary CUDA platform and dominant market position. The threat is positioned as emerging rather than immediate."
+        },
+        {
+          "ticker": "AMD",
+          "sentiment": "neutral",
+          "reasoning": "AMD is mentioned as a competitor with the Radeon AI Pro R9700, but receives minimal analysis. Intel's Arc Pro B70 is positioned as superior in value and performance, but AMD's competitive position is not substantially threatened in the article's narrative."
+        }
+      ]
+    },
+    {
+      "title": "Move Over, Nvidia GPUs. The AI CPU Era Is Here",
+      "description": "The AI market is shifting from GPU-focused training to CPU-dependent inference, creating a new growth opportunity. Arm launched its first in-house AI CPU, while Intel and AMD announced plans to raise CPU prices by up to 15% due to expected shortages. Nvidia is also entering the CPU market, and all major chip makers are positioned to benefit from surging CPU demand driven by agentic AI deployment.",
+      "published_utc": "2026-03-27T00:30:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/26/move-over-nvidia-gpus-the-ai-cpu-era-is-here/?source=iedfolrf0000001",
+      "tickers": [
+        "ARM",
+        "INTC",
+        "AMD",
+        "NVDA",
+        "MU",
+        "META"
+      ],
+      "keywords": [
+        "AI infrastructure",
+        "CPU demand",
+        "inference",
+        "agentic AI",
+        "chip shortage",
+        "price increases",
+        "data centers"
+      ],
+      "author": "Jeremy Bowman",
+      "insights": [
+        {
+          "ticker": "ARM",
+          "sentiment": "positive",
+          "reasoning": "Launched first in-house AI CPU with Meta as flagship partner, royalties from data center chips more than doubled, power-efficient architecture provides competitive advantage, expected AGI CPU launch in H2 2026"
+        },
+        {
+          "ticker": "INTC",
+          "sentiment": "positive",
+          "reasoning": "Planning to raise CPU prices by up to 15% starting this month, positioned to benefit from CPU shortage and increased demand for inference workloads"
+        },
+        {
+          "ticker": "AMD",
+          "sentiment": "positive",
+          "reasoning": "Planning to raise CPU prices by up to 15% starting this month, positioned to benefit from CPU shortage and increased demand for inference workloads"
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "neutral",
+          "reasoning": "Stock has traded sideways for 6+ months with investor attention shifting away; however, entering CPU market presents new growth opportunity in inference segment"
+        },
+        {
+          "ticker": "MU",
+          "sentiment": "positive",
+          "reasoning": "Memory stocks have soared due to shortage of high-bandwidth memory chips crucial for AI applications"
+        },
+        {
+          "ticker": "META",
+          "sentiment": "neutral",
+          "reasoning": "Signed as flagship launch partner for Arm's AGI CPU, indicating strategic involvement in CPU ecosystem but no direct operational impact mentioned"
+        }
+      ]
+    }
+  ]
+}

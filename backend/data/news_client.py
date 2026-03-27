@@ -105,6 +105,9 @@ def fetch_polygon_news(symbol: str, limit: int = 10) -> list[PolygonNewsItem]:
                 insights=insights,
                 author=getattr(article, 'author', '') or '',
             ))
+        
+        if symbol:
+            items = [item for item in items if symbol.upper() in item.tickers[:3]]
 
         _save_cache(symbol, items)
         return items
@@ -115,42 +118,23 @@ def fetch_polygon_news(symbol: str, limit: int = 10) -> list[PolygonNewsItem]:
 
 
 def fetch_market_news(limit: int = 15) -> list[PolygonNewsItem]:
-    """Fetch general market news (no specific ticker filter)."""
-    cached = _load_cache("__MARKET__")
-    if cached is not None:
-        return cached[:limit]
-
+    """Fetch general market news using the existing Google News pipeline
+    (more relevant than Polygon's unfiltered feed).
+    """
     try:
-        client = get_client()
-        items = []
-        for i, article in enumerate(client.list_ticker_news(limit=limit)):
-            if i >= limit:
-                break
-            pub = getattr(article, 'publisher', None)
-            source_name = getattr(pub, 'name', 'Unknown') if pub else 'Unknown'
-
-            insights = []
-            for ins in (getattr(article, 'insights', None) or []):
-                insights.append(PolygonInsight(
-                    ticker=getattr(ins, 'ticker', ''),
-                    sentiment=getattr(ins, 'sentiment', 'neutral'),
-                    reasoning=getattr(ins, 'sentiment_reasoning', ''),
-                ))
-
-            items.append(PolygonNewsItem(
-                title=getattr(article, 'title', '') or '',
-                description=getattr(article, 'description', '') or '',
-                published_utc=getattr(article, 'published_utc', '') or '',
-                source=source_name,
-                article_url=getattr(article, 'article_url', '') or '',
-                tickers=getattr(article, 'tickers', []) or [],
-                keywords=getattr(article, 'keywords', []) or [],
-                insights=insights,
-            ))
-
-        _save_cache("__MARKET__", items)
-        return items
-
+        from backend.news.pipeline import fetch_market_news as _gn_market
+        gn_items = _gn_market(max_items=limit)
+        # Convert to PolygonNewsItem format for compatibility
+        return [PolygonNewsItem(
+            title=item.headline,
+            description="",
+            published_utc=item.published,
+            source=item.source,
+            article_url=item.url,
+            tickers=[],
+            keywords=[],
+            insights=[],
+        ) for item in gn_items]
     except Exception:
         return []
 

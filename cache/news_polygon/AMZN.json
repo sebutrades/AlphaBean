@@ -1,0 +1,57 @@
+{
+  "cached_at": 1774628814.678369,
+  "items": [
+    {
+      "title": "Why the Class of 2025 Refuses to Interview Without AI After Watching a Generation Get Laid Off",
+      "description": "Recent college graduates facing a brutal entry-level job market with 5.7% unemployment and 42.5% underemployment are increasingly using AI tools like real-time interview assistants to compete. The Class of 2025 argues this is justified given that companies use AI throughout their hiring processes while banning candidate use, creating a double standard in a market where average job postings attract 340 applicants but only 2% advance to interviews.",
+      "published_utc": "2026-03-27T02:49:00Z",
+      "source": "GlobeNewswire Inc.",
+      "article_url": "https://www.globenewswire.com/news-release/2026/03/27/3263534/0/en/Why-the-Class-of-2025-Refuses-to-Interview-Without-AI-After-Watching-a-Generation-Get-Laid-Off.html",
+      "tickers": [
+        "META",
+        "AMZN",
+        "GOOG",
+        "GOOGL",
+        "MSFT"
+      ],
+      "keywords": [
+        "entry-level job market",
+        "Class of 2025",
+        "AI interview assistance",
+        "unemployment",
+        "underemployment",
+        "tech layoffs",
+        "hiring double standard",
+        "job market contraction"
+      ],
+      "author": "Unknown",
+      "insights": [
+        {
+          "ticker": "META",
+          "sentiment": "negative",
+          "reasoning": "Mentioned as a company that hired the previous generation but subsequently laid off workers, contributing to the Class of 2025's cautious and defensive approach to job searching. Also cited as encouraging AI use internally while banning it in interviews."
+        },
+        {
+          "ticker": "AMZN",
+          "sentiment": "negative",
+          "reasoning": "Referenced as a major employer that conducted significant layoffs in 2025, contributing to the 245,000 tech job losses that shaped the Class of 2025's pessimistic outlook. Also noted for the hiring double standard of encouraging internal AI use while banning it in interviews."
+        },
+        {
+          "ticker": "GOOG",
+          "sentiment": "negative",
+          "reasoning": "Mentioned as a company that hired previous cohorts but is now part of the broader tech layoff trend. Specifically called out for publicly acknowledging AI-generated code in its codebase while banning candidate AI use in interviews, exemplifying the double standard."
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "negative",
+          "reasoning": "Mentioned as a company that hired previous cohorts but is now part of the broader tech layoff trend. Specifically called out for publicly acknowledging AI-generated code in its codebase while banning candidate AI use in interviews, exemplifying the double standard."
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "negative",
+          "reasoning": "Referenced as encouraging engineers to use AI tools daily internally while maintaining bans on AI use during interviews, contributing to the perceived hypocrisy and double standards that frustrate job candidates."
+        }
+      ]
+    }
+  ]
+}

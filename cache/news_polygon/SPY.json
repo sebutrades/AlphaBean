@@ -1,0 +1,114 @@
+{
+  "cached_at": 1774628817.979197,
+  "items": [
+    {
+      "title": "Stock Market Today: S&P 500, Dow Futures Trip As Trump Tells Iran To 'Get Serious'\u2014 Pony AI, Worthington Steel, Olaplex In Focus (UPDATED)",
+      "description": "U.S. stock futures fell on Thursday amid escalating Iran tensions and Trump's threats of military action. Major indices declined with the Dow down 0.47%, S&P 500 down 0.55%, and Nasdaq 100 down 0.65%. BlackRock downgraded U.S. stocks to neutral citing geopolitical risks and energy market disruptions. Several individual stocks experienced significant moves: Olaplex surged 48% on acquisition news, while Worthington Steel plunged 14% and MillerKnoll dropped 19% on weak earnings.",
+      "published_utc": "2026-03-26T12:46:05Z",
+      "source": "Benzinga",
+      "article_url": "https://www.benzinga.com/markets/equities/26/03/51475286/stock-market-today-dow-jones-sp-500-futures-fall?utm_source=benzinga_taxonomy&utm_medium=rss_feed_free&utm_content=taxonomy_rss&utm_campaign=channel",
+      "tickers": [
+        "SPY",
+        "QQQ",
+        "OLPX",
+        "WS",
+        "MLKN",
+        "PONY",
+        "NOTE",
+        "NOTE.WS",
+        "UBER"
+      ],
+      "keywords": [
+        "stock market",
+        "Iran tensions",
+        "geopolitical risk",
+        "energy prices",
+        "Fed policy",
+        "earnings",
+        "acquisitions"
+      ],
+      "author": "Rishabh Mishra",
+      "insights": [
+        {
+          "ticker": "SPY",
+          "sentiment": "negative",
+          "reasoning": "Down 0.58% in premarket trading; broader market decline driven by geopolitical tensions and BlackRock's downgrade of U.S. stocks to neutral"
+        },
+        {
+          "ticker": "QQQ",
+          "sentiment": "negative",
+          "reasoning": "Declined 0.67% in premarket; Nasdaq 100 futures down 0.65% due to overall market weakness from Iran conflict escalation"
+        },
+        {
+          "ticker": "OLPX",
+          "sentiment": "positive",
+          "reasoning": "Surged 48.12% after announcing acquisition by Henkel AG for $2.06 per share in cash, representing approximately $1.4 billion equity value"
+        },
+        {
+          "ticker": "WS",
+          "sentiment": "negative",
+          "reasoning": "Plunged 14.04% after reporting weaker-than-expected third-quarter financial results; maintains weak price trend across all timeframes"
+        },
+        {
+          "ticker": "MLKN",
+          "sentiment": "negative",
+          "reasoning": "Slumped 19.16% after reporting worse-than-expected Q3 results and issuing weak Q4 guidance; maintains weak trend with poor growth score"
+        },
+        {
+          "ticker": "PONY",
+          "sentiment": "positive",
+          "reasoning": "Up 2.11% after partnering with Verne and Uber to launch Europe's first commercial Robotaxi service"
+        },
+        {
+          "ticker": "NOTE",
+          "sentiment": "negative",
+          "reasoning": "Declined 3.94% after receiving NYSE notification of non-compliance with listing standards requiring minimum $1.00 average closing share price"
+        },
+        {
+          "ticker": "NOTE.WS",
+          "sentiment": "negative",
+          "reasoning": "Declined 3.94% after receiving NYSE notification of non-compliance with listing standards requiring minimum $1.00 average closing share price"
+        },
+        {
+          "ticker": "UBER",
+          "sentiment": "neutral",
+          "reasoning": "Down 0.29% in premarket; partnership with Pony AI for Robotaxi service is positive but overshadowed by broader market decline"
+        }
+      ]
+    },
+    {
+      "title": "Peter Schiff Warns Of 'Full-Blown Financial Crisis' Looming After February Import Price Spike Amid Iran War",
+      "description": "Economist Peter Schiff warns of an imminent financial crisis following sharp spikes in U.S. import prices (up 1.3%) and export prices (up 1.5%) in February, which annualize to inflation rates of 16.8%-19.6%. The warning comes amid geopolitical tensions with Iran and oil price increases. Schiff urges the Federal Reserve to raise rates several hundred basis points to combat inflation. Major stock indices declined year-to-date, while oil futures have surged 62.59%.",
+      "published_utc": "2026-03-26T10:23:52Z",
+      "source": "Benzinga",
+      "article_url": "https://www.benzinga.com/markets/economic-data/26/03/51476559/peter-schiff-warns-of-full-blown-financial-crisis-looming-after-february-import-price-spike?utm_source=benzinga_taxonomy&utm_medium=rss_feed_free&utm_content=taxonomy_rss&utm_campaign=channel",
+      "tickers": [
+        "SPY",
+        "QQQ"
+      ],
+      "keywords": [
+        "inflation",
+        "import prices",
+        "export prices",
+        "financial crisis",
+        "Federal Reserve",
+        "Iran war",
+        "oil prices",
+        "monetary policy"
+      ],
+      "author": "Rishabh Mishra",
+      "insights": [
+        {
+          "ticker": "SPY",
+          "sentiment": "negative",
+          "reasoning": "The S&P 500 ETF has declined 3.89% year-to-date amid warnings of imminent financial crisis and high inflation pressures. The article highlights economic headwinds that threaten equity valuations."
+        },
+        {
+          "ticker": "QQQ",
+          "sentiment": "negative",
+          "reasoning": "The Nasdaq-tracking ETF has fallen 5.62% year-to-date, underperforming the broader market amid inflation concerns and economic crisis warnings that typically impact growth-oriented tech stocks."
+        }
+      ]
+    }
+  ]
+}

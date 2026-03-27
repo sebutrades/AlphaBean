@@ -1,0 +1,56 @@
+{
+  "cached_at": 1774628817.1309135,
+  "items": [
+    {
+      "title": "1 Low-Cost ETF That Could Outperform Actively Managed Funds This Year",
+      "description": "The Vanguard S&P 500 ETF (VOO) is highlighted as a low-cost investment option with a 0.03% expense ratio that could outperform actively managed funds in 2026. The article argues that over 80% of actively managed funds fail to beat their benchmarks over 10 years due to higher fees and unpredictability, making simple index investing a smarter strategy during uncertain market conditions.",
+      "published_utc": "2026-03-27T14:30:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/27/1-low-cost-etf-that-could-outperform-actively-mana/?source=iedfolrf0000001",
+      "tickers": [
+        "VOO",
+        "GOOG",
+        "GOOGL",
+        "META",
+        "MSFT"
+      ],
+      "keywords": [
+        "ETF",
+        "S&P 500",
+        "index investing",
+        "actively managed funds",
+        "low-cost investing",
+        "expense ratio",
+        "market volatility"
+      ],
+      "author": "Justin Pope",
+      "insights": [
+        {
+          "ticker": "VOO",
+          "sentiment": "positive",
+          "reasoning": "Recommended as a superior investment choice due to extremely low fees (0.03%), broad diversification across 500 companies, and historical outperformance of actively managed funds. Positioned as a defensive strategy during market chaos."
+        },
+        {
+          "ticker": "GOOG",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as part of the 'Magnificent Seven' megacap tech stocks that comprise about one-third of the S&P 500 and have declined significantly from highs, creating uncertainty for active fund managers."
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as part of the 'Magnificent Seven' megacap tech stocks that comprise about one-third of the S&P 500 and have declined significantly from highs, creating uncertainty for active fund managers."
+        },
+        {
+          "ticker": "META",
+          "sentiment": "neutral",
+          "reasoning": "Included in the 'Magnificent Seven' megacap tech companies experiencing significant declines, contributing to market uncertainty and challenges for active fund managers."
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "neutral",
+          "reasoning": "Part of the 'Magnificent Seven' tech stocks that are down significantly from highs, reflecting broader tech sector volatility and market unpredictability."
+        }
+      ]
+    }
+  ]
+}
