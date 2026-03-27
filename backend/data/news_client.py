@@ -107,7 +107,20 @@ def fetch_polygon_news(symbol: str, limit: int = 10) -> list[PolygonNewsItem]:
             ))
         
         if symbol:
-            items = [item for item in items if symbol.upper() in item.tickers[:3]]
+            items = [item for item in items if symbol.upper() in item.tickers[:6]]
+
+        if not items:
+            try:
+                from backend.news.pipeline import fetch_news, format_headlines_for_llm
+                fallback = fetch_news(symbol, max_items=limit)
+                items = [PolygonNewsItem(
+                    title=fb.headline, description="", published_utc=fb.published,
+                    source=fb.source, article_url=fb.url, tickers=[symbol],
+                    keywords=[], insights=[], author="",
+                ) for fb in fallback]
+            except Exception:
+                pass
+
 
         _save_cache(symbol, items)
         return items
