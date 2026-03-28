@@ -1,6 +1,330 @@
 {
-  "cached_at": 1774635876.628394,
+  "cached_at": 1774733421.584241,
   "items": [
+    {
+      "title": "This AI Giant Aims to Reach $9 Trillion in Market Cap. Is the Stock a Buy?",
+      "description": "Meta Platforms has offered executives stock options tied to reaching a $9 trillion market valuation by 2031, signaling ambitious AI growth plans. While the $9 trillion goal appears mathematically unlikely based on current revenue projections and valuation multiples, the author recommends buying Meta stock due to its cheap valuation at 19x forward earnings, strong profitability from its social media advertising business, and potential upside from AI investments.",
+      "published_utc": "2026-03-28T10:15:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/28/this-ai-giant-aims-to-reach-9-trillion-in-market-c/?source=iedfolrf0000001",
+      "tickers": [
+        "META",
+        "MSFT",
+        "AAPL",
+        "NVDA"
+      ],
+      "keywords": [
+        "Meta Platforms",
+        "AI growth",
+        "market valuation",
+        "stock options",
+        "executive compensation",
+        "artificial intelligence",
+        "valuation multiples",
+        "Magnificent Seven"
+      ],
+      "author": "Adria Cimino",
+      "insights": [
+        {
+          "ticker": "META",
+          "sentiment": "positive",
+          "reasoning": "Despite skepticism about the $9 trillion goal being unrealistic, the author recommends buying the stock, citing attractive valuation at 19x forward earnings, strong profitability from advertising, and significant upside potential from AI initiatives. The company's commitment to AI development and talent retention is viewed favorably."
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as a peer company that previously held the position of world's largest company by market value. No specific analysis or recommendation provided."
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as a peer company that previously held the position of world's largest company by market value. No specific analysis or recommendation provided."
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as the current world's largest company by market value and first to reach $4 trillion market cap. Serves as context for Meta's ambitions but receives no specific analysis."
+        }
+      ]
+    },
+    {
+      "title": "Here's Why The Vanguard S&P 500 Growth ETF Could Be Your Ticket to Beating the Market Over the Long Term",
+      "description": "The Vanguard S&P 500 Growth ETF (VOOG) has outperformed the S&P 500 for 16 years by focusing on 139 high-performing growth stocks, particularly in technology. With a 47% allocation to information technology and heavy weightings in companies like Nvidia and Microsoft, the ETF delivered 16.3% annual returns versus 14% for the S&P 500. Though it's down 7.1% in 2026 amid market volatility, the article suggests it remains a good long-term buy for investors with a 5+ year horizon.",
+      "published_utc": "2026-03-28T09:06:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/28/why-vanguard-sp-500-growth-etf-beat-market-long/?source=iedfolrf0000001",
+      "tickers": [
+        "VOOG",
+        "NVDA",
+        "MSFT",
+        "AAPL",
+        "AVGO"
+      ],
+      "keywords": [
+        "growth stocks",
+        "S&P 500",
+        "ETF",
+        "technology sector",
+        "artificial intelligence",
+        "long-term investing",
+        "market volatility"
+      ],
+      "author": "Anthony Di Pizio",
+      "insights": [
+        {
+          "ticker": "VOOG",
+          "sentiment": "positive",
+          "reasoning": "The ETF has consistently outperformed the S&P 500 for 16 years with a 16.3% compound annual return versus 14% for the broader index. Despite current 2026 weakness, the article recommends it as a strong long-term buy for investors with 5+ year horizons."
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "reasoning": "Highlighted as a top holding in VOOG with a median return of 1,400% over the last decade, representing a major driver of the ETF's outperformance."
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "positive",
+          "reasoning": "Listed as a top holding with exceptional 1,400% median returns over the last decade, contributing significantly to VOOG's outperformance."
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "positive",
+          "reasoning": "Identified as a top holding with 1,400% median returns over the last decade, supporting VOOG's strong performance."
+        },
+        {
+          "ticker": "AVGO",
+          "sentiment": "positive",
+          "reasoning": "Mentioned as a top holding in VOOG with strong historical returns contributing to the ETF's market-beating performance."
+        }
+      ]
+    },
+    {
+      "title": "Every Magnificent Seven Stock Is Down This Year. This One Is a Screaming Buy",
+      "description": "All Magnificent Seven stocks have underperformed the S&P 500 in 2026 amid concerns about AI spending and disruption. However, valuations have become attractive, with most trading at par with the broader market. Nvidia stands out as the best opportunity, trading at a forward P/E of less than 21 while maintaining the fastest growth in the group and strong revenue acceleration.",
+      "published_utc": "2026-03-28T02:30:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/27/every-magnificent-seven-stock-is-down-this-year-th/?source=iedfolrf0000001",
+      "tickers": [
+        "NVDA",
+        "AAPL",
+        "GOOG",
+        "GOOGL",
+        "MSFT",
+        "META",
+        "AMZN",
+        "TSLA",
+        "PSCT"
+      ],
+      "keywords": [
+        "Magnificent Seven",
+        "tech stocks",
+        "AI spending",
+        "valuations",
+        "small-cap rotation",
+        "forward earnings",
+        "revenue growth"
+      ],
+      "author": "Jeremy Bowman",
+      "insights": [
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "reasoning": "Despite current underperformance, Nvidia is highlighted as a 'screaming buy' with attractive forward P/E of less than 21, fastest growth in the Mag Seven, accelerating revenue growth, and CEO guidance of $1 trillion revenue over two years, suggesting strong long-term potential."
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "reasoning": "Part of the Magnificent Seven that has underperformed the S&P 500 this year with valuations now at par with the market, but continues to deliver double-digit revenue growth."
+        },
+        {
+          "ticker": "GOOG",
+          "sentiment": "neutral",
+          "reasoning": "One of the top four hyperscalers facing investor skepticism over massive AI capital expenditures (~$700 billion combined), but maintains sector leadership and double-digit revenue growth."
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "neutral",
+          "reasoning": "One of the top four hyperscalers facing investor skepticism over massive AI capital expenditures (~$700 billion combined), but maintains sector leadership and double-digit revenue growth."
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "negative",
+          "reasoning": "Identified as the biggest loser in the Magnificent Seven this year due to concerns about AI disruption affecting software stocks and heavy AI infrastructure spending."
+        },
+        {
+          "ticker": "META",
+          "sentiment": "neutral",
+          "reasoning": "One of the top four hyperscalers with concerns about AI spending payoff, but maintains double-digit revenue growth and attractive valuations relative to the S&P 500."
+        },
+        {
+          "ticker": "AMZN",
+          "sentiment": "neutral",
+          "reasoning": "One of the top four hyperscalers facing investor skepticism over massive AI capital expenditures, but continues to deliver strong revenue growth."
+        },
+        {
+          "ticker": "TSLA",
+          "sentiment": "neutral",
+          "reasoning": "Part of the underperforming Magnificent Seven this year, excluded from valuation analysis due to extremely high P/E ratio above 300."
+        },
+        {
+          "ticker": "PSCT",
+          "sentiment": "positive",
+          "reasoning": "Up 6% this year, bucking the broader tech sector decline and reflecting investor rotation away from large-cap tech toward small-cap opportunities."
+        }
+      ]
+    },
+    {
+      "title": "Is Fidelity's FTEC a Better Tech ETF Than State Street's XLK?",
+      "description": "Fidelity's FTEC and State Street's XLK are both low-cost technology ETFs with identical 0.08% expense ratios. XLK is larger with $87.7B in assets and holds 73 stocks with higher concentration in mega-cap tech, while FTEC holds 294 stocks offering broader diversification but with higher volatility. XLK is better for active traders seeking income, while FTEC suits investors wanting broader tech exposure.",
+      "published_utc": "2026-03-27T20:32:05Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/coverage/etfs/2026/03/27/is-fidelity-s-ftec-a-better-tech-etf-than-state-street-s-xlk/?source=iedfolrf0000001",
+      "tickers": [
+        "FTEC",
+        "XLK",
+        "AAPL",
+        "MSFT",
+        "NVDA"
+      ],
+      "keywords": [
+        "tech ETF comparison",
+        "FTEC vs XLK",
+        "expense ratio",
+        "diversification",
+        "technology sector",
+        "dividend yield",
+        "portfolio concentration"
+      ],
+      "author": "Robert Izquierdo",
+      "insights": [
+        {
+          "ticker": "FTEC",
+          "sentiment": "positive",
+          "reasoning": "Highlighted as offering broader diversification with 294 holdings versus XLK's 73, providing exposure to smaller growth companies and nearly the entire U.S. tech universe. Suitable for investors seeking greater diversification within the tech sector."
+        },
+        {
+          "ticker": "XLK",
+          "sentiment": "positive",
+          "reasoning": "Praised for larger assets under management ($87.7B) providing greater liquidity, higher dividend yield (0.6%), slightly better 5-year performance, and suitability for active traders. Ideal for income-focused investors."
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as a major holding in both ETFs (15.41% in FTEC, part of top 3 in XLK) but presented factually without positive or negative assessment."
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as a major holding in both ETFs (10.07% in FTEC, part of top 3 in XLK) but presented factually without positive or negative assessment."
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as the largest holding in both ETFs (18.25% in FTEC, part of top 3 in XLK) but presented factually without positive or negative assessment."
+        }
+      ]
+    },
+    {
+      "title": "Global Climate ETF or Emerging Markets: Which Has Better Returns?",
+      "description": "The article compares two ETFs: NZAC (State Street SPDR MSCI ACWI Climate Paris Aligned ETF) and EEM (iShares MSCI Emerging Markets ETF). EEM outperformed over the past year with 26.2% returns versus NZAC's 11.2%, but NZAC has better long-term performance over 3, 5, and 10-year periods. NZAC offers lower fees (0.12% vs 0.72%) and climate-focused ESG screening, while EEM provides higher dividend yield and deeper liquidity but carries greater volatility.",
+      "published_utc": "2026-03-27T18:21:46Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/coverage/etfs/2026/03/27/global-climate-etf-or-emerging-markets-which-has-better-returns/?source=iedfolrf0000001",
+      "tickers": [
+        "NZAC",
+        "EEM",
+        "NVDA",
+        "AAPL",
+        "MSFT"
+      ],
+      "keywords": [
+        "ETF comparison",
+        "emerging markets",
+        "climate-focused investing",
+        "ESG screening",
+        "expense ratio",
+        "long-term returns",
+        "international diversification"
+      ],
+      "author": "Dave Kovaleski",
+      "insights": [
+        {
+          "ticker": "NZAC",
+          "sentiment": "positive",
+          "reasoning": "NZAC is highlighted for superior long-term performance (3, 5, and 10-year periods), significantly lower expense ratio (0.12%), better risk profile with lower maximum drawdown (-28.31% vs -37.82%), and appeal to climate-conscious investors with ESG screening."
+        },
+        {
+          "ticker": "EEM",
+          "sentiment": "neutral",
+          "reasoning": "EEM shows strong short-term performance (26.2% 1-year return) and higher dividend yield (2.1%), but carries higher fees (0.72%), greater volatility, and underperforms NZAC over longer time horizons. It lacks ESG/climate considerations."
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "reasoning": "Nvidia is a top holding in NZAC (2.19% allocation) and is recommended by The Motley Fool, indicating confidence in the company's prospects."
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "reasoning": "Apple is a significant holding in NZAC (1.66% allocation) and recommended by The Motley Fool, though the Fool is noted as short shares, creating mixed sentiment."
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "positive",
+          "reasoning": "Microsoft is a top holding in NZAC (2.28% allocation) and is recommended by The Motley Fool, indicating positive outlook."
+        }
+      ]
+    },
+    {
+      "title": "Micron Just Started Mass-Producing HBM4 for Nvidia's Vera Rubin. Here's Why This Stock Could Soar in 2026.",
+      "description": "Micron Technology has begun mass production of HBM4 memory chips for Nvidia's Vera Rubin GPU, positioning itself as a key player in the AI-driven memory shortage expected to last until 2030. The company reported 196% year-over-year revenue growth to $23.9 billion in Q2 FY2026, with a 41.49% net profit margin. With a $100 billion investment in a new New York semiconductor factory and a strong balance sheet, Micron is well-positioned for significant growth over the next few years.",
+      "published_utc": "2026-03-27T18:05:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/27/micron-just-started-mass-producing-hbm4-for-nvidia/?source=iedfolrf0000001",
+      "tickers": [
+        "MU",
+        "NVDA",
+        "AMD",
+        "AAPL",
+        "QCOM"
+      ],
+      "keywords": [
+        "HBM4 memory",
+        "AI memory shortage",
+        "semiconductor manufacturing",
+        "Vera Rubin GPU",
+        "memory hardware market",
+        "revenue growth"
+      ],
+      "author": "James Hires",
+      "insights": [
+        {
+          "ticker": "MU",
+          "sentiment": "positive",
+          "reasoning": "Strong 196% YoY revenue growth, 41.49% net profit margin, exclusive HBM4 production deal with Nvidia, $100 billion factory investment, healthy balance sheet with low debt-to-equity ratio, and positioned to benefit from AI-driven memory shortage lasting until 2030."
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "reasoning": "Securing HBM4 memory supply from Micron for Vera Rubin GPU indicates strong demand for AI hardware and access to critical memory components needed for AI infrastructure expansion."
+        },
+        {
+          "ticker": "AMD",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as a Micron customer benefiting from memory supply, but no specific details provided about AMD's relationship or impact from the memory shortage."
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "reasoning": "Listed as a Micron customer, but no specific details about Apple's involvement in the AI memory market or impact from the shortage."
+        },
+        {
+          "ticker": "QCOM",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as a Micron customer, but no specific details provided about Qualcomm's relationship or impact from the memory shortage."
+        }
+      ]
+    },
     {
       "title": "Vanguard (VONG) vs. iShares (IWO): Which Growth Stock ETF Is Best for Investors?",
       "description": "This article compares two growth-focused ETFs: Vanguard's VONG, which concentrates on large-cap tech stocks with a 0.06% expense ratio, and iShares' IWO, which offers broader small-cap growth exposure with a 0.24% fee. VONG has outperformed with 16% annualized returns since 2010 due to heavy Magnificent Seven weighting, while IWO delivered 11% annualized returns with higher volatility. The choice depends on existing portfolio composition and diversification needs.",
@@ -229,56 +553,6 @@
           "ticker": "AAPL",
           "sentiment": "positive",
           "reasoning": "Apple is noted as a significant VOOG holding that collectively with Nvidia and Microsoft makes up over 30% of assets, driving VOOG's outperformance."
-        }
-      ]
-    },
-    {
-      "title": "IWO vs. VUG: One Offers Broad Growth Exposure While the Other Has Lower Fees",
-      "description": "Vanguard Growth ETF (VUG) and iShares Russell 2000 Growth ETF (IWO) offer different approaches to U.S. growth investing. VUG focuses on mega-cap tech stocks with superior long-term performance ($1,000 invested 5 years ago worth $1,756) and ultra-low fees (0.03%), while IWO provides small-cap diversification across 1,100+ stocks with higher fees (0.24%) but broader sector exposure. VUG delivered 13.3% 1-year returns versus IWO's 17.2%, though IWO experienced deeper drawdowns.",
-      "published_utc": "2026-03-27T00:05:33Z",
-      "source": "The Motley Fool",
-      "article_url": "https://www.fool.com/coverage/etfs/2026/03/26/iwo-vs-vug-one-offers-broad-growth-exposure-while-the-other-has-lower-fees/?source=iedfolrf0000001",
-      "tickers": [
-        "VUG",
-        "IWO",
-        "NVDA",
-        "AAPL",
-        "MSFT"
-      ],
-      "keywords": [
-        "growth ETFs",
-        "large-cap vs small-cap",
-        "expense ratios",
-        "diversification",
-        "tech stocks",
-        "investment comparison"
-      ],
-      "author": "Jake Lerch",
-      "insights": [
-        {
-          "ticker": "VUG",
-          "sentiment": "positive",
-          "reasoning": "VUG is presented favorably with superior 5-year performance ($1,756 vs $1,077), rock-bottom expense ratio of 0.03%, and strong long-term returns. The article highlights it as the better choice for cost-conscious investors seeking proven performance."
-        },
-        {
-          "ticker": "IWO",
-          "sentiment": "neutral",
-          "reasoning": "IWO is presented as a viable alternative with merits and drawbacks. While it offers superior 1-year returns (17.2%) and broader diversification across 1,100+ stocks, it has higher fees (0.24%) and deeper maximum drawdowns (-40.51%). The article suggests it appeals to diversification-focused investors despite underperformance."
-        },
-        {
-          "ticker": "NVDA",
-          "sentiment": "neutral",
-          "reasoning": "NVIDIA is mentioned as a top holding in VUG (4.14% weight), representing the mega-cap tech concentration in the fund. No performance judgment is made about the stock itself."
-        },
-        {
-          "ticker": "AAPL",
-          "sentiment": "neutral",
-          "reasoning": "Apple is mentioned as a top holding in VUG, contributing to the fund's tech-heavy concentration. It is presented factually without sentiment."
-        },
-        {
-          "ticker": "MSFT",
-          "sentiment": "neutral",
-          "reasoning": "Microsoft is listed as a top VUG holding (1.40% weight), illustrating the mega-cap tech dominance in the fund. Mentioned neutrally without performance judgment."
         }
       ]
     }

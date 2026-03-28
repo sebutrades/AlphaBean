@@ -1,6 +1,267 @@
 {
-  "cached_at": 1774635878.3111327,
+  "cached_at": 1774733420.702335,
   "items": [
+    {
+      "title": "Should the Current Stock Market Valuation Concern Investors? Here's What Billionaire Bill Ackman Thinks.",
+      "description": "Bill Ackman argues that despite high overall S&P 500 valuations (20.6x forward earnings), the market's premium is justified by the exceptional growth prospects and competitive advantages of mega-cap stocks like Amazon and Meta. While the top 10 companies account for 38.5% of the index and trade at higher multiples, they are expected to grow earnings by over 20% annually. However, not all stocks are fairly valued, and investors should be selective rather than assuming all high valuations are justified.",
+      "published_utc": "2026-03-28T12:20:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/28/should-the-current-stock-market-valuation-concern/?source=iedfolrf0000001",
+      "tickers": [
+        "AMZN",
+        "META",
+        "TSLA",
+        "WMT"
+      ],
+      "keywords": [
+        "stock market valuation",
+        "S&P 500",
+        "mega-cap stocks",
+        "price-to-earnings ratio",
+        "Bill Ackman",
+        "artificial intelligence",
+        "earnings growth",
+        "market concentration"
+      ],
+      "author": "Adam Levy",
+      "insights": [
+        {
+          "ticker": "AMZN",
+          "sentiment": "positive",
+          "reasoning": "Ackman added to Pershing Square's Amazon position in Q4, indicating confidence in its valuation and growth prospects. Trading at 27x forward earnings with expected 20%+ earnings growth, it is viewed as reasonably valued given its competitive advantages and AI leadership."
+        },
+        {
+          "ticker": "META",
+          "sentiment": "positive",
+          "reasoning": "Ackman established a new position in Meta, suggesting it is undervalued. Trading at 19.6x forward earnings (lowest among top 10) with strong growth expectations and competitive moats in AI and technology, it appears attractive at current valuations."
+        },
+        {
+          "ticker": "TSLA",
+          "sentiment": "neutral",
+          "reasoning": "Tesla's 184x forward P/E ratio is extremely high and questioned in the article. Its valuation justification depends heavily on speculative expectations for robotaxi services and humanoid robots, making it uncertain whether the premium is warranted."
+        },
+        {
+          "ticker": "WMT",
+          "sentiment": "negative",
+          "reasoning": "Walmart's 42x forward P/E ratio is questioned as potentially unjustified, especially compared to Amazon's 27x multiple. The article suggests its digital transformation may not warrant such a significant valuation premium."
+        }
+      ]
+    },
+    {
+      "title": "Gene Munster Says Upcoming Tesla Deliveries Will Be 'First Good Read,' As Ford, GM Scale Back EV Ambitions\u2014 Here's Why",
+      "description": "Gene Munster of Deepwater Asset Management views Tesla's Q1 delivery report as a critical indicator of EV demand post-tax credit expiration. With legacy automakers like Ford, GM, and Toyota scaling back EV investments, Tesla faces limited U.S. competition, particularly with BYD absent from the market. Wall Street expects ~466,000 deliveries with 8% growth, while Tesla's focus on high-volume models and autonomy positions it for market share gains.",
+      "published_utc": "2026-03-28T07:12:19Z",
+      "source": "Benzinga",
+      "article_url": "https://www.benzinga.com/analyst-stock-ratings/analyst-color/26/03/51527206/gene-munster-says-upcoming-tesla-deliveries-will-be-first-good-read-as-ford-g?utm_source=benzinga_taxonomy&utm_medium=rss_feed_free&utm_content=taxonomy_rss&utm_campaign=channel",
+      "tickers": [
+        "TSLA",
+        "F",
+        "FpB",
+        "FpC",
+        "FpD",
+        "GM",
+        "TM",
+        "HMC",
+        "STLA",
+        "BYDDY"
+      ],
+      "keywords": [
+        "Tesla deliveries",
+        "EV demand",
+        "tax credits",
+        "legacy automakers",
+        "market competition",
+        "autonomy",
+        "electric vehicles"
+      ],
+      "author": "Ananya Gairola",
+      "insights": [
+        {
+          "ticker": "TSLA",
+          "sentiment": "positive",
+          "reasoning": "Positioned to gain market share as competitors scale back EV investments; Q1 delivery report expected to show underlying demand strength; limited U.S. competition and focus on high-volume models support growth trajectory."
+        },
+        {
+          "ticker": "F",
+          "sentiment": "negative",
+          "reasoning": "Scaling back EV investments and shifting focus toward hybrids and gas-powered vehicles, indicating reduced commitment to electric vehicle market."
+        },
+        {
+          "ticker": "FpB",
+          "sentiment": "negative",
+          "reasoning": "Scaling back EV investments and shifting focus toward hybrids and gas-powered vehicles, indicating reduced commitment to electric vehicle market."
+        },
+        {
+          "ticker": "FpC",
+          "sentiment": "negative",
+          "reasoning": "Scaling back EV investments and shifting focus toward hybrids and gas-powered vehicles, indicating reduced commitment to electric vehicle market."
+        },
+        {
+          "ticker": "FpD",
+          "sentiment": "negative",
+          "reasoning": "Scaling back EV investments and shifting focus toward hybrids and gas-powered vehicles, indicating reduced commitment to electric vehicle market."
+        },
+        {
+          "ticker": "GM",
+          "sentiment": "negative",
+          "reasoning": "Reducing EV spending and facing weak EV profitability, creating a competitive disadvantage against Tesla in the electric vehicle space."
+        },
+        {
+          "ticker": "TM",
+          "sentiment": "negative",
+          "reasoning": "Among legacy automakers scaling back EV investments, indicating reduced focus on electric vehicle development."
+        },
+        {
+          "ticker": "HMC",
+          "sentiment": "negative",
+          "reasoning": "Scaling back EV investments and shifting toward hybrids and traditional powertrains, reducing competitive presence in the EV market."
+        },
+        {
+          "ticker": "STLA",
+          "sentiment": "negative",
+          "reasoning": "Part of the broader trend of legacy automakers reducing EV spending and shifting investment priorities away from electric vehicles."
+        },
+        {
+          "ticker": "BYDDY",
+          "sentiment": "neutral",
+          "reasoning": "Noted as absent from the U.S. market, which benefits Tesla's competitive position, but no direct negative sentiment toward the company itself."
+        }
+      ]
+    },
+    {
+      "title": "Tesla Emerges As Big Winner In Brutal 28% EV Sales Slump",
+      "description": "U.S. EV sales declined 28% year-over-year in Q1 2026, falling to 5.8% of total automotive sales. Despite the sector-wide downturn, Tesla emerged as a winner, reclaiming over 50% market share in the EV segment. Rising gas prices and increased consumer interest in used EVs are providing tailwinds for the market.",
+      "published_utc": "2026-03-27T19:23:13Z",
+      "source": "Benzinga",
+      "article_url": "https://www.benzinga.com/trading-ideas/long-ideas/26/03/51522080/tesla-emerges-as-big-winner-in-brutal-28-ev-sales-slump?utm_source=benzinga_taxonomy&utm_medium=rss_feed_free&utm_content=taxonomy_rss&utm_campaign=channel",
+      "tickers": [
+        "TSLA",
+        "F",
+        "FpB",
+        "FpC",
+        "FpD",
+        "GM"
+      ],
+      "keywords": [
+        "electric vehicles",
+        "EV sales decline",
+        "market share",
+        "used EV market",
+        "gas prices",
+        "automotive industry"
+      ],
+      "author": "Chris Katje",
+      "insights": [
+        {
+          "ticker": "TSLA",
+          "sentiment": "positive",
+          "reasoning": "Tesla reclaimed over 50% EV market share in the U.S. during Q1, up from below 50% in the prior year. The company is positioned as a winner despite the overall 28% sector decline, with opportunities to gain share as legacy automakers reduce EV production. Rising gas prices and consumer interest provide additional tailwinds."
+        },
+        {
+          "ticker": "F",
+          "sentiment": "negative",
+          "reasoning": "Ford is mentioned as a legacy automaker stopping production of some EV models, contributing to the overall sector decline and losing market share to Tesla."
+        },
+        {
+          "ticker": "FpB",
+          "sentiment": "negative",
+          "reasoning": "Ford is mentioned as a legacy automaker stopping production of some EV models, contributing to the overall sector decline and losing market share to Tesla."
+        },
+        {
+          "ticker": "FpC",
+          "sentiment": "negative",
+          "reasoning": "Ford is mentioned as a legacy automaker stopping production of some EV models, contributing to the overall sector decline and losing market share to Tesla."
+        },
+        {
+          "ticker": "FpD",
+          "sentiment": "negative",
+          "reasoning": "Ford is mentioned as a legacy automaker stopping production of some EV models, contributing to the overall sector decline and losing market share to Tesla."
+        },
+        {
+          "ticker": "GM",
+          "sentiment": "negative",
+          "reasoning": "General Motors is mentioned alongside Ford as a legacy automaker reducing EV production, which is contributing to the sector's 28% sales decline and market share loss to Tesla."
+        }
+      ]
+    },
+    {
+      "title": "The Newest Big Idea From Elon Musk: Terafab",
+      "description": "Elon Musk announced Terafab, a $25 billion joint venture between Tesla, SpaceX, and XAI to build a vertically integrated semiconductor factory producing 1 terawatt of AI computing power annually. The facility aims to address supply chain bottlenecks and support Tesla's robotaxi and humanoid robot ambitions, plus SpaceX's orbital AI satellite constellation. While ambitious, industry experts question feasibility given the complexity of chip fabrication and Musk's mixed track record on delivery timelines.",
+      "published_utc": "2026-03-27T18:16:17Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/27/the-newest-big-idea-from-elon-musk-terafab/?source=iedfolrf0000001",
+      "tickers": [
+        "TSLA",
+        "IBM",
+        "ISRG",
+        "CVX",
+        "OXY",
+        "OXY.WS",
+        "AMZN",
+        "JNJ",
+        "MDT"
+      ],
+      "keywords": [
+        "Terafab",
+        "semiconductor manufacturing",
+        "AI computing",
+        "vertical integration",
+        "supply chain",
+        "Iran conflict",
+        "oil prices",
+        "quantum computing",
+        "physical AI",
+        "secular growth trends"
+      ],
+      "author": "Motley Fool Staff",
+      "insights": [
+        {
+          "ticker": "TSLA",
+          "sentiment": "positive",
+          "reasoning": "Terafab partnership positions Tesla to achieve self-reliance for AI computing needs for robotaxis and humanoid robots, addressing critical supply constraints. However, execution risk exists given semiconductor manufacturing complexity."
+        },
+        {
+          "ticker": "IBM",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as a gauge for quantum computing trends, which is identified as an emerging secular growth opportunity, but no direct impact from Terafab announcement."
+        },
+        {
+          "ticker": "ISRG",
+          "sentiment": "positive",
+          "reasoning": "Highlighted as leader in physical AI and surgical robotics, representing a secular growth trend in healthcare automation and personalized medicine."
+        },
+        {
+          "ticker": "CVX",
+          "sentiment": "neutral",
+          "reasoning": "Energy sector volatility discussed due to Iran conflict and oil price swings; mentioned as example of unpredictable sector despite company fundamentals."
+        },
+        {
+          "ticker": "OXY",
+          "sentiment": "neutral",
+          "reasoning": "Energy stock subject to geopolitical volatility from Iran conflict; shares retreated on de-escalation news despite strong company operations."
+        },
+        {
+          "ticker": "OXY.WS",
+          "sentiment": "neutral",
+          "reasoning": "Energy stock subject to geopolitical volatility from Iran conflict; shares retreated on de-escalation news despite strong company operations."
+        },
+        {
+          "ticker": "AMZN",
+          "sentiment": "neutral",
+          "reasoning": "Referenced for massive CapEx spending ($200 billion annually) as context for Terafab's $25 billion investment scale; no direct sentiment impact."
+        },
+        {
+          "ticker": "JNJ",
+          "sentiment": "positive",
+          "reasoning": "Identified as major player in physical AI and healthcare robotics, benefiting from secular growth trend in personalized medicine and surgical automation."
+        },
+        {
+          "ticker": "MDT",
+          "sentiment": "positive",
+          "reasoning": "Highlighted as key player in physical AI healthcare applications, positioned to benefit from secular growth in robotic-assisted medical procedures."
+        }
+      ]
+    },
     {
       "title": "Elon Musk 'Starved The Balance Sheet' At Tesla Post-IPO To Keep Employees Sharp, Says Former TSLA President McNeill",
       "description": "Former Tesla president Jon McNeill revealed that Elon Musk intentionally kept minimal cash reserves post-IPO to maintain employee focus and discipline, sometimes operating with less than three weeks of cash. McNeill suggested SpaceX could face similar challenges after its potential IPO, as it reportedly moves toward a $1.75 trillion valuation.",
@@ -25,45 +286,6 @@
           "ticker": "TSLA",
           "sentiment": "neutral",
           "reasoning": "The article discusses Tesla's unconventional cash management strategy post-IPO as a deliberate business practice to maintain employee focus. While the approach was risky, it's presented as intentional and effective rather than problematic, with no negative outcomes mentioned."
-        }
-      ]
-    },
-    {
-      "title": "Recession Risks Are Rising According To Wall Street. Here's What It Means for Investors.",
-      "description": "Wall Street economists are raising recession risk assessments following the Iran war outbreak and resulting oil price spikes. Moody's Analytics estimates a 48.6% recession risk over the next 12 months, Goldman Sachs raised its estimate to 30%, and prediction markets now show 35% odds of recession before year-end. Rising oil prices increase transportation costs and consumer expenses, pressuring the economy. However, the S&P 500 has historically recovered from all recessions and set new highs afterward.",
-      "published_utc": "2026-03-27T02:30:00Z",
-      "source": "The Motley Fool",
-      "article_url": "https://www.fool.com/investing/2026/03/26/recession-risks-are-rising-according-to-wall-stree/?source=iedfolrf0000001",
-      "tickers": [
-        "META",
-        "NVDA",
-        "TSLA"
-      ],
-      "keywords": [
-        "recession risk",
-        "oil prices",
-        "Iran war",
-        "economic outlook",
-        "market volatility",
-        "financial conditions",
-        "bear market"
-      ],
-      "author": "Jeremy Bowman",
-      "insights": [
-        {
-          "ticker": "META",
-          "sentiment": "negative",
-          "reasoning": "Down 8.0% on the trading day mentioned; part of broader tech sector weakness amid market uncertainty."
-        },
-        {
-          "ticker": "NVDA",
-          "sentiment": "negative",
-          "reasoning": "Down 4.1% on the trading day; tech stocks declining amid recession concerns and market volatility."
-        },
-        {
-          "ticker": "TSLA",
-          "sentiment": "negative",
-          "reasoning": "Down 3.6% on the trading day; affected by broader market downturn and rising oil prices impacting consumer spending."
         }
       ]
     }

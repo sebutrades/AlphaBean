@@ -14,6 +14,7 @@ Pipeline: BarSeries → extract_structures() → classify_all() → list[TradeSe
 """
 from datetime import datetime, time, timedelta
 from typing import Optional
+from backend.optimization.param_inject import get_param
 
 import numpy as np
 
