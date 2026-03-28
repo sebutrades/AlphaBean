@@ -343,6 +343,7 @@ def run_single_strategy_backtest(
     from backend.patterns.registry import PATTERN_META
     from backend.optimization.param_inject import set_params, clear_overrides
     from run_backtest import PendingTrade, _compute_atr_at
+    from cache_bars import load_cached_bars
 
     # ── INJECT PARAMS ──
     set_params(strategy_name, params)
@@ -369,8 +370,11 @@ def run_single_strategy_backtest(
     for symbol in symbols:
         for tf in allowed_tfs:
             try:
-                fetch_days = max(days_back, 365) if tf == "1d" else days_back
-                bars_data = fetch_bars(symbol, tf, fetch_days)
+                # Cache-first: read from disk, fall back to API
+                bars_data = load_cached_bars(symbol, tf)
+                if bars_data is None:
+                    fetch_days = max(days_back, 365) if tf == "1d" else days_back
+                    bars_data = fetch_bars(symbol, tf, fetch_days)
                 bars = bars_data.bars
                 n = len(bars)
 
