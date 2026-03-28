@@ -31,6 +31,7 @@ from backend.data.schemas import BarSeries, Bar
 from backend.patterns.classifier import classify_all
 from backend.patterns.registry import PATTERN_META, PatternCategory, get_patterns_for_timeframe
 from backend.structures.indicators import wilder_atr
+from backend.patterns.classifier import _DETECTOR_MAP
 
 
 # ==============================================================================
@@ -442,7 +443,7 @@ def run_full_backtest(
 
     print(f"\n{'═' * 72}")
     print(f"  Juicer v3.4 — Walk-Forward Backtest Engine (Scaled Exits)")
-    print(f"  {len(symbols)} symbols × {len(timeframes)} TFs × 42 patterns (TF-routed)")
+    print(f"  {len(symbols)} symbols × {len(timeframes)} TFs × {len(_DETECTOR_MAP)} patterns (TF-routed)")
     print(f"  Timeframes: {', '.join(timeframes)}")
     print(f"  Lookback: {days_back} days | Per-pattern cooldown + max_hold")
     print(f"  Exits: T1 (50%) → BE stop → T2 (30%) → Trail (20%)")
@@ -768,7 +769,8 @@ def main():
     print(f"  ║  Symbols:     {len(symbols):<42}║")
     print(f"  ║  Days back:   {args.days:<42}║")
     print(f"  ║  Timeframes:  {', '.join(tfs):<42}║")
-    print(f"  ║  Patterns:    42 (TF-routed per registry)              ║")
+    _np = len(_DETECTOR_MAP)
+    print(f"  ║  Patterns:    {_np} (TF-routed per registry){' '*(14-len(str(_np)))}║")
     print(f"  ║  Exits:       T1 (50%) → BE → T2 (30%) → Trail (20%)  ║")
     print(f"  ║  Slippage:    0.05 ATR adverse                         ║")
     print(f"  ╚══════════════════════════════════════════════════════════╝")
