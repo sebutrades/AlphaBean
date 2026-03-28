@@ -1,6 +1,51 @@
 {
-  "cached_at": 1774628817.1309135,
+  "cached_at": 1774635882.6890962,
   "items": [
+    {
+      "title": "3 AI Stocks to Buy Before the Next Leg Up",
+      "description": "The article recommends three AI stocks positioned for gains when market conflicts resolve and investors shift to aggressive sectors. Microsoft's stock is valued near decade lows despite strong Azure revenue growth of 39% YoY. Alphabet has emerged as an AI leader with its TPU custom chips offering lower-cost alternatives to GPUs. Broadcom, which partnered with Alphabet on TPU design, expects its custom AI chip division to generate over $100 billion in sales by 2027, up from $8.4 billion currently.",
+      "published_utc": "2026-03-27T16:15:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/27/3-ai-stocks-to-buy-before-the-next-leg-up/?source=iedfolrf0000001",
+      "tickers": [
+        "MSFT",
+        "GOOG",
+        "GOOGL",
+        "AVGO"
+      ],
+      "keywords": [
+        "AI stocks",
+        "artificial intelligence",
+        "cloud computing",
+        "custom AI chips",
+        "market rebound",
+        "capital expenditures",
+        "generative AI"
+      ],
+      "author": "Keithen Drury",
+      "insights": [
+        {
+          "ticker": "MSFT",
+          "sentiment": "positive",
+          "reasoning": "Stock trading near decade lows despite strong fundamentals; Azure revenue growing 39% YoY demonstrates strong ROI on AI investments; positioned as outsized winner in next market leg up"
+        },
+        {
+          "ticker": "GOOG",
+          "sentiment": "positive",
+          "reasoning": "Emerged as AI leader with successful generative AI tools; custom TPU chips offer lower-cost inference/training than GPUs; stock down 15% from all-time highs presenting buying opportunity; dual advantage of cloud services and proprietary AI tools"
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "positive",
+          "reasoning": "Emerged as AI leader with successful generative AI tools; custom TPU chips offer lower-cost inference/training than GPUs; stock down 15% from all-time highs presenting buying opportunity; dual advantage of cloud services and proprietary AI tools"
+        },
+        {
+          "ticker": "AVGO",
+          "sentiment": "positive",
+          "reasoning": "Expects custom AI chip division to reach $100 billion in sales by 2027 from current $8.4 billion; Wall Street projects 64% revenue growth this year and 49% next year; immense upside potential from custom chip business"
+        }
+      ]
+    },
     {
       "title": "1 Low-Cost ETF That Could Outperform Actively Managed Funds This Year",
       "description": "The Vanguard S&P 500 ETF (VOO) is highlighted as a low-cost investment option with a 0.03% expense ratio that could outperform actively managed funds in 2026. The article argues that over 80% of actively managed funds fail to beat their benchmarks over 10 years due to higher fees and unpredictability, making simple index investing a smarter strategy during uncertain market conditions.",
@@ -49,6 +94,83 @@
           "ticker": "MSFT",
           "sentiment": "neutral",
           "reasoning": "Part of the 'Magnificent Seven' tech stocks that are down significantly from highs, reflecting broader tech sector volatility and market unpredictability."
+        }
+      ]
+    },
+    {
+      "title": "Is This AI Stock a Better Bargain Than the Magnificent Seven?",
+      "description": "Recent market corrections have made both the Magnificent Seven tech stocks and other AI players cheaper. Micron Technology, an AI memory solutions provider, is presented as a potentially better bargain than the Magnificent Seven (Alphabet, Amazon, Apple, Meta, Microsoft, Nvidia, Tesla) due to strong earnings growth driven by AI demand for memory chips, though the article notes Nvidia may still be preferable for some investors.",
+      "published_utc": "2026-03-27T08:10:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/27/is-this-ai-stock-a-better-bargain-than-the-magnifi/?source=iedfolrf0000001",
+      "tickers": [
+        "MU",
+        "NVDA",
+        "GOOG",
+        "GOOGL",
+        "AMZN",
+        "AAPL",
+        "META",
+        "MSFT",
+        "TSLA"
+      ],
+      "keywords": [
+        "AI stocks",
+        "Magnificent Seven",
+        "memory chips",
+        "valuation",
+        "bargain stocks",
+        "earnings growth",
+        "inference",
+        "DRAM",
+        "NAND"
+      ],
+      "author": "Adria Cimino",
+      "insights": [
+        {
+          "ticker": "MU",
+          "sentiment": "positive",
+          "reasoning": "Strong revenue growth (190% YoY), record earnings and margins, explosive demand for AI memory solutions, and potential for continued growth as AI inference workloads expand make it an attractive bargain compared to Magnificent Seven peers."
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "reasoning": "Identified as looking like a bargain after recent market corrections; author notes it may be preferable to Micron for some investors, indicating confidence in its AI leadership position."
+        },
+        {
+          "ticker": "GOOG",
+          "sentiment": "positive",
+          "reasoning": "Listed as a Magnificent Seven member with leadership in internet search and AI; valuations have become more attractive after recent market declines."
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "positive",
+          "reasoning": "Listed as a Magnificent Seven member with leadership in internet search and AI; valuations have become more attractive after recent market declines."
+        },
+        {
+          "ticker": "AMZN",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as a Magnificent Seven member with lower valuations after recent corrections, but no specific positive or negative analysis provided."
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "reasoning": "Included in Magnificent Seven but no specific analysis or AI-related commentary provided in the article."
+        },
+        {
+          "ticker": "META",
+          "sentiment": "neutral",
+          "reasoning": "Part of Magnificent Seven with reduced valuations, but no detailed analysis or specific investment thesis presented."
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as Magnificent Seven member with lower valuations after market corrections, but lacks specific analysis or AI-focused commentary."
+        },
+        {
+          "ticker": "TSLA",
+          "sentiment": "neutral",
+          "reasoning": "Listed as Magnificent Seven member but has no AI-related connection or specific analysis in the article."
         }
       ]
     }

@@ -1,6 +1,35 @@
 {
-  "cached_at": 1774628818.8436432,
+  "cached_at": 1774635884.449244,
   "items": [
+    {
+      "title": "How Maven Turns Palantir\u2019s Biggest Risk Into Its Biggest Strength",
+      "description": "Palantir Technologies' Maven AI platform received a major boost when the U.S. Department of Defense designated it as a program of record across military services in March 2026. This formal designation transforms the company's government revenue dependency from a risk into a structural strength, with Maven-related contracts potentially reaching $13 billion. The platform demonstrated capabilities during Operation Epic Fury and has expanded from 5,000 to 20,000 active users, creating significant switching costs and embedding the technology as military infrastructure.",
+      "published_utc": "2026-03-27T17:14:00Z",
+      "source": "Investing.com",
+      "article_url": "https://www.investing.com/analysis/how-maven-turns-palantirs-biggest-risk-into-its-biggest-strength-200677428",
+      "tickers": [
+        "PLTR"
+      ],
+      "keywords": [
+        "Maven",
+        "Palantir Technologies",
+        "AI platform",
+        "Department of Defense",
+        "military contracts",
+        "government revenue",
+        "program of record",
+        "IDIQ contracts",
+        "Operation Epic Fury"
+      ],
+      "author": "Chris Markoch",
+      "insights": [
+        {
+          "ticker": "PLTR",
+          "sentiment": "positive",
+          "reasoning": "The DoD's designation of Maven as a program of record provides institutional adoption and durable funding structure. The platform's expansion to 20,000 active users, consolidation of 75 contracts into one, and potential $13 billion in contract value significantly reduce revenue uncertainty and create high switching costs. This transforms the company's primary risk (government revenue dependency) into a competitive moat and long-term revenue stream."
+        }
+      ]
+    },
     {
       "title": "If I Had $10,000 to Invest in Artificial Intelligence (AI) Right Now, I'd Split It Between These 3 Stocks",
       "description": "The article recommends splitting a $10,000 AI investment equally among Nvidia, Palantir Technologies, and Taiwan Semiconductor Manufacturing. Nvidia offers comprehensive hardware and software solutions with its CUDA platform and strategic partnerships. Palantir's AI Platform excels at synthesizing data for enterprise and government use. Taiwan Semi manufactures advanced chips for all major AI players, positioning it as essential infrastructure.",
@@ -80,6 +109,52 @@
       ]
     },
     {
+      "title": "What Happens If the Nasdaq and S&P 500 Both Fall Into Correction Territory?",
+      "description": "The Nasdaq has entered correction territory (down 10%+ from highs) while the S&P 500 approaches it. The market shift from megacap growth dominance to broader sector participation has left many large-cap tech stocks significantly undervalued. Investors should identify quality companies beaten down for cyclical or sentiment reasons rather than fundamental deterioration, with Home Depot highlighted as a compelling value opportunity.",
+      "published_utc": "2026-03-27T06:15:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/27/nasdaq-sp-500-correction-sell-off-2026/?source=iedfolrf0000001",
+      "tickers": [
+        "NVDA",
+        "META",
+        "HD",
+        "PLTR"
+      ],
+      "keywords": [
+        "market correction",
+        "Nasdaq",
+        "S&P 500",
+        "megacap stocks",
+        "valuation",
+        "cyclical downturn",
+        "dividend stocks",
+        "value investing"
+      ],
+      "author": "Daniel Foelber",
+      "insights": [
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "reasoning": "Trading cheaper than S&P 500 on forward earnings basis, presenting a bargain opportunity for investors who believe in continued growth potential despite AI investment concerns."
+        },
+        {
+          "ticker": "META",
+          "sentiment": "positive",
+          "reasoning": "Cheaper than S&P 500 on forward earnings, offering a compelling valuation for long-term investors despite current market skepticism about AI investments."
+        },
+        {
+          "ticker": "HD",
+          "sentiment": "positive",
+          "reasoning": "Beaten down due to cyclical housing market weakness and consumer spending concerns, but trading at attractive 22.5x earnings with strategic acquisitions positioning it for recovery. Offers 2.8% dividend yield with 16 consecutive years of payout increases."
+        },
+        {
+          "ticker": "PLTR",
+          "sentiment": "negative",
+          "reasoning": "Despite landing major deals and growing rapidly, trading at extremely elevated multiples (122x 2026 earnings, 86x 2027 estimates), making it overvalued even at lower prices and not a genuine bargain."
+        }
+      ]
+    },
+    {
       "title": "Bain Deepens Palantir Alliance To Accelerate Enterprise AI Transformation",
       "description": "Palantir Technologies announced an expansion of its strategic partnership with Bain & Company to accelerate enterprise AI transformation for clients worldwide. The collaboration will provide access to Palantir's AIP and Foundry platforms. Additionally, Palantir disclosed a deal with Moder to develop an AI-powered mortgage operations platform. The stock was down 1.10% in pre-market trading at $153.25, with analysts maintaining a Buy rating and average price target of $195.23.",
       "published_utc": "2026-03-26T13:32:55Z",
@@ -102,46 +177,6 @@
           "ticker": "PLTR",
           "sentiment": "positive",
           "reasoning": "Expansion of strategic partnership with Bain & Company demonstrates growing enterprise AI adoption and market validation. New mortgage operations platform deal with Moder shows diversification into new verticals. Maintained Buy rating with $195.23 price target indicates analyst confidence despite minor pre-market decline."
-        }
-      ]
-    },
-    {
-      "title": "The Stock Market Flashed a Warning Sign for the First Time Since the Dot-Com Bubble. History Offers a Remarkably Clear Idea of What's Next for the S&P 500.",
-      "description": "The S&P 500 has surged 78% over three years driven by AI enthusiasm, but recently lost momentum amid geopolitical concerns and valuation uncertainty. The Shiller CAPE ratio has reached its highest level since the dot-com bubble at over 39, historically signaling potential market declines. However, history shows recoveries follow downturns, suggesting long-term investors should look for bargains rather than avoid stocks.",
-      "published_utc": "2026-03-26T11:10:00Z",
-      "source": "The Motley Fool",
-      "article_url": "https://www.fool.com/investing/2026/03/26/the-stock-market-flashed-a-warning-sign/?source=iedfolrf0000001",
-      "tickers": [
-        "NVDA",
-        "AMZN",
-        "PLTR"
-      ],
-      "keywords": [
-        "S&P 500",
-        "artificial intelligence",
-        "valuation",
-        "Shiller CAPE ratio",
-        "dot-com bubble",
-        "market warning",
-        "growth stocks",
-        "long-term investing"
-      ],
-      "author": "Adria Cimino",
-      "insights": [
-        {
-          "ticker": "NVDA",
-          "sentiment": "neutral",
-          "reasoning": "Mentioned as a leading AI chip designer benefiting from AI demand, but no specific forward guidance or concerns discussed. Included in context of high valuations affecting growth stocks generally."
-        },
-        {
-          "ticker": "AMZN",
-          "sentiment": "neutral",
-          "reasoning": "Cited as a cloud services provider benefiting from AI customer sales, but treated as part of the broader AI opportunity without specific positive or negative outlook."
-        },
-        {
-          "ticker": "PLTR",
-          "sentiment": "neutral",
-          "reasoning": "Mentioned as an AI-driven software company with strong revenue growth from AI customers, but discussed in context of expensive valuations affecting the sector broadly."
         }
       ]
     }

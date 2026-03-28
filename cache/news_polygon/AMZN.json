@@ -1,6 +1,300 @@
 {
-  "cached_at": 1774628814.678369,
+  "cached_at": 1774635880.1199355,
   "items": [
+    {
+      "title": "Have Tech Stocks Finally Run Out of Road? Here's What the Data Actually Says.",
+      "description": "Tech stocks have pulled back from frothy valuations but remain priced for significant AI-driven earnings growth in 2026. While the sector's forward P/E of ~24x is reasonable historically, most popular AI stocks have no margin for error. Selective picking is essential, as disappointing earnings could trigger broader sector selloffs, though reasonably-priced non-AI tech stocks exist.",
+      "published_utc": "2026-03-27T10:16:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/27/have-tech-stocks-finally-run-out-of-road-data-says/?source=iedfolrf0000001",
+      "tickers": [
+        "NVDA",
+        "MSFT",
+        "AVGO",
+        "AMZN"
+      ],
+      "keywords": [
+        "tech stocks",
+        "AI earnings growth",
+        "valuation",
+        "price-to-earnings ratio",
+        "artificial intelligence",
+        "market pullback",
+        "investment risk"
+      ],
+      "author": "James Brumley",
+      "insights": [
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "reasoning": "Trading at forward P/E of less than 16x, described as 'a relative bargain' with strong growth expectations justifying current valuations despite high absolute price multiples."
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "positive",
+          "reasoning": "Valued at less than 20x forward earnings, characterized as 'arguably cheap' with solid projected earnings growth supporting current price levels."
+        },
+        {
+          "ticker": "AVGO",
+          "sentiment": "positive",
+          "reasoning": "Trading at ~18x forward earnings with expected 50%+ profit growth, representing reasonable valuation given strong revenue growth prospects."
+        },
+        {
+          "ticker": "AMZN",
+          "sentiment": "neutral",
+          "reasoning": "Trading at 30x trailing earnings, which is elevated but not explicitly criticized; mentioned as part of cap-weighted index concentration risk."
+        }
+      ]
+    },
+    {
+      "title": "Is This AI Stock a Better Bargain Than the Magnificent Seven?",
+      "description": "Recent market corrections have made both the Magnificent Seven tech stocks and other AI players cheaper. Micron Technology, an AI memory solutions provider, is presented as a potentially better bargain than the Magnificent Seven (Alphabet, Amazon, Apple, Meta, Microsoft, Nvidia, Tesla) due to strong earnings growth driven by AI demand for memory chips, though the article notes Nvidia may still be preferable for some investors.",
+      "published_utc": "2026-03-27T08:10:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/27/is-this-ai-stock-a-better-bargain-than-the-magnifi/?source=iedfolrf0000001",
+      "tickers": [
+        "MU",
+        "NVDA",
+        "GOOG",
+        "GOOGL",
+        "AMZN",
+        "AAPL",
+        "META",
+        "MSFT",
+        "TSLA"
+      ],
+      "keywords": [
+        "AI stocks",
+        "Magnificent Seven",
+        "memory chips",
+        "valuation",
+        "bargain stocks",
+        "earnings growth",
+        "inference",
+        "DRAM",
+        "NAND"
+      ],
+      "author": "Adria Cimino",
+      "insights": [
+        {
+          "ticker": "MU",
+          "sentiment": "positive",
+          "reasoning": "Strong revenue growth (190% YoY), record earnings and margins, explosive demand for AI memory solutions, and potential for continued growth as AI inference workloads expand make it an attractive bargain compared to Magnificent Seven peers."
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "reasoning": "Identified as looking like a bargain after recent market corrections; author notes it may be preferable to Micron for some investors, indicating confidence in its AI leadership position."
+        },
+        {
+          "ticker": "GOOG",
+          "sentiment": "positive",
+          "reasoning": "Listed as a Magnificent Seven member with leadership in internet search and AI; valuations have become more attractive after recent market declines."
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "positive",
+          "reasoning": "Listed as a Magnificent Seven member with leadership in internet search and AI; valuations have become more attractive after recent market declines."
+        },
+        {
+          "ticker": "AMZN",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as a Magnificent Seven member with lower valuations after recent corrections, but no specific positive or negative analysis provided."
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "reasoning": "Included in Magnificent Seven but no specific analysis or AI-related commentary provided in the article."
+        },
+        {
+          "ticker": "META",
+          "sentiment": "neutral",
+          "reasoning": "Part of Magnificent Seven with reduced valuations, but no detailed analysis or specific investment thesis presented."
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as Magnificent Seven member with lower valuations after market corrections, but lacks specific analysis or AI-focused commentary."
+        },
+        {
+          "ticker": "TSLA",
+          "sentiment": "neutral",
+          "reasoning": "Listed as Magnificent Seven member but has no AI-related connection or specific analysis in the article."
+        }
+      ]
+    },
+    {
+      "title": "Quantum Computing Stocks IonQ, Rigetti Computing, and D-Wave Quantum Have Created Shockwaves With This $930 Million Warning to Wall Street",
+      "description": "Despite quantum computing stocks IonQ, Rigetti Computing, and D-Wave Quantum surging 670-6,217% over the past year, insiders at these companies are selling shares aggressively while barely buying any, signaling they may not view their stocks as bargains. With quantum computers still years away from being cost-effective and these companies likely to continue losing money, their valuations may have gotten ahead of themselves despite the sector's long-term potential.",
+      "published_utc": "2026-03-27T08:06:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/27/quantum-computing-stocks-ionq-rgti-warning-wall-st/?source=iedfolrf0000001",
+      "tickers": [
+        "IONQ",
+        "IONQ.WS",
+        "RGTI",
+        "RGTIW",
+        "QBTS",
+        "AMZN",
+        "AMJB",
+        "JPM",
+        "JPMpC",
+        "JPMpD",
+        "JPMpJ",
+        "JPMpK",
+        "JPMpL",
+        "JPMpM",
+        "VYLD"
+      ],
+      "keywords": [
+        "quantum computing",
+        "insider selling",
+        "stock valuation",
+        "Form 4 filings",
+        "technology stocks",
+        "market warning"
+      ],
+      "author": "Sean Williams",
+      "insights": [
+        {
+          "ticker": "IONQ",
+          "sentiment": "negative",
+          "reasoning": "Massive insider selling with minimal insider buying ($3.35M over 5 years), stock up 6,217% in 12 months suggesting overvaluation, and company still unprofitable with exorbitant price-to-sales ratios despite long-term potential."
+        },
+        {
+          "ticker": "IONQ.WS",
+          "sentiment": "negative",
+          "reasoning": "Massive insider selling with minimal insider buying ($3.35M over 5 years), stock up 6,217% in 12 months suggesting overvaluation, and company still unprofitable with exorbitant price-to-sales ratios despite long-term potential."
+        },
+        {
+          "ticker": "RGTI",
+          "sentiment": "negative",
+          "reasoning": "Insiders are net sellers with virtually no buying activity ($625K over 5 years), indicating lack of confidence in valuation. Stock up 670% in 12 months with company still unprofitable and years away from commercial viability."
+        },
+        {
+          "ticker": "RGTIW",
+          "sentiment": "negative",
+          "reasoning": "Insiders are net sellers with virtually no buying activity ($625K over 5 years), indicating lack of confidence in valuation. Stock up 670% in 12 months with company still unprofitable and years away from commercial viability."
+        },
+        {
+          "ticker": "QBTS",
+          "sentiment": "negative",
+          "reasoning": "Minimal insider buying ($309K over 5 years) despite aggressive selling, suggesting insiders don't view stock as a bargain. Company unprofitable with inflated valuations despite promising long-term sector outlook."
+        },
+        {
+          "ticker": "AMZN",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as a positive client win for quantum computing companies through its Braket service, but no direct impact on Amazon's business model or valuation discussed."
+        },
+        {
+          "ticker": "AMJB",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned for its $1.5 trillion 10-year Security and Resiliency Initiative investment in quantum computing, but this is contextual information about sector investment rather than commentary on JPMorgan's stock."
+        },
+        {
+          "ticker": "JPM",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned for its $1.5 trillion 10-year Security and Resiliency Initiative investment in quantum computing, but this is contextual information about sector investment rather than commentary on JPMorgan's stock."
+        },
+        {
+          "ticker": "JPMpC",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned for its $1.5 trillion 10-year Security and Resiliency Initiative investment in quantum computing, but this is contextual information about sector investment rather than commentary on JPMorgan's stock."
+        },
+        {
+          "ticker": "JPMpD",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned for its $1.5 trillion 10-year Security and Resiliency Initiative investment in quantum computing, but this is contextual information about sector investment rather than commentary on JPMorgan's stock."
+        },
+        {
+          "ticker": "JPMpJ",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned for its $1.5 trillion 10-year Security and Resiliency Initiative investment in quantum computing, but this is contextual information about sector investment rather than commentary on JPMorgan's stock."
+        },
+        {
+          "ticker": "JPMpK",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned for its $1.5 trillion 10-year Security and Resiliency Initiative investment in quantum computing, but this is contextual information about sector investment rather than commentary on JPMorgan's stock."
+        },
+        {
+          "ticker": "JPMpL",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned for its $1.5 trillion 10-year Security and Resiliency Initiative investment in quantum computing, but this is contextual information about sector investment rather than commentary on JPMorgan's stock."
+        },
+        {
+          "ticker": "JPMpM",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned for its $1.5 trillion 10-year Security and Resiliency Initiative investment in quantum computing, but this is contextual information about sector investment rather than commentary on JPMorgan's stock."
+        },
+        {
+          "ticker": "VYLD",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned for its $1.5 trillion 10-year Security and Resiliency Initiative investment in quantum computing, but this is contextual information about sector investment rather than commentary on JPMorgan's stock."
+        }
+      ]
+    },
+    {
+      "title": "Nvidia Stock Has Gone Nowhere for 6 Months. What Will It Take for Shares to Go Higher?",
+      "description": "Despite Nvidia's exceptional business performance\u2014including 73% revenue growth, $1 trillion revenue forecast through 2027, and strong guidance\u2014the stock has stalled over the past six months. The market's cautious valuation (36x P/E) reflects concerns about sustaining high margins as competition intensifies from custom AI chips developed by major tech companies like Google, Amazon, and Meta. The stock may remain stuck until investors gain confidence that the AI boom will last longer than expected or that Nvidia's software and networking platforms can insulate the business from traditional hardware cycles.",
+      "published_utc": "2026-03-27T03:30:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/26/nvidia-stock-has-gone-nowhere-for-6-months-what-wi/?source=iedfolrf0000001",
+      "tickers": [
+        "NVDA",
+        "GOOG",
+        "GOOGL",
+        "AMZN",
+        "META",
+        "ARM",
+        "MU"
+      ],
+      "keywords": [
+        "AI semiconductors",
+        "hardware valuation",
+        "margin compression",
+        "custom silicon competition",
+        "AI infrastructure spending",
+        "cyclical hardware business"
+      ],
+      "author": "Daniel Sparks",
+      "insights": [
+        {
+          "ticker": "NVDA",
+          "sentiment": "neutral",
+          "reasoning": "Strong operational execution with 73% revenue growth and $1 trillion revenue visibility, but stock performance has stalled due to high valuation (36x P/E) and market concerns about margin sustainability as competitors develop custom AI chips. Growth prospects are solid but priced in, leaving limited upside without proof of durability."
+        },
+        {
+          "ticker": "GOOG",
+          "sentiment": "negative",
+          "reasoning": "Developing custom TPUs to reduce reliance on Nvidia's hardware, representing a competitive threat to Nvidia's pricing power and market dominance in AI semiconductors."
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "negative",
+          "reasoning": "Developing custom TPUs to reduce reliance on Nvidia's hardware, representing a competitive threat to Nvidia's pricing power and market dominance in AI semiconductors."
+        },
+        {
+          "ticker": "AMZN",
+          "sentiment": "negative",
+          "reasoning": "Scaling proprietary Trainium chips as an alternative to Nvidia's expensive hardware, posing a risk to Nvidia's market share and pricing power in the AI infrastructure space."
+        },
+        {
+          "ticker": "META",
+          "sentiment": "negative",
+          "reasoning": "Partnering with Arm to build custom AI chips, further intensifying competition against Nvidia and threatening its dominance in AI semiconductor hardware."
+        },
+        {
+          "ticker": "ARM",
+          "sentiment": "neutral",
+          "reasoning": "Announced development of its own AI chip in partnership with Meta, shifting from traditional licensing model. This represents a strategic pivot but impact on overall market dynamics is unclear."
+        },
+        {
+          "ticker": "MU",
+          "sentiment": "neutral",
+          "reasoning": "Referenced as an example of market pricing in cyclical peaks; trading at 8x forward P/E despite strong growth guidance, illustrating investor caution about hardware cycle sustainability."
+        }
+      ]
+    },
     {
       "title": "Why the Class of 2025 Refuses to Interview Without AI After Watching a Generation Get Laid Off",
       "description": "Recent college graduates facing a brutal entry-level job market with 5.7% unemployment and 42.5% underemployment are increasingly using AI tools like real-time interview assistants to compete. The Class of 2025 argues this is justified given that companies use AI throughout their hiring processes while banning candidate use, creating a double standard in a market where average job postings attract 340 applicants but only 2% advance to interviews.",

@@ -88,7 +88,7 @@ async def scan(symbol:str=Query(...),mode:str=Query("today"),ai:bool=Query(True)
         for s in setups: s["spy_correlation"] = corr
     except: pass
     # Remove anything below 45 score
-    setups = [s for s in setups if s.get("composite_score", 0) >= 45]
+    setups = [s for s in setups if s.get("composite_score", 0) >= 40]
     return {"symbol":symbol.upper(),"mode":mode,"count":len(setups),"setups":setups,"market_open":_mkt_open()}
 
 @app.get("/api/scan-multiple")
@@ -101,7 +101,7 @@ async def scan_multi(symbols:str=Query(...),mode:str=Query("today"),ai:bool=Quer
             nb = fetch_news_batch(sl); ns = {sym:format_headlines_for_llm(items) for sym,items in nb.items()}
             setups = evaluate_setups_batch(setups,ns,_regime_str(),top_n=5)
         except Exception as e: print(f"  AI error: {e}")
-    setups = [s for s in setups if s.get("composite_score", 0) >= 45]
+    setups = [s for s in setups if s.get("composite_score", 0) >= 2]
     return {"symbols":sl,"mode":mode,"count":len(setups),"setups":setups}
 
 

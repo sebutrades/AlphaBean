@@ -1,6 +1,228 @@
 {
-  "cached_at": 1774628813.8860798,
+  "cached_at": 1774635879.162771,
   "items": [
+    {
+      "title": "Entergy Jumps On $2 Billion Savings Plan With Meta",
+      "description": "Entergy announced a major partnership with Meta that is expected to generate approximately $2 billion in customer savings for Entergy Louisiana over the next 20 years, building on a previously announced $650 million deal. The agreement includes a significant energy expansion with seven new natural gas plants, transmission lines, battery storage, and up to 2,500 MW of renewable energy development. Entergy shares rose 8.62% to $111.73 on the news, outperforming a declining broader market.",
+      "published_utc": "2026-03-27T17:39:27Z",
+      "source": "Benzinga",
+      "article_url": "https://www.benzinga.com/trading-ideas/movers/26/03/51518435/entergy-jumps-on-2-billion-savings-plan-with-meta?utm_source=benzinga_taxonomy&utm_medium=rss_feed_free&utm_content=taxonomy_rss&utm_campaign=channel",
+      "tickers": [
+        "ETR",
+        "META"
+      ],
+      "keywords": [
+        "energy partnership",
+        "customer savings",
+        "infrastructure investment",
+        "renewable energy",
+        "natural gas expansion",
+        "grid reliability",
+        "job creation"
+      ],
+      "author": "Lekha Gupta",
+      "insights": [
+        {
+          "ticker": "ETR",
+          "sentiment": "positive",
+          "reasoning": "Major partnership with Meta generating $2 billion in customer savings, significant infrastructure expansion plans, stock up 8.62%, trading above key moving averages, and positioned near 52-week highs with strong 12-month performance of 22.42%."
+        },
+        {
+          "ticker": "META",
+          "sentiment": "neutral",
+          "reasoning": "Meta is supporting renewable energy development and exploring nuclear projects as part of the partnership, which demonstrates strategic energy investments, but the article focuses primarily on Entergy's benefits rather than Meta's direct gains."
+        }
+      ]
+    },
+    {
+      "title": "Nasdaq 100 Enters Correction As 30-Year Yields Near 5%: What's Moving Markets Friday?",
+      "description": "U.S. equities tumbled to their lowest levels in nearly seven months on Friday as the Nasdaq 100 officially entered correction territory, down over 10% from January highs. The decline was driven by geopolitical tensions with Iran rejecting ceasefire options, surging crude oil prices, deteriorating consumer sentiment, and rising inflation expectations. The 30-year Treasury yield climbed to 4.958%, threatening to breach 5% for the first time since July 2025, while the Fed rate hike probability by December jumped to nearly 50%.",
+      "published_utc": "2026-03-27T17:09:48Z",
+      "source": "Benzinga",
+      "article_url": "https://www.benzinga.com/markets/equities/26/03/51517275/iran-oil-price-today-nasdaq-correction-inflation-treasury-yields-stock-market-news-today-friday?utm_source=benzinga_taxonomy&utm_medium=rss_feed_free&utm_content=taxonomy_rss&utm_campaign=channel",
+      "tickers": [
+        "META",
+        "ASTS",
+        "DDOG",
+        "OKTA",
+        "FOUR",
+        "FOURpA",
+        "SRPT",
+        "U",
+        "ETR",
+        "TFX",
+        "CPB",
+        "GDX",
+        "XLE",
+        "XLP",
+        "XLU",
+        "XLY",
+        "IGV",
+        "FDN",
+        "JETS"
+      ],
+      "keywords": [
+        "market correction",
+        "Nasdaq 100",
+        "geopolitical tensions",
+        "Iran",
+        "crude oil",
+        "Treasury yields",
+        "inflation",
+        "consumer sentiment",
+        "safe-haven assets",
+        "sector rotation"
+      ],
+      "author": "Piero Cingari",
+      "insights": [
+        {
+          "ticker": "META",
+          "sentiment": "negative",
+          "reasoning": "Extended steep three-day decline with additional 3.4% drop on Friday, cumulative loss of 10% since Wednesday due to mass layoffs and court ruling on addictive platforms for minors"
+        },
+        {
+          "ticker": "ASTS",
+          "sentiment": "negative",
+          "reasoning": "Listed among Russell 1000 top losers with 6.48% decline on the day amid broad tech sector weakness"
+        },
+        {
+          "ticker": "DDOG",
+          "sentiment": "negative",
+          "reasoning": "Software stock experiencing significant losses (6.66%) as iShares Expanded Tech-Software ETF declined 2.6% during market downturn"
+        },
+        {
+          "ticker": "OKTA",
+          "sentiment": "negative",
+          "reasoning": "Software company down 6.61% as software sector led losses during Friday's market decline"
+        },
+        {
+          "ticker": "FOUR",
+          "sentiment": "negative",
+          "reasoning": "Among Russell 1000 top losers with 7.46% decline amid broad market weakness and consumer discretionary sector pressure"
+        },
+        {
+          "ticker": "FOURpA",
+          "sentiment": "negative",
+          "reasoning": "Among Russell 1000 top losers with 7.46% decline amid broad market weakness and consumer discretionary sector pressure"
+        },
+        {
+          "ticker": "SRPT",
+          "sentiment": "negative",
+          "reasoning": "Listed among Russell 1000 top losers with 7.11% decline during market downturn"
+        },
+        {
+          "ticker": "U",
+          "sentiment": "positive",
+          "reasoning": "Top gainer with 10.88% gain, outperforming broader market decline"
+        },
+        {
+          "ticker": "ETR",
+          "sentiment": "positive",
+          "reasoning": "Top gainer with 8.11% gain as utilities sector benefited from defensive rotation amid market stress"
+        },
+        {
+          "ticker": "TFX",
+          "sentiment": "positive",
+          "reasoning": "Top gainer with 5.39% gain, benefiting from defensive sector rotation"
+        },
+        {
+          "ticker": "CPB",
+          "sentiment": "positive",
+          "reasoning": "Top gainer with 5.32% gain as consumer staples sector gained 1.3% during defensive rotation"
+        },
+        {
+          "ticker": "GDX",
+          "sentiment": "positive",
+          "reasoning": "Surged 4.2% with strongest single-session gain in recent weeks as gold rebounded above $4,500 on safe-haven demand"
+        },
+        {
+          "ticker": "XLE",
+          "sentiment": "positive",
+          "reasoning": "Advanced 1.9% as leading S&P 500 sector, benefiting from surging crude oil prices (WTI +3.9%, Brent +3.3%)"
+        },
+        {
+          "ticker": "XLP",
+          "sentiment": "positive",
+          "reasoning": "Gained 1.3% as investors rotated defensively into yield-bearing and non-cyclical plays"
+        },
+        {
+          "ticker": "XLU",
+          "sentiment": "positive",
+          "reasoning": "Added 1.6% as defensive sector benefited from investor rotation into yield-bearing plays amid market stress"
+        },
+        {
+          "ticker": "XLY",
+          "sentiment": "negative",
+          "reasoning": "Fell 1.7% as worst-performing sector, pressured by soaring energy costs and sharp drop in consumer confidence"
+        },
+        {
+          "ticker": "IGV",
+          "sentiment": "negative",
+          "reasoning": "Down 2.6% as software stocks led losses during market downturn"
+        },
+        {
+          "ticker": "FDN",
+          "sentiment": "negative",
+          "reasoning": "Dropped 2.3% amid Meta's continued decline and broader internet sector weakness"
+        },
+        {
+          "ticker": "JETS",
+          "sentiment": "negative",
+          "reasoning": "Fell 1.2% as rising fuel costs from surging crude oil prices weighed on airlines"
+        }
+      ]
+    },
+    {
+      "title": "1 Low-Cost ETF That Could Outperform Actively Managed Funds This Year",
+      "description": "The Vanguard S&P 500 ETF (VOO) is highlighted as a low-cost investment option with a 0.03% expense ratio that could outperform actively managed funds in 2026. The article argues that over 80% of actively managed funds fail to beat their benchmarks over 10 years due to higher fees and unpredictability, making simple index investing a smarter strategy during uncertain market conditions.",
+      "published_utc": "2026-03-27T14:30:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/27/1-low-cost-etf-that-could-outperform-actively-mana/?source=iedfolrf0000001",
+      "tickers": [
+        "VOO",
+        "GOOG",
+        "GOOGL",
+        "META",
+        "MSFT"
+      ],
+      "keywords": [
+        "ETF",
+        "S&P 500",
+        "index investing",
+        "actively managed funds",
+        "low-cost investing",
+        "expense ratio",
+        "market volatility"
+      ],
+      "author": "Justin Pope",
+      "insights": [
+        {
+          "ticker": "VOO",
+          "sentiment": "positive",
+          "reasoning": "Recommended as a superior investment choice due to extremely low fees (0.03%), broad diversification across 500 companies, and historical outperformance of actively managed funds. Positioned as a defensive strategy during market chaos."
+        },
+        {
+          "ticker": "GOOG",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as part of the 'Magnificent Seven' megacap tech stocks that comprise about one-third of the S&P 500 and have declined significantly from highs, creating uncertainty for active fund managers."
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as part of the 'Magnificent Seven' megacap tech stocks that comprise about one-third of the S&P 500 and have declined significantly from highs, creating uncertainty for active fund managers."
+        },
+        {
+          "ticker": "META",
+          "sentiment": "neutral",
+          "reasoning": "Included in the 'Magnificent Seven' megacap tech companies experiencing significant declines, contributing to market uncertainty and challenges for active fund managers."
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "neutral",
+          "reasoning": "Part of the 'Magnificent Seven' tech stocks that are down significantly from highs, reflecting broader tech sector volatility and market unpredictability."
+        }
+      ]
+    },
     {
       "title": "Arm\u2019s New Gambit: Building Chips to Challenge the AI Titans",
       "description": "Arm Holdings announced its first in-house silicon product, the AGI CPU, marking a strategic shift from IP licensing to direct chip manufacturing for AI data centers. The 136-core processor, built on TSMC's 3nm process, targets energy efficiency in AI workloads. Meta is the lead partner and co-developer, with support from OpenAI, Cloudflare, and SAP. Arm's stock surged 15% on the announcement, with analyst upgrades citing potential $15 billion annual revenue by 2031, positioning the company as a disruptive competitor to Intel and AMD in the AI infrastructure market.",
@@ -61,39 +283,6 @@
           "ticker": "SAP",
           "sentiment": "positive",
           "reasoning": "Commitment to Arm's AGI CPU ecosystem demonstrates enterprise software vendor support, expanding the platform's appeal and creating broader adoption incentives."
-        }
-      ]
-    },
-    {
-      "title": "This Brilliant Artificial Intelligence (AI) Stock Just Unveiled Plans to Reach a $9 Trillion Valuation by 2031 (Hint: Not Nvidia)",
-      "description": "Meta Platforms has announced ambitious plans to reach a $9 trillion market valuation by 2031, requiring 43% annual revenue growth and a 494% stock price increase. While the company is investing heavily in AI infrastructure ($115-135 billion in 2026) and showing strong financial results, analysts question whether the aggressive target is achievable given current growth projections of 18% annually.",
-      "published_utc": "2026-03-27T07:02:00Z",
-      "source": "The Motley Fool",
-      "article_url": "https://www.fool.com/investing/2026/03/27/this-brilliant-artificial-intelligence-ai-stock-ju/?source=iedfolrf0000001",
-      "tickers": [
-        "META",
-        "NVDA"
-      ],
-      "keywords": [
-        "artificial intelligence",
-        "market valuation",
-        "AI models",
-        "executive incentive plan",
-        "capital expenditure",
-        "revenue growth",
-        "stock price target"
-      ],
-      "author": "Danny Vena, Cpa",
-      "insights": [
-        {
-          "ticker": "META",
-          "sentiment": "neutral",
-          "reasoning": "Meta shows strong fundamentals with 22% revenue growth and 24% EPS growth, plus aggressive AI investments. However, the $9 trillion goal requires unrealistic 43% annual revenue growth versus Wall Street's 18% expectation. Recent AI model (Llama 4) was poorly received, adding execution risk. The company is trading at a discount (25x earnings vs S&P 500's 28x), but the ambitious target appears challenging."
-        },
-        {
-          "ticker": "NVDA",
-          "sentiment": "positive",
-          "reasoning": "Nvidia is positioned as the undisputed AI winner with its GPUs becoming the gold standard for AI training. The company has achieved a $4.35 trillion market cap and 1,120% stock gains since early 2023, establishing it as the world's most valuable company and a primary beneficiary of the AI revolution."
         }
       ]
     }

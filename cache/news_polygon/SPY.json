@@ -1,6 +1,50 @@
 {
-  "cached_at": 1774628817.979197,
+  "cached_at": 1774635883.5019796,
   "items": [
+    {
+      "title": "Netflix Hikes Prices For All Plans As Content Spending Surges",
+      "description": "Netflix raised prices across all streaming plans, with the ad-supported plan increasing to $8.99, standard to $19.99, and premium to $26.99. The company justified the hikes by citing increased content spending of $20 billion in 2026, a $2 billion increase from 2025, to support new ventures including live shows and video podcasts. Netflix stock rose 1.13% during regular trading.",
+      "published_utc": "2026-03-26T20:39:34Z",
+      "source": "Benzinga",
+      "article_url": "https://www.benzinga.com/markets/large-cap/26/03/51496496/netflix-hikes-prices-for-all-plans-as-content-spending-surges?utm_source=benzinga_taxonomy&utm_medium=rss_feed_free&utm_content=taxonomy_rss&utm_campaign=channel",
+      "tickers": [
+        "NFLX",
+        "IVV",
+        "QQQ",
+        "SPY"
+      ],
+      "keywords": [
+        "price increase",
+        "streaming",
+        "content spending",
+        "subscription plans",
+        "live events",
+        "ad revenue"
+      ],
+      "author": "Erica Kollmann",
+      "insights": [
+        {
+          "ticker": "NFLX",
+          "sentiment": "neutral",
+          "reasoning": "While price increases typically boost revenue and profitability, they also risk subscriber churn. The modest stock movement (0.38% after-hours, 1.13% during regular session) suggests the market views this as a balanced move. The increased content spending of $20 billion demonstrates growth ambitions but also rising costs that could pressure margins."
+        },
+        {
+          "ticker": "IVV",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned only as a vehicle for Netflix exposure; no direct impact from Netflix's price hike announcement."
+        },
+        {
+          "ticker": "QQQ",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned only as a vehicle for Netflix exposure; no direct impact from Netflix's price hike announcement."
+        },
+        {
+          "ticker": "SPY",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned only as a vehicle for Netflix exposure; no direct impact from Netflix's price hike announcement."
+        }
+      ]
+    },
     {
       "title": "Stock Market Today: S&P 500, Dow Futures Trip As Trump Tells Iran To 'Get Serious'\u2014 Pony AI, Worthington Steel, Olaplex In Focus (UPDATED)",
       "description": "U.S. stock futures fell on Thursday amid escalating Iran tensions and Trump's threats of military action. Major indices declined with the Dow down 0.47%, S&P 500 down 0.55%, and Nasdaq 100 down 0.65%. BlackRock downgraded U.S. stocks to neutral citing geopolitical risks and energy market disruptions. Several individual stocks experienced significant moves: Olaplex surged 48% on acquisition news, while Worthington Steel plunged 14% and MillerKnoll dropped 19% on weak earnings.",
@@ -107,6 +151,76 @@
           "ticker": "QQQ",
           "sentiment": "negative",
           "reasoning": "The Nasdaq-tracking ETF has fallen 5.62% year-to-date, underperforming the broader market amid inflation concerns and economic crisis warnings that typically impact growth-oriented tech stocks."
+        }
+      ]
+    },
+    {
+      "title": "Trump Ceasefire Plan Meets Iran's 5 Red Lines: How Long Can Markets Ignore The Reality Gap?",
+      "description": "President Trump claims progress in U.S.-Iran ceasefire talks, prompting Wall Street to price in de-escalation and drive risk assets higher. However, Iran denies negotiations exist and has set five non-negotiable preconditions fundamentally incompatible with U.S. demands. Ground reality shows no signs of de-escalation, with oil flows at 5% of normal levels and continued military exchanges. Prediction markets assign only 15-37% odds of ceasefire by mid-April, suggesting traders are skeptical despite optimistic headlines.",
+      "published_utc": "2026-03-25T16:02:37Z",
+      "source": "Benzinga",
+      "article_url": "https://www.benzinga.com/news/politics/26/03/51461512/trump-ceasefire-plan-15-point-iran-5-red-lines-ceasefire-markets-reality-gap-prediction-market-odds?utm_source=benzinga_taxonomy&utm_medium=rss_feed_free&utm_content=taxonomy_rss&utm_campaign=channel",
+      "tickers": [
+        "CCL",
+        "NCLH",
+        "RCL",
+        "DIA",
+        "QQQ",
+        "SPY",
+        "XLE",
+        "XLY"
+      ],
+      "keywords": [
+        "U.S.-Iran tensions",
+        "ceasefire negotiations",
+        "geopolitical risk",
+        "oil prices",
+        "Middle East conflict",
+        "prediction markets",
+        "risk assets",
+        "Strait of Hormuz"
+      ],
+      "author": "Piero Cingari",
+      "insights": [
+        {
+          "ticker": "CCL",
+          "sentiment": "positive",
+          "reasoning": "Cruise stock rebounding sharply (+3%) on market optimism about Middle East de-escalation and reduced geopolitical risk premium. War-battered discretionary stocks leading the rebound."
+        },
+        {
+          "ticker": "NCLH",
+          "sentiment": "positive",
+          "reasoning": "Cruise stock up more than 3% as markets price in ceasefire and reduced geopolitical uncertainty affecting travel and leisure sectors."
+        },
+        {
+          "ticker": "RCL",
+          "sentiment": "positive",
+          "reasoning": "Cruise stock gaining over 3% alongside broader discretionary sector rally driven by perceived de-escalation in Middle East tensions."
+        },
+        {
+          "ticker": "DIA",
+          "sentiment": "positive",
+          "reasoning": "Broad market index ETF up 0.63% as equities rally on ceasefire optimism, though gains are modest compared to growth-sensitive indices."
+        },
+        {
+          "ticker": "QQQ",
+          "sentiment": "positive",
+          "reasoning": "Nasdaq 100 ETF up 1.3%, outperforming broader market as growth-sensitive stocks benefit from reduced geopolitical risk and lower oil prices."
+        },
+        {
+          "ticker": "SPY",
+          "sentiment": "positive",
+          "reasoning": "S&P 500 ETF up 1.0% as markets price in de-escalation and risk-on sentiment, though gains lag more cyclical indices."
+        },
+        {
+          "ticker": "XLE",
+          "sentiment": "negative",
+          "reasoning": "Energy sector down 0.3% as oil prices decline sharply (WTI below $90, Brent below $100) on ceasefire expectations, unwinding geopolitical risk premium."
+        },
+        {
+          "ticker": "XLY",
+          "sentiment": "positive",
+          "reasoning": "Consumer discretionary sector leading with 1.7% gain as cruise and travel stocks rebound on reduced Middle East tensions and improved risk sentiment."
         }
       ]
     }

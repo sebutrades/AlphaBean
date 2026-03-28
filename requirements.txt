@@ -21,3 +21,7 @@ requests
 feedparser 
 yfinance
 beautifulsoup4
+
+#machine learning
+xgboost
+scikit-learn

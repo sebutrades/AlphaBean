@@ -1,4 +1,286 @@
 {
-  "cached_at": 1774628812.2846122,
-  "items": []
+  "cached_at": 1774635876.628394,
+  "items": [
+    {
+      "title": "Vanguard (VONG) vs. iShares (IWO): Which Growth Stock ETF Is Best for Investors?",
+      "description": "This article compares two growth-focused ETFs: Vanguard's VONG, which concentrates on large-cap tech stocks with a 0.06% expense ratio, and iShares' IWO, which offers broader small-cap growth exposure with a 0.24% fee. VONG has outperformed with 16% annualized returns since 2010 due to heavy Magnificent Seven weighting, while IWO delivered 11% annualized returns with higher volatility. The choice depends on existing portfolio composition and diversification needs.",
+      "published_utc": "2026-03-27T16:02:51Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/coverage/etfs/2026/03/27/vanguard-vong-vs-ishares-iwo-which-growth-stock-etf-is-best-for-investors/?source=iedfolrf0000001",
+      "tickers": [
+        "NVDA",
+        "AAPL",
+        "MSFT"
+      ],
+      "keywords": [
+        "growth ETF",
+        "large-cap vs small-cap",
+        "expense ratio",
+        "portfolio diversification",
+        "technology stocks",
+        "Magnificent Seven",
+        "volatility",
+        "performance comparison"
+      ],
+      "author": "Josh Kohn-Lindquist",
+      "insights": [
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "reasoning": "Nvidia is highlighted as a top-10 holding in VONG and a key component of the Magnificent Seven, contributing significantly to the ETF's strong performance."
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "positive",
+          "reasoning": "Apple is mentioned as a substantial holding in VONG and part of the Magnificent Seven, driving the ETF's outperformance."
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "positive",
+          "reasoning": "Microsoft is identified as a major position in VONG and a Magnificent Seven constituent contributing to strong returns."
+        }
+      ]
+    },
+    {
+      "title": "Choosing an ETF for Tech Stock Exposure: Fidelity's FTEC vs. iShares' IYW",
+      "description": "Fidelity's FTEC and iShares' IYW both offer U.S. technology exposure but differ significantly in cost, diversification, and sector definition. FTEC charges a lower expense ratio (0.08% vs 0.38%), holds nearly twice as many companies (294 vs 139), and offers higher dividend yield, making it ideal for cost-conscious investors. IYW takes a broader approach to tech classification, including communication services stocks like Alphabet, and concentrates more heavily in mega-cap names. Both delivered similar one-year returns (~24%), though FTEC showed less volatility over five years.",
+      "published_utc": "2026-03-27T14:18:06Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/coverage/etfs/2026/03/27/choosing-an-etf-for-tech-stock-exposure-fidelity-s-ftec-vs-ishares-iyw/?source=iedfolrf0000001",
+      "tickers": [
+        "FTEC",
+        "IYW",
+        "NVDA",
+        "AAPL",
+        "MSFT",
+        "GOOG",
+        "GOOGL"
+      ],
+      "keywords": [
+        "tech ETF comparison",
+        "expense ratio",
+        "diversification",
+        "dividend yield",
+        "technology sector",
+        "mega-cap stocks",
+        "index funds"
+      ],
+      "author": "Robert Izquierdo",
+      "insights": [
+        {
+          "ticker": "FTEC",
+          "sentiment": "positive",
+          "reasoning": "Highlighted for significantly lower expense ratio (0.08%), broader diversification with 294 holdings, higher dividend yield (0.4%), lower maximum drawdown over 5 years (34.95%), and comparable returns to competitor, making it attractive for cost-conscious investors."
+        },
+        {
+          "ticker": "IYW",
+          "sentiment": "neutral",
+          "reasoning": "Presented as a viable alternative with broader sector definition that includes communication services (Alphabet), appealing to investors seeking exposure to mega-cap tech names, but disadvantaged by higher expense ratio (0.38%), fewer holdings (139), and greater concentration risk."
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as a top holding in both ETFs (18.25% in FTEC, leading position in IYW), indicating significant exposure to this mega-cap tech company in both funds."
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "reasoning": "Listed as a major holding in both ETFs (15.41% in FTEC, top 3 in IYW), representing substantial exposure to this mega-cap technology company."
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "neutral",
+          "reasoning": "Noted as a significant holding in FTEC (10.07%), representing meaningful exposure to this major technology company."
+        },
+        {
+          "ticker": "GOOG",
+          "sentiment": "neutral",
+          "reasoning": "Included in IYW's top holdings but excluded from FTEC due to different sector classification definitions, illustrating the key structural difference between the two ETFs."
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "neutral",
+          "reasoning": "Included in IYW's top holdings but excluded from FTEC due to different sector classification definitions, illustrating the key structural difference between the two ETFs."
+        }
+      ]
+    },
+    {
+      "title": "Is This AI Stock a Better Bargain Than the Magnificent Seven?",
+      "description": "Recent market corrections have made both the Magnificent Seven tech stocks and other AI players cheaper. Micron Technology, an AI memory solutions provider, is presented as a potentially better bargain than the Magnificent Seven (Alphabet, Amazon, Apple, Meta, Microsoft, Nvidia, Tesla) due to strong earnings growth driven by AI demand for memory chips, though the article notes Nvidia may still be preferable for some investors.",
+      "published_utc": "2026-03-27T08:10:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/27/is-this-ai-stock-a-better-bargain-than-the-magnifi/?source=iedfolrf0000001",
+      "tickers": [
+        "MU",
+        "NVDA",
+        "GOOG",
+        "GOOGL",
+        "AMZN",
+        "AAPL",
+        "META",
+        "MSFT",
+        "TSLA"
+      ],
+      "keywords": [
+        "AI stocks",
+        "Magnificent Seven",
+        "memory chips",
+        "valuation",
+        "bargain stocks",
+        "earnings growth",
+        "inference",
+        "DRAM",
+        "NAND"
+      ],
+      "author": "Adria Cimino",
+      "insights": [
+        {
+          "ticker": "MU",
+          "sentiment": "positive",
+          "reasoning": "Strong revenue growth (190% YoY), record earnings and margins, explosive demand for AI memory solutions, and potential for continued growth as AI inference workloads expand make it an attractive bargain compared to Magnificent Seven peers."
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "reasoning": "Identified as looking like a bargain after recent market corrections; author notes it may be preferable to Micron for some investors, indicating confidence in its AI leadership position."
+        },
+        {
+          "ticker": "GOOG",
+          "sentiment": "positive",
+          "reasoning": "Listed as a Magnificent Seven member with leadership in internet search and AI; valuations have become more attractive after recent market declines."
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "positive",
+          "reasoning": "Listed as a Magnificent Seven member with leadership in internet search and AI; valuations have become more attractive after recent market declines."
+        },
+        {
+          "ticker": "AMZN",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as a Magnificent Seven member with lower valuations after recent corrections, but no specific positive or negative analysis provided."
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "reasoning": "Included in Magnificent Seven but no specific analysis or AI-related commentary provided in the article."
+        },
+        {
+          "ticker": "META",
+          "sentiment": "neutral",
+          "reasoning": "Part of Magnificent Seven with reduced valuations, but no detailed analysis or specific investment thesis presented."
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as Magnificent Seven member with lower valuations after market corrections, but lacks specific analysis or AI-focused commentary."
+        },
+        {
+          "ticker": "TSLA",
+          "sentiment": "neutral",
+          "reasoning": "Listed as Magnificent Seven member but has no AI-related connection or specific analysis in the article."
+        }
+      ]
+    },
+    {
+      "title": "IWO vs. VOOG: How Small-Cap Diversification Compares to Large-Cap Growth",
+      "description": "The iShares Russell 2000 Growth ETF (IWO) and Vanguard S&P 500 Growth ETF (VOOG) offer different approaches to growth investing. VOOG focuses on large-cap tech stocks with lower fees and better 5-year returns, while IWO provides broader small-cap diversification with less tech concentration but higher volatility and expense ratios. VOOG's top holdings (Nvidia, Microsoft, Apple) dominate its portfolio, whereas IWO spreads risk across 1,100+ companies.",
+      "published_utc": "2026-03-27T01:10:11Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/coverage/etfs/2026/03/26/iwo-vs-voog-how-small-cap-diversification-compares-to-large-cap-growth/?source=iedfolrf0000001",
+      "tickers": [
+        "IWO",
+        "VOOG",
+        "NVDA",
+        "MSFT",
+        "AAPL"
+      ],
+      "keywords": [
+        "growth ETFs",
+        "small-cap vs large-cap",
+        "expense ratios",
+        "diversification",
+        "tech sector exposure",
+        "volatility",
+        "portfolio concentration"
+      ],
+      "author": "Katie Brockman",
+      "insights": [
+        {
+          "ticker": "IWO",
+          "sentiment": "neutral",
+          "reasoning": "IWO offers extensive diversification across 1,100+ holdings with lower tech concentration (22%), making it suitable for risk-averse investors. However, it carries a higher expense ratio (0.24%), experienced steeper drawdowns (-42.02% over 5 years), and underperformed VOOG over the long term, limiting its appeal for growth-focused investors."
+        },
+        {
+          "ticker": "VOOG",
+          "sentiment": "positive",
+          "reasoning": "VOOG demonstrates superior long-term performance with lower fees (0.07% expense ratio), better 5-year cumulative growth ($1,880 vs $1,127), and less volatility (beta 1.12 vs 1.45). Its concentrated exposure to mega-cap tech leaders like Nvidia, Microsoft, and Apple has driven strong returns, though this concentration poses future risk."
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "reasoning": "Nvidia is highlighted as a top holding in VOOG that has delivered explosive returns, contributing significantly to VOOG's outperformance over the past five years."
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "positive",
+          "reasoning": "Microsoft is identified as a major VOOG holding that has contributed to the fund's strong performance and above-average returns."
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "positive",
+          "reasoning": "Apple is noted as a significant VOOG holding that collectively with Nvidia and Microsoft makes up over 30% of assets, driving VOOG's outperformance."
+        }
+      ]
+    },
+    {
+      "title": "IWO vs. VUG: One Offers Broad Growth Exposure While the Other Has Lower Fees",
+      "description": "Vanguard Growth ETF (VUG) and iShares Russell 2000 Growth ETF (IWO) offer different approaches to U.S. growth investing. VUG focuses on mega-cap tech stocks with superior long-term performance ($1,000 invested 5 years ago worth $1,756) and ultra-low fees (0.03%), while IWO provides small-cap diversification across 1,100+ stocks with higher fees (0.24%) but broader sector exposure. VUG delivered 13.3% 1-year returns versus IWO's 17.2%, though IWO experienced deeper drawdowns.",
+      "published_utc": "2026-03-27T00:05:33Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/coverage/etfs/2026/03/26/iwo-vs-vug-one-offers-broad-growth-exposure-while-the-other-has-lower-fees/?source=iedfolrf0000001",
+      "tickers": [
+        "VUG",
+        "IWO",
+        "NVDA",
+        "AAPL",
+        "MSFT"
+      ],
+      "keywords": [
+        "growth ETFs",
+        "large-cap vs small-cap",
+        "expense ratios",
+        "diversification",
+        "tech stocks",
+        "investment comparison"
+      ],
+      "author": "Jake Lerch",
+      "insights": [
+        {
+          "ticker": "VUG",
+          "sentiment": "positive",
+          "reasoning": "VUG is presented favorably with superior 5-year performance ($1,756 vs $1,077), rock-bottom expense ratio of 0.03%, and strong long-term returns. The article highlights it as the better choice for cost-conscious investors seeking proven performance."
+        },
+        {
+          "ticker": "IWO",
+          "sentiment": "neutral",
+          "reasoning": "IWO is presented as a viable alternative with merits and drawbacks. While it offers superior 1-year returns (17.2%) and broader diversification across 1,100+ stocks, it has higher fees (0.24%) and deeper maximum drawdowns (-40.51%). The article suggests it appeals to diversification-focused investors despite underperformance."
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "neutral",
+          "reasoning": "NVIDIA is mentioned as a top holding in VUG (4.14% weight), representing the mega-cap tech concentration in the fund. No performance judgment is made about the stock itself."
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "reasoning": "Apple is mentioned as a top holding in VUG, contributing to the fund's tech-heavy concentration. It is presented factually without sentiment."
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "neutral",
+          "reasoning": "Microsoft is listed as a top VUG holding (1.40% weight), illustrating the mega-cap tech dominance in the fund. Mentioned neutrally without performance judgment."
+        }
+      ]
+    }
+  ]
 }

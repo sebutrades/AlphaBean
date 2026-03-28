@@ -1,6 +1,205 @@
 {
-  "cached_at": 1774628816.301067,
+  "cached_at": 1774635881.865142,
   "items": [
+    {
+      "title": "3 AI Stocks to Buy Before the Next Leg Up",
+      "description": "The article recommends three AI stocks positioned for gains when market conflicts resolve and investors shift to aggressive sectors. Microsoft's stock is valued near decade lows despite strong Azure revenue growth of 39% YoY. Alphabet has emerged as an AI leader with its TPU custom chips offering lower-cost alternatives to GPUs. Broadcom, which partnered with Alphabet on TPU design, expects its custom AI chip division to generate over $100 billion in sales by 2027, up from $8.4 billion currently.",
+      "published_utc": "2026-03-27T16:15:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/27/3-ai-stocks-to-buy-before-the-next-leg-up/?source=iedfolrf0000001",
+      "tickers": [
+        "MSFT",
+        "GOOG",
+        "GOOGL",
+        "AVGO"
+      ],
+      "keywords": [
+        "AI stocks",
+        "artificial intelligence",
+        "cloud computing",
+        "custom AI chips",
+        "market rebound",
+        "capital expenditures",
+        "generative AI"
+      ],
+      "author": "Keithen Drury",
+      "insights": [
+        {
+          "ticker": "MSFT",
+          "sentiment": "positive",
+          "reasoning": "Stock trading near decade lows despite strong fundamentals; Azure revenue growing 39% YoY demonstrates strong ROI on AI investments; positioned as outsized winner in next market leg up"
+        },
+        {
+          "ticker": "GOOG",
+          "sentiment": "positive",
+          "reasoning": "Emerged as AI leader with successful generative AI tools; custom TPU chips offer lower-cost inference/training than GPUs; stock down 15% from all-time highs presenting buying opportunity; dual advantage of cloud services and proprietary AI tools"
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "positive",
+          "reasoning": "Emerged as AI leader with successful generative AI tools; custom TPU chips offer lower-cost inference/training than GPUs; stock down 15% from all-time highs presenting buying opportunity; dual advantage of cloud services and proprietary AI tools"
+        },
+        {
+          "ticker": "AVGO",
+          "sentiment": "positive",
+          "reasoning": "Expects custom AI chip division to reach $100 billion in sales by 2027 from current $8.4 billion; Wall Street projects 64% revenue growth this year and 49% next year; immense upside potential from custom chip business"
+        }
+      ]
+    },
+    {
+      "title": "Vanguard (VONG) vs. iShares (IWO): Which Growth Stock ETF Is Best for Investors?",
+      "description": "This article compares two growth-focused ETFs: Vanguard's VONG, which concentrates on large-cap tech stocks with a 0.06% expense ratio, and iShares' IWO, which offers broader small-cap growth exposure with a 0.24% fee. VONG has outperformed with 16% annualized returns since 2010 due to heavy Magnificent Seven weighting, while IWO delivered 11% annualized returns with higher volatility. The choice depends on existing portfolio composition and diversification needs.",
+      "published_utc": "2026-03-27T16:02:51Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/coverage/etfs/2026/03/27/vanguard-vong-vs-ishares-iwo-which-growth-stock-etf-is-best-for-investors/?source=iedfolrf0000001",
+      "tickers": [
+        "NVDA",
+        "AAPL",
+        "MSFT"
+      ],
+      "keywords": [
+        "growth ETF",
+        "large-cap vs small-cap",
+        "expense ratio",
+        "portfolio diversification",
+        "technology stocks",
+        "Magnificent Seven",
+        "volatility",
+        "performance comparison"
+      ],
+      "author": "Josh Kohn-Lindquist",
+      "insights": [
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "reasoning": "Nvidia is highlighted as a top-10 holding in VONG and a key component of the Magnificent Seven, contributing significantly to the ETF's strong performance."
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "positive",
+          "reasoning": "Apple is mentioned as a substantial holding in VONG and part of the Magnificent Seven, driving the ETF's outperformance."
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "positive",
+          "reasoning": "Microsoft is identified as a major position in VONG and a Magnificent Seven constituent contributing to strong returns."
+        }
+      ]
+    },
+    {
+      "title": "1 Low-Cost ETF That Could Outperform Actively Managed Funds This Year",
+      "description": "The Vanguard S&P 500 ETF (VOO) is highlighted as a low-cost investment option with a 0.03% expense ratio that could outperform actively managed funds in 2026. The article argues that over 80% of actively managed funds fail to beat their benchmarks over 10 years due to higher fees and unpredictability, making simple index investing a smarter strategy during uncertain market conditions.",
+      "published_utc": "2026-03-27T14:30:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/03/27/1-low-cost-etf-that-could-outperform-actively-mana/?source=iedfolrf0000001",
+      "tickers": [
+        "VOO",
+        "GOOG",
+        "GOOGL",
+        "META",
+        "MSFT"
+      ],
+      "keywords": [
+        "ETF",
+        "S&P 500",
+        "index investing",
+        "actively managed funds",
+        "low-cost investing",
+        "expense ratio",
+        "market volatility"
+      ],
+      "author": "Justin Pope",
+      "insights": [
+        {
+          "ticker": "VOO",
+          "sentiment": "positive",
+          "reasoning": "Recommended as a superior investment choice due to extremely low fees (0.03%), broad diversification across 500 companies, and historical outperformance of actively managed funds. Positioned as a defensive strategy during market chaos."
+        },
+        {
+          "ticker": "GOOG",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as part of the 'Magnificent Seven' megacap tech stocks that comprise about one-third of the S&P 500 and have declined significantly from highs, creating uncertainty for active fund managers."
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as part of the 'Magnificent Seven' megacap tech stocks that comprise about one-third of the S&P 500 and have declined significantly from highs, creating uncertainty for active fund managers."
+        },
+        {
+          "ticker": "META",
+          "sentiment": "neutral",
+          "reasoning": "Included in the 'Magnificent Seven' megacap tech companies experiencing significant declines, contributing to market uncertainty and challenges for active fund managers."
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "neutral",
+          "reasoning": "Part of the 'Magnificent Seven' tech stocks that are down significantly from highs, reflecting broader tech sector volatility and market unpredictability."
+        }
+      ]
+    },
+    {
+      "title": "Choosing an ETF for Tech Stock Exposure: Fidelity's FTEC vs. iShares' IYW",
+      "description": "Fidelity's FTEC and iShares' IYW both offer U.S. technology exposure but differ significantly in cost, diversification, and sector definition. FTEC charges a lower expense ratio (0.08% vs 0.38%), holds nearly twice as many companies (294 vs 139), and offers higher dividend yield, making it ideal for cost-conscious investors. IYW takes a broader approach to tech classification, including communication services stocks like Alphabet, and concentrates more heavily in mega-cap names. Both delivered similar one-year returns (~24%), though FTEC showed less volatility over five years.",
+      "published_utc": "2026-03-27T14:18:06Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/coverage/etfs/2026/03/27/choosing-an-etf-for-tech-stock-exposure-fidelity-s-ftec-vs-ishares-iyw/?source=iedfolrf0000001",
+      "tickers": [
+        "FTEC",
+        "IYW",
+        "NVDA",
+        "AAPL",
+        "MSFT",
+        "GOOG",
+        "GOOGL"
+      ],
+      "keywords": [
+        "tech ETF comparison",
+        "expense ratio",
+        "diversification",
+        "dividend yield",
+        "technology sector",
+        "mega-cap stocks",
+        "index funds"
+      ],
+      "author": "Robert Izquierdo",
+      "insights": [
+        {
+          "ticker": "FTEC",
+          "sentiment": "positive",
+          "reasoning": "Highlighted for significantly lower expense ratio (0.08%), broader diversification with 294 holdings, higher dividend yield (0.4%), lower maximum drawdown over 5 years (34.95%), and comparable returns to competitor, making it attractive for cost-conscious investors."
+        },
+        {
+          "ticker": "IYW",
+          "sentiment": "neutral",
+          "reasoning": "Presented as a viable alternative with broader sector definition that includes communication services (Alphabet), appealing to investors seeking exposure to mega-cap tech names, but disadvantaged by higher expense ratio (0.38%), fewer holdings (139), and greater concentration risk."
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as a top holding in both ETFs (18.25% in FTEC, leading position in IYW), indicating significant exposure to this mega-cap tech company in both funds."
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "reasoning": "Listed as a major holding in both ETFs (15.41% in FTEC, top 3 in IYW), representing substantial exposure to this mega-cap technology company."
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "neutral",
+          "reasoning": "Noted as a significant holding in FTEC (10.07%), representing meaningful exposure to this major technology company."
+        },
+        {
+          "ticker": "GOOG",
+          "sentiment": "neutral",
+          "reasoning": "Included in IYW's top holdings but excluded from FTEC due to different sector classification definitions, illustrating the key structural difference between the two ETFs."
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "neutral",
+          "reasoning": "Included in IYW's top holdings but excluded from FTEC due to different sector classification definitions, illustrating the key structural difference between the two ETFs."
+        }
+      ]
+    },
     {
       "title": "Crusoe Announces New 900 MW AI Factory Campus in Abilene, Texas to Support Microsoft AI Infrastructure",
       "description": "Crusoe announced a new 900 MW AI factory campus in Abilene, Texas dedicated to supporting Microsoft's AI workloads. Combined with existing infrastructure, the full Abilene site will reach 2.1 GW capacity. The new campus features two buildings and an onsite power plant, with the first building expected to be energized in mid-2027. The project is expected to create thousands of jobs and significantly increase tax contributions to the Abilene community.",
@@ -26,51 +225,6 @@
           "ticker": "MSFT",
           "sentiment": "positive",
           "reasoning": "Microsoft is securing large-scale, reliable AI infrastructure to support growing customer demand for AI services. The partnership with Crusoe demonstrates Microsoft's commitment to building responsible, scalable infrastructure for next-generation AI workloads."
-        }
-      ]
-    },
-    {
-      "title": "Have Tech Stocks Finally Run Out of Road? Here's What the Data Actually Says.",
-      "description": "Tech stocks have pulled back from frothy valuations but remain priced for significant AI-driven earnings growth in 2026. While the sector's forward P/E of ~24x is reasonable historically, most popular AI stocks have no margin for error. Selective picking is essential, as disappointing earnings could trigger broader sector selloffs, though reasonably-priced non-AI tech stocks exist.",
-      "published_utc": "2026-03-27T10:16:00Z",
-      "source": "The Motley Fool",
-      "article_url": "https://www.fool.com/investing/2026/03/27/have-tech-stocks-finally-run-out-of-road-data-says/?source=iedfolrf0000001",
-      "tickers": [
-        "NVDA",
-        "MSFT",
-        "AVGO",
-        "AMZN"
-      ],
-      "keywords": [
-        "tech stocks",
-        "AI earnings growth",
-        "valuation",
-        "price-to-earnings ratio",
-        "artificial intelligence",
-        "market pullback",
-        "investment risk"
-      ],
-      "author": "James Brumley",
-      "insights": [
-        {
-          "ticker": "NVDA",
-          "sentiment": "positive",
-          "reasoning": "Trading at forward P/E of less than 16x, described as 'a relative bargain' with strong growth expectations justifying current valuations despite high absolute price multiples."
-        },
-        {
-          "ticker": "MSFT",
-          "sentiment": "positive",
-          "reasoning": "Valued at less than 20x forward earnings, characterized as 'arguably cheap' with solid projected earnings growth supporting current price levels."
-        },
-        {
-          "ticker": "AVGO",
-          "sentiment": "positive",
-          "reasoning": "Trading at ~18x forward earnings with expected 50%+ profit growth, representing reasonable valuation given strong revenue growth prospects."
-        },
-        {
-          "ticker": "AMZN",
-          "sentiment": "neutral",
-          "reasoning": "Trading at 30x trailing earnings, which is elevated but not explicitly criticized; mentioned as part of cap-weighted index concentration risk."
         }
       ]
     }

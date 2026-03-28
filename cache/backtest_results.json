@@ -1,508 +1,508 @@
 {
   "version": "3.4",
-  "run_date": "2026-03-26T15:20:03.894436",
+  "run_date": "2026-03-27T18:34:11.239354",
   "config": {
     "symbols": [
-      "TT",
-      "CNQ",
-      "SNDK",
-      "LQD",
-      "OVV",
-      "NEE",
-      "CDNS",
-      "DUK",
-      "AMP",
-      "DHI",
-      "TLT",
-      "PH",
-      "KRE",
-      "EQIX",
-      "PSA",
-      "TRGP",
-      "CRWV",
-      "XLK",
-      "CSX",
-      "ACWI",
-      "SCHD",
-      "MRNA",
-      "YUM",
-      "PSQ",
-      "OKLO",
-      "EFX",
-      "UPRO",
-      "UNH",
-      "SOFI",
-      "HWM",
-      "SLV",
-      "MCHP",
-      "BNO",
-      "MRVL",
-      "AAL",
-      "EMB",
-      "TSEM",
-      "INTC",
-      "O",
-      "NOC",
-      "EIX",
-      "XLY",
-      "GDX",
-      "XLI",
-      "ABT",
-      "GPGI",
-      "MELI",
-      "B",
-      "RSP",
-      "HLT",
-      "LITE",
-      "OEF",
-      "KVUE",
-      "SO",
-      "CTVA",
-      "XLV",
-      "AFL",
-      "VCSH",
-      "GE",
-      "PSX",
-      "MTB",
-      "XLRE",
-      "IWM",
-      "QCOM",
-      "PAYC",
-      "META",
-      "USFD",
-      "EOG",
-      "TQQQ",
-      "VALE",
-      "XEL",
-      "APP",
-      "MNST",
-      "SN",
-      "CRM",
-      "AWK",
-      "TMUS",
-      "PG",
-      "IEF",
-      "VGLT",
-      "MUB",
-      "KWEB",
-      "GLDM",
-      "ITOT",
-      "XBI",
       "EMXC",
-      "ALNY",
-      "BBY",
-      "VXUS",
-      "LUV",
-      "TDG",
-      "VRT",
-      "AGNC",
-      "TXN",
-      "C",
-      "VT",
-      "BE",
-      "FTNT",
-      "UPS",
-      "ETN",
-      "MA",
-      "GEN",
-      "IT",
-      "NLY",
-      "AXTI",
-      "SATS",
-      "GTLS",
-      "UAL",
-      "HAL",
-      "UVIX",
-      "ROP",
-      "BSX",
-      "CTSH",
-      "FIX",
-      "DT",
-      "MDLN",
-      "LIN",
-      "FANG",
-      "ICE",
-      "BITO",
-      "RF",
-      "BLK",
-      "VEEV",
-      "MTZ",
-      "CVX",
-      "XRT",
-      "AMZN",
-      "CF",
-      "INDA",
-      "MCD",
-      "TEL",
-      "FN",
-      "IVV",
-      "SITM",
-      "UNM",
-      "ECL",
-      "AAOI",
-      "MRSH",
-      "SOXL",
-      "STX",
-      "DIA",
-      "APD",
-      "EA",
-      "LYV",
-      "OKE",
-      "WDAY",
-      "EFV",
-      "AGG",
-      "OXY",
-      "AXP",
-      "ZS",
-      "TGT",
-      "TJX",
-      "KMI",
-      "NVDL",
-      "GOOG",
-      "WMB",
-      "TTWO",
-      "LHX",
-      "IEX",
-      "ANET",
-      "SGOV",
-      "TNA",
-      "TZA",
-      "RWM",
-      "SRE",
-      "HII",
-      "WELL",
-      "EXAS",
-      "MTCH",
-      "RDDT",
-      "FAST",
-      "LMT",
-      "DASH",
-      "VGK",
-      "ALAB",
-      "ADP",
-      "RITM",
-      "HCA",
-      "SHEL",
-      "SEDG",
-      "WSM",
-      "IBIT",
-      "SOXX",
-      "BA",
-      "PEG",
-      "TTD",
-      "PAYX",
-      "WDC",
-      "CRH",
-      "MO",
-      "ROST",
-      "NVO",
-      "CIEN",
-      "ROIV",
-      "VTI",
-      "CTAS",
-      "VST",
-      "GEV",
-      "ABBV",
-      "WAT",
-      "EWBC",
-      "SBUX",
-      "ACN",
-      "MDY",
-      "TSM",
-      "KMB",
-      "DELL",
-      "ARM",
-      "ON",
-      "PYPL",
-      "NRG",
-      "SMCI",
-      "SPG",
-      "NVDA",
-      "KTOS",
-      "ASML",
-      "ODFL",
-      "NVD",
-      "DXCM",
-      "CEG",
-      "DE",
-      "MLM",
-      "RCL",
-      "Q",
-      "ADI",
-      "BAH",
-      "NEM",
-      "VLO",
-      "NDAQ",
-      "VG",
-      "XOM",
-      "AMAT",
-      "VTWO",
-      "AJG",
-      "PAAS",
-      "SPYM",
-      "MSFT",
-      "EFA",
-      "ALL",
-      "OMC",
-      "MSCI",
-      "VCIT",
-      "JNJ",
-      "APA",
-      "ARKK",
-      "SPXS",
-      "COIN",
-      "EWJ",
-      "VEA",
-      "ARES",
-      "VLTO",
-      "PDD",
-      "USO",
-      "XLB",
-      "EQT",
-      "CI",
-      "EXC",
-      "OTIS",
-      "VCLT",
       "NXPI",
-      "NBIS",
-      "CTRA",
-      "HPQ",
-      "RGLD",
-      "WRB",
-      "CL",
-      "IWD",
-      "GDXJ",
-      "SUNB",
-      "KEY",
-      "SPYG",
-      "NKE",
-      "VRTX",
-      "ISRG",
-      "USB",
-      "BDX",
-      "CDE",
-      "PFE",
-      "AGQ",
-      "EWY",
-      "MCO",
-      "SQQQ",
-      "CFG",
-      "IDCC",
-      "KEYS",
-      "PEP",
-      "COF",
-      "GILD",
-      "DAL",
-      "SMH",
-      "XLP",
-      "IWB",
-      "CRWD",
-      "MKC",
-      "ULTA",
-      "CAT",
-      "AMGN",
-      "MPC",
-      "RKLB",
-      "NTAP",
-      "KO",
-      "DIS",
-      "HBAN",
-      "WSO",
-      "CTRE",
-      "BIL",
-      "GM",
-      "IWF",
-      "CRDO",
-      "OKTA",
-      "IEFA",
-      "BND",
-      "ORCL",
-      "BMY",
-      "HL",
-      "SCHF",
-      "JBL",
-      "TSLL",
-      "SYK",
-      "CLX",
-      "VNQ",
-      "MDT",
-      "ASTS",
-      "LPLA",
-      "XLF",
-      "GOOGL",
-      "SPY",
-      "GS",
-      "FITB",
-      "IBM",
-      "IJH",
-      "COP",
-      "ANNA",
-      "LYFT",
-      "MOS",
-      "CMI",
-      "IEI",
-      "DVN",
-      "VZ",
-      "CMCSA",
-      "JNK",
-      "ADBE",
-      "PM",
-      "ELV",
-      "BABA",
-      "SCHG",
-      "LRCX",
-      "SNPS",
-      "AON",
-      "INSM",
-      "ETHA",
-      "AAPL",
-      "EXPE",
-      "QQQM",
-      "IQV",
-      "AEP",
-      "CVNA",
-      "WPM",
-      "CRCL",
-      "USHY",
-      "AMT",
-      "CSCO",
-      "VMC",
-      "FFIV",
-      "CB",
-      "HIMS",
-      "FXI",
-      "PLD",
-      "WMT",
-      "HOOD",
-      "VUG",
-      "BKLN",
-      "LYB",
-      "DDOG",
-      "INFY",
-      "HYG",
-      "MDLZ",
-      "PL",
-      "PFG",
-      "CCJ",
-      "FDX",
-      "APH",
-      "UNP",
-      "TLN",
-      "COST",
-      "GIS",
-      "EXE",
-      "KLAC",
-      "EEM",
-      "SYF",
-      "SLB",
-      "VSEC",
-      "WBD",
-      "FICO",
       "BP",
-      "CAH",
-      "TMO",
-      "ZTS",
-      "V",
-      "SPXL",
-      "IONQ",
-      "MS",
-      "REGN",
-      "RIVN",
-      "PKG",
-      "SHY",
-      "FTAI",
-      "JPM",
-      "CSGP",
-      "VXX",
-      "VOO",
-      "VWO",
-      "DG",
-      "IREN",
-      "FCX",
-      "TRV",
-      "BAC",
-      "HD",
+      "UNP",
       "SHV",
-      "NFLX",
-      "FTI",
-      "EWZ",
-      "ABNB",
-      "AEM",
-      "PCG",
-      "XLC",
-      "QID",
-      "GLD",
-      "SCHX",
-      "SOLS",
-      "GD",
-      "ONDS",
-      "CME",
-      "XOP",
-      "T",
-      "APO",
-      "ORLY",
-      "APTV",
-      "AMD",
-      "MCK",
-      "JCI",
-      "MRK",
-      "SNA",
-      "AVGO",
-      "ADM",
-      "SHOP",
-      "SPGI",
-      "F",
-      "EME",
-      "AGX",
-      "HUM",
-      "SPOT",
-      "RBLX",
-      "NET",
-      "WFC",
+      "LQD",
+      "NVD",
+      "STX",
+      "RF",
+      "APA",
+      "UPRO",
+      "TT",
+      "BX",
+      "TNA",
+      "CVX",
       "XYZ",
       "ATO",
-      "BG",
-      "ADSK",
-      "AKAM",
-      "EBAY",
-      "WM",
-      "SH",
-      "LEN",
-      "CVS",
-      "MMM",
-      "BX",
-      "SOXS",
-      "LLY",
-      "BK",
-      "LIF",
-      "CINF",
-      "TFC",
-      "HSY",
-      "CVE",
-      "QQQ",
-      "LDOS",
-      "CCL",
-      "IEMG",
-      "SPDN",
-      "UCO",
-      "CMG",
-      "DRI",
-      "IGV",
-      "UL",
-      "SAP",
-      "LTH",
-      "TPL",
-      "PNC",
-      "VTV",
-      "MSI",
+      "SOXX",
+      "VXUS",
+      "CFG",
+      "MDT",
+      "XLV",
+      "UNM",
+      "CTRA",
+      "CEG",
+      "GOOGL",
+      "JNJ",
+      "CIEN",
+      "ANNA",
+      "ONDS",
       "RTX",
+      "BBY",
+      "MMM",
+      "NLY",
+      "INSM",
+      "SAP",
+      "RSP",
+      "APD",
+      "INTC",
+      "MDLN",
+      "DVN",
+      "ETHA",
+      "LITE",
+      "FXI",
+      "AGNC",
+      "EME",
+      "SLB",
+      "C",
+      "ELV",
+      "FICO",
+      "HLT",
+      "WELL",
+      "EA",
+      "PLD",
+      "FIX",
+      "RITM",
+      "PEP",
+      "ADSK",
+      "PEG",
+      "VWO",
+      "BITO",
+      "TEL",
+      "NDAQ",
+      "SEDG",
+      "JNK",
+      "BAH",
+      "EFX",
+      "WMB",
+      "USB",
+      "GDX",
+      "USHY",
+      "CMG",
+      "MNST",
+      "MCD",
       "TSLA",
-      "XLE",
-      "JHG",
-      "MOH",
+      "AXP",
+      "SOXS",
+      "MRNA",
+      "SNPS",
+      "TGT",
+      "SPDN",
+      "OEF",
+      "BK",
+      "TPL",
+      "SH",
+      "VTI",
+      "ITOT",
+      "FN",
+      "AXTI",
+      "AGX",
+      "SPOT",
+      "VRT",
+      "VLO",
+      "EFV",
+      "OKLO",
       "LNG",
+      "MS",
+      "CDE",
+      "LTH",
+      "AJG",
+      "NVO",
+      "VCIT",
+      "TRGP",
+      "IGV",
+      "CRWV",
+      "VEEV",
+      "SN",
+      "KEY",
+      "LEN",
+      "EWJ",
+      "CF",
+      "OVV",
+      "XLRE",
+      "HOOD",
+      "HII",
+      "CAH",
+      "EWBC",
+      "YUM",
+      "AGG",
+      "LYFT",
+      "IT",
+      "SHEL",
+      "SMH",
+      "SITM",
+      "SCHX",
+      "PCG",
+      "OKTA",
+      "MCHP",
+      "IWM",
+      "ANET",
+      "EQIX",
+      "WDAY",
+      "MA",
+      "LYB",
+      "XLE",
+      "APP",
+      "COP",
+      "DIS",
+      "AMP",
+      "EFA",
+      "ASTS",
+      "MTB",
+      "IEX",
+      "GOOG",
+      "SPGI",
+      "TLT",
+      "AMT",
+      "WDC",
+      "CNQ",
+      "SBUX",
+      "IBM",
+      "HSY",
+      "FANG",
+      "SPXL",
+      "SPYG",
+      "SNDK",
+      "NRG",
+      "VXX",
+      "NVDA",
+      "IEF",
+      "SPYM",
+      "DAL",
+      "XLP",
+      "ABT",
+      "PL",
+      "MUB",
+      "AON",
+      "EXAS",
+      "CL",
+      "CDNS",
+      "GEN",
+      "EWY",
+      "MO",
+      "AAL",
+      "UAL",
+      "CTSH",
+      "EXC",
+      "DRI",
+      "SATS",
+      "ALNY",
+      "PM",
+      "RIVN",
+      "XLB",
+      "RCL",
+      "BABA",
+      "TXN",
+      "TMO",
+      "DHI",
+      "KEYS",
+      "USO",
+      "QQQM",
+      "IEI",
+      "MOS",
+      "LIF",
+      "CRCL",
+      "SPG",
+      "ROIV",
+      "HCA",
+      "MPC",
+      "HBAN",
+      "GDXJ",
+      "WM",
+      "SLV",
+      "CSX",
+      "APTV",
+      "MRVL",
+      "CCL",
+      "NET",
+      "UL",
+      "MTZ",
+      "VT",
+      "TSLL",
+      "JHG",
+      "LHX",
+      "BND",
+      "IDCC",
+      "ODFL",
+      "NEE",
+      "IWD",
+      "MTCH",
+      "USFD",
+      "PAYC",
+      "XOP",
+      "DE",
+      "IEFA",
+      "UNH",
+      "CME",
+      "ON",
+      "CAT",
+      "IVV",
+      "BMY",
+      "VOO",
+      "IWB",
+      "QID",
+      "IEMG",
+      "PH",
+      "ARES",
+      "GEV",
+      "NOC",
+      "RDDT",
+      "BAC",
+      "META",
+      "TFC",
+      "AAPL",
+      "XLY",
+      "XLF",
+      "DXCM",
+      "QCOM",
+      "CLX",
+      "BKLN",
+      "RBLX",
+      "SQQQ",
+      "AMZN",
+      "GD",
+      "SNA",
+      "APH",
+      "UPS",
+      "OKE",
+      "UCO",
+      "CTVA",
+      "CSCO",
+      "LUV",
+      "SHOP",
+      "MCK",
+      "CCJ",
+      "LIN",
+      "IBIT",
+      "RGLD",
+      "MCO",
+      "DT",
+      "SRE",
+      "NVDL",
+      "SOLS",
+      "BDX",
+      "WSO",
+      "OMC",
+      "AEP",
+      "MSI",
+      "WPM",
+      "VTV",
+      "INFY",
+      "KTOS",
+      "BSX",
+      "AGQ",
+      "REGN",
+      "VTWO",
+      "PSA",
+      "TMUS",
+      "ECL",
+      "NKE",
+      "HON",
+      "ROP",
+      "EOG",
+      "ZTS",
+      "HUM",
+      "CRDO",
+      "CMCSA",
+      "RKLB",
+      "PFE",
+      "TTD",
+      "GPGI",
+      "APO",
+      "MDY",
+      "GLD",
+      "UVIX",
+      "AMD",
+      "CVS",
+      "VZ",
+      "GM",
+      "LMT",
+      "JBL",
+      "NBIS",
+      "CB",
+      "SOFI",
+      "PAAS",
+      "CSGP",
+      "KO",
+      "ALL",
+      "ADM",
+      "CI",
+      "CVE",
+      "PG",
+      "TDG",
+      "FTAI",
+      "GLDM",
+      "VNQ",
+      "SYF",
+      "HPQ",
+      "WSM",
+      "CRWD",
+      "HYG",
+      "VUG",
+      "SCHD",
+      "PSX",
+      "ABBV",
+      "TQQQ",
+      "CMI",
+      "GS",
+      "HAL",
+      "SPY",
+      "TSEM",
+      "MSCI",
+      "BLK",
+      "RWM",
+      "EEM",
+      "KVUE",
+      "INDA",
+      "FITB",
+      "EXE",
+      "DG",
+      "PYPL",
+      "XBI",
+      "LLY",
+      "ACN",
+      "XRT",
+      "AEM",
+      "FAST",
+      "F",
+      "VGK",
+      "PNC",
+      "MKC",
+      "AMGN",
+      "Q",
+      "SOXL",
+      "FFIV",
+      "ZS",
+      "JPM",
+      "IJH",
+      "AAOI",
+      "EQT",
+      "ICE",
+      "PFG",
+      "DUK",
+      "VCLT",
+      "COIN",
+      "WMT",
+      "SGOV",
+      "VMC",
+      "HL",
+      "LPLA",
+      "QQQ",
+      "B",
+      "IQV",
+      "EMB",
+      "SPXS",
+      "AMAT",
+      "PAYX",
+      "VLTO",
+      "V",
+      "ADBE",
+      "CTRE",
+      "VRTX",
+      "SYK",
+      "MRK",
+      "TLN",
+      "ASML",
+      "XLI",
+      "IREN",
+      "BG",
+      "SHY",
+      "ADP",
+      "GTLS",
+      "KWEB",
+      "ALAB",
+      "CRH",
+      "KMB",
+      "ACWI",
+      "TSM",
+      "ISRG",
+      "PKG",
+      "SCHF",
+      "WRB",
+      "SO",
+      "VALE",
+      "FTNT",
+      "XLK",
+      "ARKK",
+      "CVNA",
+      "TTWO",
+      "TRV",
+      "ROST",
+      "ULTA",
+      "TZA",
+      "OTIS",
+      "XOM",
+      "VST",
+      "LRCX",
+      "ETN",
+      "KMI",
+      "VCSH",
+      "DIA",
+      "WFC",
+      "GIS",
+      "SMCI",
+      "NFLX",
+      "DELL",
+      "NTAP",
       "HPE",
-      "HON"
+      "KRE",
+      "LYV",
+      "MSFT",
+      "EWZ",
+      "PDD",
+      "GE",
+      "XLC",
+      "HD",
+      "TJX",
+      "T",
+      "NEM",
+      "SUNB",
+      "IONQ",
+      "JCI",
+      "HWM",
+      "MDLZ",
+      "SCHG",
+      "BA",
+      "VEA",
+      "VSEC",
+      "CINF",
+      "WAT",
+      "ORLY",
+      "FTI",
+      "BIL",
+      "AFL",
+      "COST",
+      "AVGO",
+      "DASH",
+      "LDOS",
+      "MRSH",
+      "VGLT",
+      "BNO",
+      "ORCL",
+      "CRM",
+      "PSQ",
+      "HIMS",
+      "CTAS",
+      "GILD",
+      "KLAC",
+      "EIX",
+      "MOH",
+      "ARM",
+      "FCX",
+      "FDX",
+      "BE",
+      "IWF",
+      "ABNB",
+      "MELI",
+      "O",
+      "DDOG",
+      "OXY",
+      "AKAM",
+      "ADI",
+      "WBD",
+      "EXPE",
+      "XEL",
+      "AWK",
+      "COF",
+      "MLM",
+      "VG",
+      "EBAY"
     ],
     "symbol_count": 500,
     "days_back": 160,
@@ -517,3271 +517,3290 @@
   },
   "summary": {
     "total_symbols": 500,
-    "total_signals": 175795,
-    "total_wins": 30994,
-    "total_partial_wins": 35144,
-    "total_losses": 102730,
-    "total_timeouts": 6927,
-    "overall_win_rate": 37.6,
-    "total_time_seconds": 19263.7,
+    "total_signals": 72798,
+    "total_wins": 14574,
+    "total_partial_wins": 12619,
+    "total_losses": 42308,
+    "total_timeouts": 3297,
+    "overall_win_rate": 37.4,
+    "total_time_seconds": 18104.9,
     "errors": []
   },
   "symbol_stats": {
     "SPY": {
-      "total_signals": 369,
-      "wins": 143,
-      "win_rate": 38.8,
-      "time_seconds": 76.4
+      "total_signals": 135,
+      "wins": 45,
+      "win_rate": 33.3,
+      "time_seconds": 72.0
     },
     "QQQ": {
-      "total_signals": 410,
-      "wins": 166,
-      "win_rate": 40.5,
-      "time_seconds": 97.4
+      "total_signals": 142,
+      "wins": 55,
+      "win_rate": 38.7,
+      "time_seconds": 72.4
     },
     "NVDA": {
-      "total_signals": 441,
-      "wins": 164,
-      "win_rate": 37.2,
-      "time_seconds": 116.2
+      "total_signals": 166,
+      "wins": 63,
+      "win_rate": 38.0,
+      "time_seconds": 80.9
     },
     "TSLA": {
-      "total_signals": 536,
-      "wins": 189,
-      "win_rate": 35.3,
-      "time_seconds": 87.4
+      "total_signals": 198,
+      "wins": 72,
+      "win_rate": 36.4,
+      "time_seconds": 81.4
     },
     "VRT": {
-      "total_signals": 498,
-      "wins": 174,
-      "win_rate": 34.9,
-      "time_seconds": 66.8
+      "total_signals": 262,
+      "wins": 97,
+      "win_rate": 37.0,
+      "time_seconds": 57.0
     },
     "AAPL": {
-      "total_signals": 349,
-      "wins": 128,
-      "win_rate": 36.7,
-      "time_seconds": 79.2
+      "total_signals": 147,
+      "wins": 51,
+      "win_rate": 34.7,
+      "time_seconds": 68.5
     },
     "MSFT": {
-      "total_signals": 359,
-      "wins": 126,
-      "win_rate": 35.1,
-      "time_seconds": 85.6
+      "total_signals": 133,
+      "wins": 52,
+      "win_rate": 39.1,
+      "time_seconds": 72.2
     },
     "IWM": {
-      "total_signals": 403,
-      "wins": 147,
-      "win_rate": 36.5,
-      "time_seconds": 71.4
+      "total_signals": 163,
+      "wins": 65,
+      "win_rate": 39.9,
+      "time_seconds": 70.7
     },
     "SNDK": {
-      "total_signals": 517,
-      "wins": 196,
-      "win_rate": 37.9,
-      "time_seconds": 100.9
+      "total_signals": 281,
+      "wins": 96,
+      "win_rate": 34.2,
+      "time_seconds": 101.5
     },
     "LITE": {
-      "total_signals": 530,
-      "wins": 200,
-      "win_rate": 37.7,
-      "time_seconds": 70.4
+      "total_signals": 263,
+      "wins": 107,
+      "win_rate": 40.7,
+      "time_seconds": 71.4
     },
     "AVGO": {
-      "total_signals": 490,
-      "wins": 173,
-      "win_rate": 35.3,
-      "time_seconds": 82.3
+      "total_signals": 192,
+      "wins": 70,
+      "win_rate": 36.5,
+      "time_seconds": 81.2
     },
     "GOOGL": {
-      "total_signals": 422,
-      "wins": 157,
-      "win_rate": 37.2,
-      "time_seconds": 77.4
+      "total_signals": 167,
+      "wins": 58,
+      "win_rate": 34.7,
+      "time_seconds": 76.4
     },
     "AMZN": {
-      "total_signals": 419,
-      "wins": 144,
-      "win_rate": 34.4,
-      "time_seconds": 75.9
+      "total_signals": 176,
+      "wins": 57,
+      "win_rate": 32.4,
+      "time_seconds": 74.9
     },
     "META": {
-      "total_signals": 370,
-      "wins": 136,
-      "win_rate": 36.8,
-      "time_seconds": 74.6
+      "total_signals": 129,
+      "wins": 47,
+      "win_rate": 36.4,
+      "time_seconds": 73.6
     },
     "GLD": {
-      "total_signals": 430,
-      "wins": 169,
-      "win_rate": 39.3,
-      "time_seconds": 75.2
+      "total_signals": 161,
+      "wins": 61,
+      "win_rate": 37.9,
+      "time_seconds": 73.7
     },
     "UNH": {
-      "total_signals": 437,
-      "wins": 176,
-      "win_rate": 40.3,
-      "time_seconds": 78.7
+      "total_signals": 155,
+      "wins": 66,
+      "win_rate": 42.6,
+      "time_seconds": 65.2
     },
     "VOO": {
-      "total_signals": 343,
-      "wins": 134,
-      "win_rate": 39.1,
-      "time_seconds": 65.9
+      "total_signals": 119,
+      "wins": 48,
+      "win_rate": 40.3,
+      "time_seconds": 64.7
     },
     "GOOG": {
-      "total_signals": 435,
-      "wins": 164,
-      "win_rate": 37.7,
-      "time_seconds": 75.3
+      "total_signals": 167,
+      "wins": 57,
+      "win_rate": 34.1,
+      "time_seconds": 75.0
     },
     "QCOM": {
-      "total_signals": 391,
-      "wins": 147,
-      "win_rate": 37.6,
-      "time_seconds": 46.3
+      "total_signals": 150,
+      "wins": 54,
+      "win_rate": 36.0,
+      "time_seconds": 46.8
     },
     "ACN": {
-      "total_signals": 320,
-      "wins": 108,
-      "win_rate": 33.8,
-      "time_seconds": 26.6
+      "total_signals": 136,
+      "wins": 51,
+      "win_rate": 37.5,
+      "time_seconds": 24.8
     },
     "PG": {
-      "total_signals": 312,
-      "wins": 116,
-      "win_rate": 37.2,
-      "time_seconds": 33.7
+      "total_signals": 105,
+      "wins": 45,
+      "win_rate": 42.9,
+      "time_seconds": 31.7
     },
     "HYG": {
-      "total_signals": 210,
-      "wins": 76,
-      "win_rate": 36.2,
-      "time_seconds": 23.5
+      "total_signals": 87,
+      "wins": 27,
+      "win_rate": 31.0,
+      "time_seconds": 20.7
     },
     "XOM": {
-      "total_signals": 384,
-      "wins": 139,
-      "win_rate": 36.2,
-      "time_seconds": 48.9
+      "total_signals": 138,
+      "wins": 47,
+      "win_rate": 34.1,
+      "time_seconds": 47.5
     },
     "ABT": {
-      "total_signals": 291,
-      "wins": 93,
-      "win_rate": 32.0,
-      "time_seconds": 24.7
+      "total_signals": 116,
+      "wins": 41,
+      "win_rate": 35.3,
+      "time_seconds": 24.2
     },
     "IVV": {
-      "total_signals": 365,
-      "wins": 147,
-      "win_rate": 40.3,
-      "time_seconds": 52.4
+      "total_signals": 117,
+      "wins": 52,
+      "win_rate": 44.4,
+      "time_seconds": 50.2
     },
     "AMD": {
-      "total_signals": 479,
-      "wins": 172,
-      "win_rate": 35.9,
-      "time_seconds": 85.3
+      "total_signals": 187,
+      "wins": 74,
+      "win_rate": 39.6,
+      "time_seconds": 91.4
     },
     "CVX": {
-      "total_signals": 354,
-      "wins": 150,
-      "win_rate": 42.4,
-      "time_seconds": 42.8
+      "total_signals": 127,
+      "wins": 55,
+      "win_rate": 43.3,
+      "time_seconds": 42.5
     },
     "LQD": {
-      "total_signals": 229,
-      "wins": 95,
-      "win_rate": 41.5,
-      "time_seconds": 19.3
+      "total_signals": 95,
+      "wins": 36,
+      "win_rate": 37.9,
+      "time_seconds": 19.6
     },
     "CMCSA": {
-      "total_signals": 329,
-      "wins": 108,
-      "win_rate": 32.8,
-      "time_seconds": 44.1
+      "total_signals": 116,
+      "wins": 40,
+      "win_rate": 34.5,
+      "time_seconds": 41.2
     },
     "INTC": {
-      "total_signals": 465,
-      "wins": 170,
-      "win_rate": 36.6,
-      "time_seconds": 91.3
+      "total_signals": 201,
+      "wins": 58,
+      "win_rate": 28.9,
+      "time_seconds": 93.8
     },
     "CSCO": {
-      "total_signals": 343,
-      "wins": 126,
-      "win_rate": 36.7,
-      "time_seconds": 41.0
+      "total_signals": 141,
+      "wins": 44,
+      "win_rate": 31.2,
+      "time_seconds": 41.5
     },
     "WMT": {
-      "total_signals": 345,
-      "wins": 121,
-      "win_rate": 35.1,
-      "time_seconds": 49.3
+      "total_signals": 149,
+      "wins": 57,
+      "win_rate": 38.3,
+      "time_seconds": 49.0
     },
     "TLT": {
-      "total_signals": 289,
-      "wins": 116,
-      "win_rate": 40.1,
-      "time_seconds": 65.6
+      "total_signals": 106,
+      "wins": 48,
+      "win_rate": 45.3,
+      "time_seconds": 66.6
     },
     "JPM": {
-      "total_signals": 366,
-      "wins": 135,
-      "win_rate": 36.9,
-      "time_seconds": 47.6
+      "total_signals": 150,
+      "wins": 60,
+      "win_rate": 40.0,
+      "time_seconds": 46.8
     },
     "AMAT": {
-      "total_signals": 472,
-      "wins": 160,
-      "win_rate": 33.9,
-      "time_seconds": 43.5
+      "total_signals": 181,
+      "wins": 57,
+      "win_rate": 31.5,
+      "time_seconds": 42.6
     },
     "USO": {
-      "total_signals": 450,
-      "wins": 167,
-      "win_rate": 37.1,
-      "time_seconds": 61.8
+      "total_signals": 174,
+      "wins": 69,
+      "win_rate": 39.7,
+      "time_seconds": 61.6
     },
     "LRCX": {
-      "total_signals": 527,
-      "wins": 196,
-      "win_rate": 37.2,
+      "total_signals": 221,
+      "wins": 82,
+      "win_rate": 37.1,
       "time_seconds": 51.3
     },
     "TQQQ": {
-      "total_signals": 541,
-      "wins": 211,
-      "win_rate": 39.0,
-      "time_seconds": 93.3
+      "total_signals": 219,
+      "wins": 81,
+      "win_rate": 37.0,
+      "time_seconds": 88.8
     },
     "ABBV": {
-      "total_signals": 323,
-      "wins": 123,
-      "win_rate": 38.1,
-      "time_seconds": 25.4
+      "total_signals": 128,
+      "wins": 52,
+      "win_rate": 40.6,
+      "time_seconds": 23.8
     },
     "TSM": {
-      "total_signals": 519,
-      "wins": 192,
-      "win_rate": 37.0,
-      "time_seconds": 78.6
+      "total_signals": 204,
+      "wins": 71,
+      "win_rate": 34.8,
+      "time_seconds": 77.9
     },
     "NFLX": {
-      "total_signals": 382,
-      "wins": 127,
-      "win_rate": 33.2,
-      "time_seconds": 79.2
+      "total_signals": 145,
+      "wins": 59,
+      "win_rate": 40.7,
+      "time_seconds": 75.7
     },
     "ORCL": {
-      "total_signals": 478,
-      "wins": 175,
-      "win_rate": 36.6,
-      "time_seconds": 85.2
+      "total_signals": 178,
+      "wins": 59,
+      "win_rate": 33.1,
+      "time_seconds": 84.6
     },
     "BX": {
-      "total_signals": 347,
-      "wins": 131,
-      "win_rate": 37.8,
-      "time_seconds": 30.3
+      "total_signals": 140,
+      "wins": 60,
+      "win_rate": 42.9,
+      "time_seconds": 30.8
     },
     "SATS": {
-      "total_signals": 418,
-      "wins": 162,
-      "win_rate": 38.8,
-      "time_seconds": 39.2
+      "total_signals": 197,
+      "wins": 77,
+      "win_rate": 39.1,
+      "time_seconds": 36.7
     },
     "SOXL": {
-      "total_signals": 563,
-      "wins": 202,
-      "win_rate": 35.9,
-      "time_seconds": 105.2
+      "total_signals": 286,
+      "wins": 88,
+      "win_rate": 30.8,
+      "time_seconds": 99.2
     },
     "SMCI": {
-      "total_signals": 484,
-      "wins": 181,
-      "win_rate": 37.4,
-      "time_seconds": 90.4
+      "total_signals": 212,
+      "wins": 86,
+      "win_rate": 40.6,
+      "time_seconds": 85.4
     },
     "SMH": {
-      "total_signals": 466,
-      "wins": 199,
-      "win_rate": 42.7,
-      "time_seconds": 63.8
+      "total_signals": 173,
+      "wins": 78,
+      "win_rate": 45.1,
+      "time_seconds": 61.3
     },
     "DIA": {
-      "total_signals": 372,
-      "wins": 144,
-      "win_rate": 38.7,
-      "time_seconds": 50.4
+      "total_signals": 116,
+      "wins": 45,
+      "win_rate": 38.8,
+      "time_seconds": 48.6
     },
     "VLO": {
-      "total_signals": 340,
-      "wins": 125,
-      "win_rate": 36.8,
-      "time_seconds": 27.9
+      "total_signals": 152,
+      "wins": 66,
+      "win_rate": 43.4,
+      "time_seconds": 27.5
     },
     "SQQQ": {
-      "total_signals": 535,
-      "wins": 198,
-      "win_rate": 37.0,
-      "time_seconds": 89.9
+      "total_signals": 229,
+      "wins": 77,
+      "win_rate": 33.6,
+      "time_seconds": 83.6
     },
     "EEM": {
-      "total_signals": 400,
-      "wins": 166,
-      "win_rate": 41.5,
-      "time_seconds": 34.6
+      "total_signals": 159,
+      "wins": 61,
+      "win_rate": 38.4,
+      "time_seconds": 33.1
     },
     "LLY": {
-      "total_signals": 422,
-      "wins": 156,
-      "win_rate": 37.0,
-      "time_seconds": 43.2
+      "total_signals": 179,
+      "wins": 61,
+      "win_rate": 34.1,
+      "time_seconds": 41.6
     },
     "V": {
-      "total_signals": 300,
-      "wins": 101,
-      "win_rate": 33.7,
-      "time_seconds": 39.1
+      "total_signals": 113,
+      "wins": 38,
+      "win_rate": 33.6,
+      "time_seconds": 36.6
     },
     "XLE": {
-      "total_signals": 384,
-      "wins": 125,
-      "win_rate": 32.6,
-      "time_seconds": 54.5
+      "total_signals": 133,
+      "wins": 50,
+      "win_rate": 37.6,
+      "time_seconds": 52.4
     },
     "EFA": {
-      "total_signals": 307,
-      "wins": 129,
-      "win_rate": 42.0,
+      "total_signals": 123,
+      "wins": 38,
+      "win_rate": 30.9,
       "time_seconds": 22.8
     },
     "MRK": {
-      "total_signals": 374,
-      "wins": 132,
-      "win_rate": 35.3,
-      "time_seconds": 35.4
+      "total_signals": 150,
+      "wins": 47,
+      "win_rate": 31.3,
+      "time_seconds": 32.1
     },
     "LMT": {
-      "total_signals": 345,
-      "wins": 130,
-      "win_rate": 37.7,
-      "time_seconds": 33.0
+      "total_signals": 139,
+      "wins": 53,
+      "win_rate": 38.1,
+      "time_seconds": 32.0
     },
     "COP": {
-      "total_signals": 365,
-      "wins": 149,
-      "win_rate": 40.8,
-      "time_seconds": 33.4
+      "total_signals": 148,
+      "wins": 49,
+      "win_rate": 33.1,
+      "time_seconds": 32.1
     },
     "XLF": {
-      "total_signals": 334,
-      "wins": 128,
-      "win_rate": 38.3,
-      "time_seconds": 52.0
+      "total_signals": 114,
+      "wins": 38,
+      "win_rate": 33.3,
+      "time_seconds": 49.4
     },
     "JNJ": {
-      "total_signals": 278,
-      "wins": 98,
-      "win_rate": 35.3,
-      "time_seconds": 27.2
+      "total_signals": 110,
+      "wins": 51,
+      "win_rate": 46.4,
+      "time_seconds": 26.2
     },
     "EWY": {
-      "total_signals": 537,
-      "wins": 213,
-      "win_rate": 39.7,
-      "time_seconds": 54.4
+      "total_signals": 241,
+      "wins": 85,
+      "win_rate": 35.3,
+      "time_seconds": 54.7
     },
     "ADP": {
-      "total_signals": 267,
-      "wins": 104,
-      "win_rate": 39.0,
-      "time_seconds": 39.3
+      "total_signals": 87,
+      "wins": 28,
+      "win_rate": 32.2,
+      "time_seconds": 23.5
     },
     "CRM": {
-      "total_signals": 379,
-      "wins": 146,
-      "win_rate": 38.5,
-      "time_seconds": 49.4
+      "total_signals": 145,
+      "wins": 51,
+      "win_rate": 35.2,
+      "time_seconds": 45.7
     },
     "BMY": {
-      "total_signals": 321,
-      "wins": 117,
-      "win_rate": 36.4,
-      "time_seconds": 35.9
+      "total_signals": 137,
+      "wins": 51,
+      "win_rate": 37.2,
+      "time_seconds": 36.4
     },
     "GEV": {
-      "total_signals": 464,
-      "wins": 153,
-      "win_rate": 33.0,
-      "time_seconds": 53.7
+      "total_signals": 202,
+      "wins": 66,
+      "win_rate": 32.7,
+      "time_seconds": 52.8
     },
     "WDC": {
-      "total_signals": 557,
-      "wins": 216,
-      "win_rate": 38.8,
-      "time_seconds": 72.0
+      "total_signals": 267,
+      "wins": 98,
+      "win_rate": 36.7,
+      "time_seconds": 71.2
     },
     "XLK": {
-      "total_signals": 408,
-      "wins": 164,
-      "win_rate": 40.2,
-      "time_seconds": 52.6
+      "total_signals": 122,
+      "wins": 53,
+      "win_rate": 43.4,
+      "time_seconds": 49.0
     },
     "BAC": {
-      "total_signals": 363,
-      "wins": 137,
-      "win_rate": 37.7,
-      "time_seconds": 46.2
+      "total_signals": 133,
+      "wins": 48,
+      "win_rate": 36.1,
+      "time_seconds": 44.6
     },
     "DELL": {
-      "total_signals": 441,
-      "wins": 171,
-      "win_rate": 38.8,
-      "time_seconds": 53.2
+      "total_signals": 207,
+      "wins": 72,
+      "win_rate": 34.8,
+      "time_seconds": 56.5
     },
     "T": {
-      "total_signals": 334,
-      "wins": 128,
-      "win_rate": 38.3,
-      "time_seconds": 46.5
+      "total_signals": 133,
+      "wins": 49,
+      "win_rate": 36.8,
+      "time_seconds": 47.5
     },
     "STX": {
-      "total_signals": 512,
-      "wins": 205,
-      "win_rate": 40.0,
-      "time_seconds": 49.4
+      "total_signals": 239,
+      "wins": 95,
+      "win_rate": 39.7,
+      "time_seconds": 47.1
     },
     "SLV": {
-      "total_signals": 481,
-      "wins": 172,
-      "win_rate": 35.8,
-      "time_seconds": 88.2
+      "total_signals": 245,
+      "wins": 75,
+      "win_rate": 30.6,
+      "time_seconds": 85.9
     },
     "CAT": {
-      "total_signals": 398,
-      "wins": 140,
-      "win_rate": 35.2,
-      "time_seconds": 35.4
+      "total_signals": 150,
+      "wins": 58,
+      "win_rate": 38.7,
+      "time_seconds": 37.3
     },
     "ASML": {
-      "total_signals": 465,
-      "wins": 181,
-      "win_rate": 38.9,
-      "time_seconds": 50.2
+      "total_signals": 189,
+      "wins": 66,
+      "win_rate": 34.9,
+      "time_seconds": 51.5
     },
     "VZ": {
-      "total_signals": 308,
-      "wins": 110,
-      "win_rate": 35.7,
-      "time_seconds": 48.3
+      "total_signals": 124,
+      "wins": 38,
+      "win_rate": 30.6,
+      "time_seconds": 47.8
     },
     "UPS": {
-      "total_signals": 376,
-      "wins": 135,
-      "win_rate": 35.9,
-      "time_seconds": 36.3
+      "total_signals": 149,
+      "wins": 55,
+      "win_rate": 36.9,
+      "time_seconds": 35.2
     },
     "KLAC": {
-      "total_signals": 396,
-      "wins": 154,
-      "win_rate": 38.9,
-      "time_seconds": 28.4
+      "total_signals": 190,
+      "wins": 71,
+      "win_rate": 37.4,
+      "time_seconds": 27.8
     },
     "C": {
-      "total_signals": 397,
-      "wins": 141,
-      "win_rate": 35.5,
-      "time_seconds": 38.4
+      "total_signals": 156,
+      "wins": 57,
+      "win_rate": 36.5,
+      "time_seconds": 36.3
     },
     "GDX": {
-      "total_signals": 524,
-      "wins": 200,
-      "win_rate": 38.2,
-      "time_seconds": 76.1
+      "total_signals": 210,
+      "wins": 66,
+      "win_rate": 31.4,
+      "time_seconds": 74.8
     },
     "AMGN": {
-      "total_signals": 309,
-      "wins": 115,
-      "win_rate": 37.2,
-      "time_seconds": 25.9
+      "total_signals": 122,
+      "wins": 50,
+      "win_rate": 41.0,
+      "time_seconds": 27.2
     },
     "GS": {
-      "total_signals": 406,
-      "wins": 156,
-      "win_rate": 38.4,
-      "time_seconds": 44.7
+      "total_signals": 158,
+      "wins": 58,
+      "win_rate": 36.7,
+      "time_seconds": 36.7
     },
     "WFC": {
-      "total_signals": 353,
-      "wins": 129,
-      "win_rate": 36.5,
-      "time_seconds": 32.8
+      "total_signals": 129,
+      "wins": 51,
+      "win_rate": 39.5,
+      "time_seconds": 33.1
     },
     "SOXX": {
-      "total_signals": 524,
-      "wins": 199,
-      "win_rate": 38.0,
-      "time_seconds": 62.7
+      "total_signals": 207,
+      "wins": 85,
+      "win_rate": 41.1,
+      "time_seconds": 59.3
     },
     "XLI": {
-      "total_signals": 346,
-      "wins": 144,
-      "win_rate": 41.6,
-      "time_seconds": 26.4
+      "total_signals": 118,
+      "wins": 44,
+      "win_rate": 37.3,
+      "time_seconds": 26.0
     },
     "HD": {
-      "total_signals": 379,
-      "wins": 133,
-      "win_rate": 35.1,
-      "time_seconds": 31.9
+      "total_signals": 127,
+      "wins": 49,
+      "win_rate": 38.6,
+      "time_seconds": 32.6
     },
     "LIN": {
-      "total_signals": 338,
-      "wins": 127,
-      "win_rate": 37.6,
-      "time_seconds": 25.7
+      "total_signals": 130,
+      "wins": 49,
+      "win_rate": 37.7,
+      "time_seconds": 25.3
     },
     "SLB": {
-      "total_signals": 404,
-      "wins": 148,
-      "win_rate": 36.6,
-      "time_seconds": 42.6
+      "total_signals": 159,
+      "wins": 64,
+      "win_rate": 40.3,
+      "time_seconds": 40.8
     },
     "NEM": {
-      "total_signals": 503,
-      "wins": 181,
-      "win_rate": 36.0,
-      "time_seconds": 62.2
+      "total_signals": 227,
+      "wins": 83,
+      "win_rate": 36.6,
+      "time_seconds": 60.3
     },
     "GE": {
-      "total_signals": 433,
-      "wins": 170,
-      "win_rate": 39.3,
-      "time_seconds": 39.8
+      "total_signals": 160,
+      "wins": 64,
+      "win_rate": 40.0,
+      "time_seconds": 37.9
     },
     "RSP": {
-      "total_signals": 283,
-      "wins": 109,
-      "win_rate": 38.5,
-      "time_seconds": 30.1
+      "total_signals": 90,
+      "wins": 35,
+      "win_rate": 38.9,
+      "time_seconds": 31.5
     },
     "TMUS": {
-      "total_signals": 303,
-      "wins": 120,
-      "win_rate": 39.6,
-      "time_seconds": 28.6
+      "total_signals": 91,
+      "wins": 31,
+      "win_rate": 34.1,
+      "time_seconds": 28.2
     },
     "CRCL": {
-      "total_signals": 481,
-      "wins": 207,
-      "win_rate": 43.0,
-      "time_seconds": 94.5
+      "total_signals": 215,
+      "wins": 90,
+      "win_rate": 41.9,
+      "time_seconds": 94.1
     },
     "MA": {
-      "total_signals": 319,
-      "wins": 113,
-      "win_rate": 35.4,
-      "time_seconds": 27.7
+      "total_signals": 115,
+      "wins": 39,
+      "win_rate": 33.9,
+      "time_seconds": 27.9
     },
     "TXN": {
-      "total_signals": 347,
-      "wins": 129,
-      "win_rate": 37.2,
-      "time_seconds": 30.5
+      "total_signals": 147,
+      "wins": 60,
+      "win_rate": 40.8,
+      "time_seconds": 31.5
     },
     "DIS": {
-      "total_signals": 340,
-      "wins": 112,
-      "win_rate": 32.9,
-      "time_seconds": 37.4
+      "total_signals": 108,
+      "wins": 32,
+      "win_rate": 29.6,
+      "time_seconds": 38.6
     },
     "IBM": {
-      "total_signals": 394,
-      "wins": 154,
-      "win_rate": 39.1,
-      "time_seconds": 45.2
+      "total_signals": 157,
+      "wins": 61,
+      "win_rate": 38.9,
+      "time_seconds": 44.7
     },
     "DVN": {
-      "total_signals": 409,
-      "wins": 126,
-      "win_rate": 30.8,
-      "time_seconds": 42.9
+      "total_signals": 164,
+      "wins": 51,
+      "win_rate": 31.1,
+      "time_seconds": 41.8
     },
     "COIN": {
-      "total_signals": 502,
-      "wins": 192,
-      "win_rate": 38.2,
-      "time_seconds": 90.2
+      "total_signals": 233,
+      "wins": 95,
+      "win_rate": 40.8,
+      "time_seconds": 85.5
     },
     "IWB": {
-      "total_signals": 262,
-      "wins": 118,
-      "win_rate": 45.0,
+      "total_signals": 107,
+      "wins": 53,
+      "win_rate": 49.5,
       "time_seconds": 17.8
     },
     "ADBE": {
-      "total_signals": 355,
-      "wins": 137,
-      "win_rate": 38.6,
-      "time_seconds": 51.5
+      "total_signals": 119,
+      "wins": 47,
+      "win_rate": 39.5,
+      "time_seconds": 50.7
     },
     "CRWD": {
-      "total_signals": 445,
-      "wins": 153,
-      "win_rate": 34.4,
-      "time_seconds": 52.9
+      "total_signals": 177,
+      "wins": 57,
+      "win_rate": 32.2,
+      "time_seconds": 51.6
     },
     "COST": {
-      "total_signals": 300,
-      "wins": 127,
-      "win_rate": 42.3,
-      "time_seconds": 38.6
+      "total_signals": 137,
+      "wins": 51,
+      "win_rate": 37.2,
+      "time_seconds": 37.2
     },
     "BA": {
-      "total_signals": 397,
-      "wins": 171,
-      "win_rate": 43.1,
-      "time_seconds": 53.6
+      "total_signals": 149,
+      "wins": 61,
+      "win_rate": 40.9,
+      "time_seconds": 48.1
     },
     "FDX": {
-      "total_signals": 291,
-      "wins": 101,
-      "win_rate": 34.7,
-      "time_seconds": 23.8
+      "total_signals": 115,
+      "wins": 46,
+      "win_rate": 40.0,
+      "time_seconds": 23.0
     },
     "KO": {
-      "total_signals": 303,
-      "wins": 95,
-      "win_rate": 31.4,
-      "time_seconds": 45.2
+      "total_signals": 129,
+      "wins": 42,
+      "win_rate": 32.6,
+      "time_seconds": 42.2
     },
     "MO": {
-      "total_signals": 336,
-      "wins": 132,
-      "win_rate": 39.3,
-      "time_seconds": 37.3
-    },
-    "HOOD": {
-      "total_signals": 509,
-      "wins": 185,
-      "win_rate": 36.3,
-      "time_seconds": 88.0
-    },
-    "XLV": {
-      "total_signals": 300,
-      "wins": 120,
-      "win_rate": 40.0,
-      "time_seconds": 29.0
-    },
-    "BE": {
-      "total_signals": 499,
-      "wins": 202,
-      "win_rate": 40.5,
-      "time_seconds": 88.3
-    },
-    "CRWV": {
-      "total_signals": 491,
-      "wins": 156,
-      "win_rate": 31.8,
-      "time_seconds": 99.2
-    },
-    "MTCH": {
-      "total_signals": 289,
-      "wins": 107,
-      "win_rate": 37.0,
-      "time_seconds": 21.5
-    },
-    "RKLB": {
-      "total_signals": 519,
-      "wins": 210,
-      "win_rate": 40.5,
-      "time_seconds": 99.1
-    },
-    "MS": {
-      "total_signals": 361,
-      "wins": 136,
-      "win_rate": 37.7,
-      "time_seconds": 30.3
-    },
-    "SGOV": {
-      "total_signals": 226,
-      "wins": 47,
-      "win_rate": 20.8,
-      "time_seconds": 60.5
-    },
-    "IWF": {
-      "total_signals": 288,
-      "wins": 126,
-      "win_rate": 43.8,
-      "time_seconds": 20.1
-    },
-    "EXAS": {
-      "total_signals": 215,
-      "wins": 75,
-      "win_rate": 34.9,
-      "time_seconds": 20.0
-    },
-    "MRVL": {
-      "total_signals": 510,
-      "wins": 178,
-      "win_rate": 34.9,
-      "time_seconds": 71.8
-    },
-    "TGT": {
-      "total_signals": 413,
-      "wins": 163,
-      "win_rate": 39.5,
+      "total_signals": 139,
+      "wins": 52,
+      "win_rate": 37.4,
       "time_seconds": 35.3
     },
-    "FXI": {
-      "total_signals": 410,
-      "wins": 154,
-      "win_rate": 37.6,
-      "time_seconds": 54.1
+    "HOOD": {
+      "total_signals": 208,
+      "wins": 82,
+      "win_rate": 39.4,
+      "time_seconds": 81.7
     },
-    "CIEN": {
-      "total_signals": 432,
-      "wins": 169,
-      "win_rate": 39.1,
-      "time_seconds": 38.3
-    },
-    "EOG": {
-      "total_signals": 329,
-      "wins": 105,
-      "win_rate": 31.9,
-      "time_seconds": 24.0
-    },
-    "ADI": {
-      "total_signals": 324,
-      "wins": 127,
-      "win_rate": 39.2,
-      "time_seconds": 24.0
-    },
-    "PEP": {
-      "total_signals": 313,
-      "wins": 129,
-      "win_rate": 41.2,
-      "time_seconds": 29.7
-    },
-    "PL": {
-      "total_signals": 451,
-      "wins": 187,
-      "win_rate": 41.5,
-      "time_seconds": 83.2
-    },
-    "HAL": {
-      "total_signals": 410,
-      "wins": 144,
-      "win_rate": 35.1,
-      "time_seconds": 43.6
-    },
-    "GILD": {
-      "total_signals": 309,
-      "wins": 108,
-      "win_rate": 35.0,
-      "time_seconds": 26.6
-    },
-    "APP": {
-      "total_signals": 473,
-      "wins": 182,
-      "win_rate": 38.5,
-      "time_seconds": 66.6
-    },
-    "AXP": {
-      "total_signals": 363,
-      "wins": 148,
-      "win_rate": 40.8,
-      "time_seconds": 30.2
-    },
-    "VTI": {
-      "total_signals": 320,
-      "wins": 122,
-      "win_rate": 38.1,
-      "time_seconds": 38.7
-    },
-    "CF": {
-      "total_signals": 325,
-      "wins": 106,
-      "win_rate": 32.6,
-      "time_seconds": 25.7
-    },
-    "LNG": {
-      "total_signals": 313,
-      "wins": 112,
-      "win_rate": 35.8,
-      "time_seconds": 26.0
-    },
-    "NBIS": {
-      "total_signals": 528,
-      "wins": 202,
-      "win_rate": 38.3,
-      "time_seconds": 99.9
-    },
-    "MOH": {
-      "total_signals": 332,
-      "wins": 139,
-      "win_rate": 41.9,
-      "time_seconds": 29.6
-    },
-    "IBIT": {
-      "total_signals": 443,
-      "wins": 172,
-      "win_rate": 38.8,
-      "time_seconds": 84.5
-    },
-    "MCD": {
-      "total_signals": 298,
-      "wins": 117,
-      "win_rate": 39.3,
-      "time_seconds": 29.1
-    },
-    "SOLS": {
-      "total_signals": 312,
-      "wins": 138,
-      "win_rate": 44.2,
-      "time_seconds": 28.1
-    },
-    "IEF": {
-      "total_signals": 275,
-      "wins": 115,
-      "win_rate": 41.8,
-      "time_seconds": 29.1
-    },
-    "NEE": {
-      "total_signals": 364,
-      "wins": 131,
-      "win_rate": 36.0,
-      "time_seconds": 33.6
-    },
-    "BABA": {
-      "total_signals": 490,
-      "wins": 174,
-      "win_rate": 35.5,
-      "time_seconds": 77.1
-    },
-    "IEFA": {
-      "total_signals": 289,
-      "wins": 116,
-      "win_rate": 40.1,
-      "time_seconds": 34.5
-    },
-    "USHY": {
-      "total_signals": 206,
-      "wins": 61,
-      "win_rate": 29.6,
-      "time_seconds": 20.6
-    },
-    "COF": {
-      "total_signals": 331,
-      "wins": 118,
-      "win_rate": 35.6,
-      "time_seconds": 28.6
-    },
-    "PAYC": {
-      "total_signals": 254,
-      "wins": 99,
-      "win_rate": 39.0,
-      "time_seconds": 23.5
-    },
-    "APH": {
-      "total_signals": 440,
-      "wins": 159,
-      "win_rate": 36.1,
-      "time_seconds": 36.0
-    },
-    "PFE": {
-      "total_signals": 349,
-      "wins": 122,
-      "win_rate": 35.0,
-      "time_seconds": 65.9
-    },
-    "WELL": {
-      "total_signals": 298,
-      "wins": 119,
-      "win_rate": 39.9,
-      "time_seconds": 22.2
-    },
-    "HON": {
-      "total_signals": 270,
-      "wins": 107,
-      "win_rate": 39.6,
-      "time_seconds": 25.6
-    },
-    "VCIT": {
-      "total_signals": 207,
-      "wins": 75,
-      "win_rate": 36.2,
-      "time_seconds": 20.7
-    },
-    "CEG": {
-      "total_signals": 442,
-      "wins": 157,
-      "win_rate": 35.5,
-      "time_seconds": 47.7
-    },
-    "SOXS": {
-      "total_signals": 509,
-      "wins": 183,
-      "win_rate": 36.0,
-      "time_seconds": 114.4
-    },
-    "EQIX": {
-      "total_signals": 290,
-      "wins": 110,
-      "win_rate": 37.9,
-      "time_seconds": 21.6
-    },
-    "SNPS": {
-      "total_signals": 395,
-      "wins": 150,
-      "win_rate": 38.0,
-      "time_seconds": 36.6
-    },
-    "OKE": {
-      "total_signals": 365,
-      "wins": 141,
-      "win_rate": 38.6,
-      "time_seconds": 28.6
-    },
-    "LYB": {
-      "total_signals": 375,
-      "wins": 146,
-      "win_rate": 38.9,
-      "time_seconds": 32.4
-    },
-    "MCK": {
-      "total_signals": 273,
-      "wins": 105,
-      "win_rate": 38.5,
-      "time_seconds": 20.0
-    },
-    "MRSH": {
-      "total_signals": 84,
-      "wins": 29,
-      "win_rate": 34.5,
-      "time_seconds": 6.3
-    },
-    "F": {
-      "total_signals": 375,
-      "wins": 133,
-      "win_rate": 35.5,
-      "time_seconds": 54.2
-    },
-    "XLP": {
-      "total_signals": 276,
-      "wins": 122,
-      "win_rate": 44.2,
-      "time_seconds": 29.2
-    },
-    "RTX": {
-      "total_signals": 357,
-      "wins": 125,
-      "win_rate": 35.0,
-      "time_seconds": 31.4
-    },
-    "EWZ": {
-      "total_signals": 407,
-      "wins": 139,
-      "win_rate": 34.2,
-      "time_seconds": 38.3
-    },
-    "ARM": {
-      "total_signals": 487,
-      "wins": 187,
-      "win_rate": 38.4,
-      "time_seconds": 55.6
-    },
-    "VST": {
-      "total_signals": 402,
-      "wins": 119,
-      "win_rate": 29.6,
-      "time_seconds": 46.9
-    },
-    "EWJ": {
-      "total_signals": 379,
-      "wins": 131,
-      "win_rate": 34.6,
-      "time_seconds": 32.0
-    },
-    "PM": {
-      "total_signals": 350,
-      "wins": 143,
-      "win_rate": 40.9,
-      "time_seconds": 24.3
-    },
-    "CTRE": {
-      "total_signals": 283,
-      "wins": 113,
-      "win_rate": 39.9,
-      "time_seconds": 19.8
-    },
-    "OXY": {
-      "total_signals": 435,
-      "wins": 166,
-      "win_rate": 38.2,
-      "time_seconds": 58.2
-    },
-    "IGV": {
-      "total_signals": 372,
-      "wins": 152,
-      "win_rate": 40.9,
-      "time_seconds": 37.9
-    },
-    "DE": {
-      "total_signals": 345,
-      "wins": 120,
-      "win_rate": 34.8,
-      "time_seconds": 24.0
-    },
-    "IDCC": {
-      "total_signals": 317,
-      "wins": 118,
-      "win_rate": 37.2,
-      "time_seconds": 21.3
-    },
-    "ETN": {
-      "total_signals": 439,
-      "wins": 165,
-      "win_rate": 37.6,
-      "time_seconds": 31.5
-    },
-    "BITO": {
-      "total_signals": 469,
-      "wins": 179,
-      "win_rate": 38.2,
-      "time_seconds": 80.2
-    },
-    "ANET": {
-      "total_signals": 415,
-      "wins": 157,
-      "win_rate": 37.8,
-      "time_seconds": 48.6
-    },
-    "MPC": {
-      "total_signals": 316,
-      "wins": 121,
-      "win_rate": 38.3,
-      "time_seconds": 24.0
-    },
-    "VEA": {
-      "total_signals": 301,
-      "wins": 114,
-      "win_rate": 37.9,
+    "XLV": {
+      "total_signals": 106,
+      "wins": 35,
+      "win_rate": 33.0,
       "time_seconds": 26.4
     },
-    "XBI": {
-      "total_signals": 381,
-      "wins": 134,
-      "win_rate": 35.2,
-      "time_seconds": 37.9
+    "BE": {
+      "total_signals": 258,
+      "wins": 113,
+      "win_rate": 43.8,
+      "time_seconds": 81.9
     },
-    "ASTS": {
-      "total_signals": 492,
-      "wins": 197,
-      "win_rate": 40.0,
-      "time_seconds": 93.2
+    "CRWV": {
+      "total_signals": 229,
+      "wins": 71,
+      "win_rate": 31.0,
+      "time_seconds": 91.3
     },
-    "SPGI": {
-      "total_signals": 278,
-      "wins": 117,
-      "win_rate": 42.1,
-      "time_seconds": 23.9
+    "MTCH": {
+      "total_signals": 113,
+      "wins": 40,
+      "win_rate": 35.4,
+      "time_seconds": 20.1
     },
-    "SPYM": {
-      "total_signals": 283,
-      "wins": 110,
-      "win_rate": 38.9,
-      "time_seconds": 38.8
+    "RKLB": {
+      "total_signals": 268,
+      "wins": 106,
+      "win_rate": 39.6,
+      "time_seconds": 91.4
     },
-    "AKAM": {
-      "total_signals": 357,
-      "wins": 132,
-      "win_rate": 37.0,
+    "MS": {
+      "total_signals": 138,
+      "wins": 53,
+      "win_rate": 38.4,
+      "time_seconds": 26.1
+    },
+    "SGOV": {
+      "total_signals": 122,
+      "wins": 17,
+      "win_rate": 13.9,
+      "time_seconds": 54.9
+    },
+    "IWF": {
+      "total_signals": 102,
+      "wins": 53,
+      "win_rate": 52.0,
+      "time_seconds": 17.6
+    },
+    "EXAS": {
+      "total_signals": 89,
+      "wins": 38,
+      "win_rate": 42.7,
+      "time_seconds": 18.9
+    },
+    "MRVL": {
+      "total_signals": 205,
+      "wins": 80,
+      "win_rate": 39.0,
+      "time_seconds": 65.5
+    },
+    "TGT": {
+      "total_signals": 139,
+      "wins": 53,
+      "win_rate": 38.1,
+      "time_seconds": 32.8
+    },
+    "FXI": {
+      "total_signals": 138,
+      "wins": 52,
+      "win_rate": 37.7,
+      "time_seconds": 49.9
+    },
+    "CIEN": {
+      "total_signals": 207,
+      "wins": 76,
+      "win_rate": 36.7,
+      "time_seconds": 35.5
+    },
+    "EOG": {
+      "total_signals": 137,
+      "wins": 53,
+      "win_rate": 38.7,
+      "time_seconds": 22.8
+    },
+    "ADI": {
+      "total_signals": 146,
+      "wins": 59,
+      "win_rate": 40.4,
+      "time_seconds": 23.3
+    },
+    "PEP": {
+      "total_signals": 124,
+      "wins": 51,
+      "win_rate": 41.1,
+      "time_seconds": 28.0
+    },
+    "PL": {
+      "total_signals": 209,
+      "wins": 85,
+      "win_rate": 40.7,
+      "time_seconds": 77.3
+    },
+    "HAL": {
+      "total_signals": 175,
+      "wins": 69,
+      "win_rate": 39.4,
+      "time_seconds": 40.0
+    },
+    "GILD": {
+      "total_signals": 106,
+      "wins": 48,
+      "win_rate": 45.3,
       "time_seconds": 25.3
     },
-    "WBD": {
-      "total_signals": 321,
-      "wins": 122,
-      "win_rate": 38.0,
-      "time_seconds": 53.9
-    },
-    "IREN": {
-      "total_signals": 466,
-      "wins": 183,
+    "APP": {
+      "total_signals": 224,
+      "wins": 88,
       "win_rate": 39.3,
-      "time_seconds": 109.0
+      "time_seconds": 62.1
     },
-    "AGG": {
-      "total_signals": 188,
-      "wins": 71,
+    "AXP": {
+      "total_signals": 148,
+      "wins": 56,
       "win_rate": 37.8,
-      "time_seconds": 20.2
+      "time_seconds": 27.2
     },
-    "BSX": {
-      "total_signals": 292,
-      "wins": 106,
-      "win_rate": 36.3,
-      "time_seconds": 25.8
-    },
-    "KRE": {
-      "total_signals": 346,
-      "wins": 129,
-      "win_rate": 37.3,
-      "time_seconds": 30.3
-    },
-    "SHOP": {
-      "total_signals": 444,
-      "wins": 149,
-      "win_rate": 33.6,
-      "time_seconds": 48.5
-    },
-    "PYPL": {
-      "total_signals": 387,
-      "wins": 152,
-      "win_rate": 39.3,
-      "time_seconds": 64.7
-    },
-    "MDY": {
-      "total_signals": 277,
-      "wins": 113,
-      "win_rate": 40.8,
-      "time_seconds": 20.3
-    },
-    "AEM": {
-      "total_signals": 500,
-      "wins": 181,
-      "win_rate": 36.2,
-      "time_seconds": 38.9
-    },
-    "BIL": {
-      "total_signals": 207,
-      "wins": 36,
-      "win_rate": 17.4,
-      "time_seconds": 45.3
-    },
-    "BLK": {
-      "total_signals": 337,
-      "wins": 134,
-      "win_rate": 39.8,
-      "time_seconds": 29.0
-    },
-    "CVS": {
-      "total_signals": 346,
-      "wins": 135,
-      "win_rate": 39.0,
-      "time_seconds": 28.1
-    },
-    "SOFI": {
-      "total_signals": 498,
-      "wins": 164,
-      "win_rate": 32.9,
-      "time_seconds": 90.1
-    },
-    "INFY": {
-      "total_signals": 343,
-      "wins": 141,
-      "win_rate": 41.1,
-      "time_seconds": 27.6
-    },
-    "ZTS": {
-      "total_signals": 262,
-      "wins": 109,
-      "win_rate": 41.6,
-      "time_seconds": 22.1
-    },
-    "XLY": {
-      "total_signals": 329,
-      "wins": 130,
-      "win_rate": 39.5,
-      "time_seconds": 26.6
-    },
-    "FTNT": {
-      "total_signals": 374,
-      "wins": 133,
-      "win_rate": 35.6,
-      "time_seconds": 30.1
-    },
-    "SCHX": {
-      "total_signals": 298,
-      "wins": 124,
-      "win_rate": 41.6,
-      "time_seconds": 23.9
-    },
-    "SPDN": {
-      "total_signals": 312,
-      "wins": 120,
-      "win_rate": 38.5,
-      "time_seconds": 23.4
-    },
-    "FAST": {
-      "total_signals": 284,
-      "wins": 107,
-      "win_rate": 37.7,
-      "time_seconds": 22.7
-    },
-    "TRV": {
-      "total_signals": 288,
-      "wins": 111,
-      "win_rate": 38.5,
-      "time_seconds": 20.0
-    },
-    "SITM": {
-      "total_signals": 348,
-      "wins": 120,
-      "win_rate": 34.5,
-      "time_seconds": 27.7
-    },
-    "DDOG": {
-      "total_signals": 418,
-      "wins": 167,
-      "win_rate": 40.0,
-      "time_seconds": 40.3
-    },
-    "PAAS": {
-      "total_signals": 522,
-      "wins": 221,
+    "VTI": {
+      "total_signals": 130,
+      "wins": 55,
       "win_rate": 42.3,
-      "time_seconds": 64.1
+      "time_seconds": 35.7
     },
-    "FCX": {
-      "total_signals": 519,
-      "wins": 172,
-      "win_rate": 33.1,
-      "time_seconds": 58.9
-    },
-    "GM": {
-      "total_signals": 362,
-      "wins": 126,
-      "win_rate": 34.8,
-      "time_seconds": 34.5
-    },
-    "SBUX": {
-      "total_signals": 387,
-      "wins": 147,
-      "win_rate": 38.0,
-      "time_seconds": 36.0
-    },
-    "EMB": {
-      "total_signals": 190,
-      "wins": 78,
-      "win_rate": 41.1,
-      "time_seconds": 16.5
-    },
-    "KMB": {
-      "total_signals": 268,
-      "wins": 91,
-      "win_rate": 34.0,
-      "time_seconds": 25.8
-    },
-    "SPOT": {
-      "total_signals": 378,
-      "wins": 145,
-      "win_rate": 38.4,
-      "time_seconds": 34.2
-    },
-    "BP": {
-      "total_signals": 434,
-      "wins": 180,
-      "win_rate": 41.5,
-      "time_seconds": 52.3
-    },
-    "MDLZ": {
-      "total_signals": 301,
-      "wins": 106,
-      "win_rate": 35.2,
-      "time_seconds": 24.7
-    },
-    "FIX": {
-      "total_signals": 310,
-      "wins": 120,
-      "win_rate": 38.7,
-      "time_seconds": 25.0
-    },
-    "RGLD": {
-      "total_signals": 373,
-      "wins": 158,
-      "win_rate": 42.4,
-      "time_seconds": 25.0
-    },
-    "WDAY": {
-      "total_signals": 314,
-      "wins": 129,
-      "win_rate": 41.1,
-      "time_seconds": 26.6
-    },
-    "JNK": {
-      "total_signals": 209,
-      "wins": 78,
-      "win_rate": 37.3,
-      "time_seconds": 16.5
-    },
-    "QQQM": {
-      "total_signals": 421,
-      "wins": 169,
-      "win_rate": 40.1,
-      "time_seconds": 53.4
-    },
-    "IJH": {
-      "total_signals": 291,
-      "wins": 109,
-      "win_rate": 37.5,
-      "time_seconds": 22.7
-    },
-    "ITOT": {
-      "total_signals": 281,
-      "wins": 111,
-      "win_rate": 39.5,
-      "time_seconds": 19.1
-    },
-    "ARES": {
-      "total_signals": 335,
-      "wins": 137,
-      "win_rate": 40.9,
-      "time_seconds": 23.9
-    },
-    "PNC": {
-      "total_signals": 291,
-      "wins": 117,
-      "win_rate": 40.2,
-      "time_seconds": 19.5
-    },
-    "GLDM": {
-      "total_signals": 422,
-      "wins": 173,
-      "win_rate": 41.0,
-      "time_seconds": 57.0
-    },
-    "AGX": {
-      "total_signals": 315,
-      "wins": 117,
-      "win_rate": 37.1,
-      "time_seconds": 22.5
-    },
-    "NOC": {
-      "total_signals": 328,
-      "wins": 132,
-      "win_rate": 40.2,
+    "CF": {
+      "total_signals": 138,
+      "wins": 50,
+      "win_rate": 36.2,
       "time_seconds": 24.1
     },
-    "CME": {
-      "total_signals": 302,
-      "wins": 113,
-      "win_rate": 37.4,
-      "time_seconds": 21.4
+    "LNG": {
+      "total_signals": 133,
+      "wins": 46,
+      "win_rate": 34.6,
+      "time_seconds": 23.4
     },
-    "CB": {
-      "total_signals": 263,
-      "wins": 88,
-      "win_rate": 33.5,
-      "time_seconds": 21.2
+    "NBIS": {
+      "total_signals": 267,
+      "wins": 101,
+      "win_rate": 37.8,
+      "time_seconds": 88.9
     },
-    "MDLN": {
-      "total_signals": 147,
-      "wins": 59,
-      "win_rate": 40.1,
-      "time_seconds": 14.7
+    "MOH": {
+      "total_signals": 146,
+      "wins": 58,
+      "win_rate": 39.7,
+      "time_seconds": 26.6
     },
-    "HSY": {
-      "total_signals": 285,
-      "wins": 107,
-      "win_rate": 37.5,
-      "time_seconds": 20.4
+    "IBIT": {
+      "total_signals": 177,
+      "wins": 69,
+      "win_rate": 39.0,
+      "time_seconds": 77.0
     },
-    "UNP": {
-      "total_signals": 274,
-      "wins": 102,
-      "win_rate": 37.2,
-      "time_seconds": 20.7
+    "MCD": {
+      "total_signals": 109,
+      "wins": 38,
+      "win_rate": 34.9,
+      "time_seconds": 26.4
     },
-    "DASH": {
-      "total_signals": 362,
-      "wins": 136,
-      "win_rate": 37.6,
-      "time_seconds": 37.6
+    "SOLS": {
+      "total_signals": 152,
+      "wins": 58,
+      "win_rate": 38.2,
+      "time_seconds": 26.3
     },
-    "IEMG": {
-      "total_signals": 313,
-      "wins": 131,
+    "IEF": {
+      "total_signals": 88,
+      "wins": 40,
+      "win_rate": 45.5,
+      "time_seconds": 26.1
+    },
+    "NEE": {
+      "total_signals": 136,
+      "wins": 41,
+      "win_rate": 30.1,
+      "time_seconds": 29.4
+    },
+    "BABA": {
+      "total_signals": 191,
+      "wins": 73,
+      "win_rate": 38.2,
+      "time_seconds": 66.7
+    },
+    "IEFA": {
+      "total_signals": 123,
+      "wins": 47,
+      "win_rate": 38.2,
+      "time_seconds": 17.8
+    },
+    "USHY": {
+      "total_signals": 102,
+      "wins": 31,
+      "win_rate": 30.4,
+      "time_seconds": 16.9
+    },
+    "COF": {
+      "total_signals": 160,
+      "wins": 48,
+      "win_rate": 30.0,
+      "time_seconds": 24.5
+    },
+    "PAYC": {
+      "total_signals": 93,
+      "wins": 39,
       "win_rate": 41.9,
+      "time_seconds": 19.4
+    },
+    "APH": {
+      "total_signals": 192,
+      "wins": 74,
+      "win_rate": 38.5,
+      "time_seconds": 31.6
+    },
+    "PFE": {
+      "total_signals": 159,
+      "wins": 62,
+      "win_rate": 39.0,
+      "time_seconds": 60.3
+    },
+    "WELL": {
+      "total_signals": 139,
+      "wins": 55,
+      "win_rate": 39.6,
+      "time_seconds": 18.8
+    },
+    "HON": {
+      "total_signals": 98,
+      "wins": 45,
+      "win_rate": 45.9,
+      "time_seconds": 23.2
+    },
+    "VCIT": {
+      "total_signals": 79,
+      "wins": 35,
+      "win_rate": 44.3,
+      "time_seconds": 16.7
+    },
+    "CEG": {
+      "total_signals": 187,
+      "wins": 58,
+      "win_rate": 31.0,
+      "time_seconds": 42.5
+    },
+    "SOXS": {
+      "total_signals": 242,
+      "wins": 81,
+      "win_rate": 33.5,
+      "time_seconds": 102.9
+    },
+    "EQIX": {
+      "total_signals": 111,
+      "wins": 45,
+      "win_rate": 40.5,
+      "time_seconds": 18.0
+    },
+    "SNPS": {
+      "total_signals": 166,
+      "wins": 67,
+      "win_rate": 40.4,
+      "time_seconds": 32.6
+    },
+    "OKE": {
+      "total_signals": 134,
+      "wins": 46,
+      "win_rate": 34.3,
+      "time_seconds": 25.0
+    },
+    "LYB": {
+      "total_signals": 167,
+      "wins": 61,
+      "win_rate": 36.5,
+      "time_seconds": 29.5
+    },
+    "MCK": {
+      "total_signals": 114,
+      "wins": 43,
+      "win_rate": 37.7,
+      "time_seconds": 18.6
+    },
+    "MRSH": {
+      "total_signals": 33,
+      "wins": 10,
+      "win_rate": 30.3,
+      "time_seconds": 5.9
+    },
+    "F": {
+      "total_signals": 152,
+      "wins": 54,
+      "win_rate": 35.5,
+      "time_seconds": 50.0
+    },
+    "XLP": {
+      "total_signals": 112,
+      "wins": 46,
+      "win_rate": 41.1,
+      "time_seconds": 26.0
+    },
+    "RTX": {
+      "total_signals": 146,
+      "wins": 46,
+      "win_rate": 31.5,
+      "time_seconds": 27.4
+    },
+    "EWZ": {
+      "total_signals": 145,
+      "wins": 47,
+      "win_rate": 32.4,
+      "time_seconds": 34.2
+    },
+    "ARM": {
+      "total_signals": 196,
+      "wins": 72,
+      "win_rate": 36.7,
+      "time_seconds": 51.3
+    },
+    "VST": {
+      "total_signals": 182,
+      "wins": 49,
+      "win_rate": 26.9,
+      "time_seconds": 42.4
+    },
+    "EWJ": {
+      "total_signals": 161,
+      "wins": 52,
+      "win_rate": 32.3,
+      "time_seconds": 28.9
+    },
+    "PM": {
+      "total_signals": 139,
+      "wins": 48,
+      "win_rate": 34.5,
       "time_seconds": 22.4
     },
-    "CCL": {
-      "total_signals": 439,
-      "wins": 160,
-      "win_rate": 36.4,
-      "time_seconds": 57.9
+    "CTRE": {
+      "total_signals": 123,
+      "wins": 53,
+      "win_rate": 43.1,
+      "time_seconds": 18.0
     },
-    "MMM": {
-      "total_signals": 333,
-      "wins": 119,
-      "win_rate": 35.7,
-      "time_seconds": 22.5
-    },
-    "EXPE": {
-      "total_signals": 326,
-      "wins": 110,
-      "win_rate": 33.7,
-      "time_seconds": 25.2
-    },
-    "DAL": {
-      "total_signals": 437,
-      "wins": 161,
-      "win_rate": 36.8,
-      "time_seconds": 40.5
-    },
-    "TJX": {
-      "total_signals": 262,
-      "wins": 105,
-      "win_rate": 40.1,
-      "time_seconds": 21.7
-    },
-    "LYFT": {
-      "total_signals": 390,
-      "wins": 143,
+    "OXY": {
+      "total_signals": 180,
+      "wins": 66,
       "win_rate": 36.7,
-      "time_seconds": 50.6
+      "time_seconds": 53.9
     },
-    "XLC": {
-      "total_signals": 289,
-      "wins": 119,
-      "win_rate": 41.2,
-      "time_seconds": 20.0
+    "IGV": {
+      "total_signals": 141,
+      "wins": 63,
+      "win_rate": 44.7,
+      "time_seconds": 33.8
     },
-    "AMT": {
-      "total_signals": 287,
-      "wins": 114,
+    "DE": {
+      "total_signals": 130,
+      "wins": 42,
+      "win_rate": 32.3,
+      "time_seconds": 22.1
+    },
+    "IDCC": {
+      "total_signals": 132,
+      "wins": 52,
+      "win_rate": 39.4,
+      "time_seconds": 19.7
+    },
+    "ETN": {
+      "total_signals": 184,
+      "wins": 63,
+      "win_rate": 34.2,
+      "time_seconds": 29.1
+    },
+    "BITO": {
+      "total_signals": 206,
+      "wins": 71,
+      "win_rate": 34.5,
+      "time_seconds": 73.5
+    },
+    "ANET": {
+      "total_signals": 166,
+      "wins": 61,
+      "win_rate": 36.7,
+      "time_seconds": 44.7
+    },
+    "MPC": {
+      "total_signals": 146,
+      "wins": 55,
+      "win_rate": 37.7,
+      "time_seconds": 22.1
+    },
+    "VEA": {
+      "total_signals": 118,
+      "wins": 43,
+      "win_rate": 36.4,
+      "time_seconds": 24.3
+    },
+    "XBI": {
+      "total_signals": 116,
+      "wins": 45,
+      "win_rate": 38.8,
+      "time_seconds": 35.3
+    },
+    "ASTS": {
+      "total_signals": 238,
+      "wins": 76,
+      "win_rate": 31.9,
+      "time_seconds": 87.3
+    },
+    "SPGI": {
+      "total_signals": 111,
+      "wins": 45,
+      "win_rate": 40.5,
+      "time_seconds": 21.5
+    },
+    "SPYM": {
+      "total_signals": 81,
+      "wins": 33,
+      "win_rate": 40.7,
+      "time_seconds": 37.0
+    },
+    "AKAM": {
+      "total_signals": 156,
+      "wins": 56,
+      "win_rate": 35.9,
+      "time_seconds": 25.4
+    },
+    "WBD": {
+      "total_signals": 139,
+      "wins": 58,
+      "win_rate": 41.7,
+      "time_seconds": 51.6
+    },
+    "IREN": {
+      "total_signals": 223,
+      "wins": 72,
+      "win_rate": 32.3,
+      "time_seconds": 107.4
+    },
+    "AGG": {
+      "total_signals": 78,
+      "wins": 31,
       "win_rate": 39.7,
-      "time_seconds": 21.1
+      "time_seconds": 18.2
     },
-    "CL": {
-      "total_signals": 326,
-      "wins": 120,
+    "BSX": {
+      "total_signals": 114,
+      "wins": 42,
       "win_rate": 36.8,
       "time_seconds": 24.2
     },
-    "JCI": {
-      "total_signals": 310,
-      "wins": 108,
-      "win_rate": 34.8,
-      "time_seconds": 21.6
+    "KRE": {
+      "total_signals": 153,
+      "wins": 54,
+      "win_rate": 35.3,
+      "time_seconds": 29.2
     },
-    "XOP": {
-      "total_signals": 391,
-      "wins": 136,
-      "win_rate": 34.8,
-      "time_seconds": 29.9
+    "SHOP": {
+      "total_signals": 199,
+      "wins": 62,
+      "win_rate": 31.2,
+      "time_seconds": 48.1
     },
-    "IWD": {
+    "PYPL": {
+      "total_signals": 167,
+      "wins": 61,
+      "win_rate": 36.5,
+      "time_seconds": 64.9
+    },
+    "MDY": {
+      "total_signals": 105,
+      "wins": 49,
+      "win_rate": 46.7,
+      "time_seconds": 19.7
+    },
+    "AEM": {
+      "total_signals": 213,
+      "wins": 75,
+      "win_rate": 35.2,
+      "time_seconds": 37.1
+    },
+    "BIL": {
+      "total_signals": 109,
+      "wins": 24,
+      "win_rate": 22.0,
+      "time_seconds": 45.3
+    },
+    "BLK": {
+      "total_signals": 158,
+      "wins": 53,
+      "win_rate": 33.5,
+      "time_seconds": 29.7
+    },
+    "CVS": {
+      "total_signals": 127,
+      "wins": 44,
+      "win_rate": 34.6,
+      "time_seconds": 28.6
+    },
+    "SOFI": {
       "total_signals": 244,
-      "wins": 108,
-      "win_rate": 44.3,
-      "time_seconds": 19.2
+      "wins": 90,
+      "win_rate": 36.9,
+      "time_seconds": 87.0
     },
-    "DRI": {
-      "total_signals": 314,
-      "wins": 115,
-      "win_rate": 36.6,
-      "time_seconds": 19.5
-    },
-    "USB": {
-      "total_signals": 302,
-      "wins": 128,
-      "win_rate": 42.4,
-      "time_seconds": 23.1
-    },
-    "RCL": {
-      "total_signals": 414,
-      "wins": 172,
-      "win_rate": 41.5,
-      "time_seconds": 33.6
-    },
-    "ADM": {
-      "total_signals": 321,
-      "wins": 120,
-      "win_rate": 37.4,
-      "time_seconds": 25.4
-    },
-    "TSEM": {
-      "total_signals": 460,
-      "wins": 177,
-      "win_rate": 38.5,
-      "time_seconds": 40.6
-    },
-    "ADSK": {
-      "total_signals": 307,
-      "wins": 105,
-      "win_rate": 34.2,
-      "time_seconds": 24.4
-    },
-    "AAOI": {
-      "total_signals": 500,
-      "wins": 206,
-      "win_rate": 41.2,
-      "time_seconds": 70.7
-    },
-    "PKG": {
-      "total_signals": 297,
-      "wins": 109,
-      "win_rate": 36.7,
-      "time_seconds": 19.1
-    },
-    "AEP": {
-      "total_signals": 294,
-      "wins": 123,
-      "win_rate": 41.8,
-      "time_seconds": 22.4
-    },
-    "TMO": {
-      "total_signals": 312,
-      "wins": 102,
-      "win_rate": 32.7,
-      "time_seconds": 27.3
-    },
-    "B": {
-      "total_signals": 463,
-      "wins": 174,
-      "win_rate": 37.6,
-      "time_seconds": 64.7
-    },
-    "VG": {
-      "total_signals": 436,
-      "wins": 171,
-      "win_rate": 39.2,
-      "time_seconds": 63.1
-    },
-    "KEYS": {
-      "total_signals": 306,
-      "wins": 115,
-      "win_rate": 37.6,
-      "time_seconds": 20.6
-    },
-    "RITM": {
-      "total_signals": 347,
-      "wins": 129,
-      "win_rate": 37.2,
-      "time_seconds": 29.4
-    },
-    "PSX": {
-      "total_signals": 329,
-      "wins": 123,
-      "win_rate": 37.4,
-      "time_seconds": 22.7
-    },
-    "ISRG": {
-      "total_signals": 366,
-      "wins": 127,
-      "win_rate": 34.7,
-      "time_seconds": 27.0
-    },
-    "FITB": {
-      "total_signals": 313,
-      "wins": 126,
-      "win_rate": 40.3,
-      "time_seconds": 22.0
-    },
-    "EXE": {
-      "total_signals": 332,
-      "wins": 113,
-      "win_rate": 34.0,
-      "time_seconds": 23.4
-    },
-    "HCA": {
-      "total_signals": 324,
-      "wins": 121,
-      "win_rate": 37.3,
-      "time_seconds": 22.6
-    },
-    "GIS": {
-      "total_signals": 342,
-      "wins": 126,
-      "win_rate": 36.8,
-      "time_seconds": 30.9
-    },
-    "TZA": {
-      "total_signals": 490,
-      "wins": 171,
-      "win_rate": 34.9,
-      "time_seconds": 80.6
-    },
-    "DT": {
-      "total_signals": 281,
-      "wins": 121,
-      "win_rate": 43.1,
+    "INFY": {
+      "total_signals": 144,
+      "wins": 48,
+      "win_rate": 33.3,
       "time_seconds": 25.2
     },
-    "CTRA": {
-      "total_signals": 381,
-      "wins": 139,
-      "win_rate": 36.5,
-      "time_seconds": 29.8
+    "ZTS": {
+      "total_signals": 100,
+      "wins": 35,
+      "win_rate": 35.0,
+      "time_seconds": 21.4
     },
-    "PAYX": {
-      "total_signals": 287,
-      "wins": 97,
-      "win_rate": 33.8,
+    "XLY": {
+      "total_signals": 121,
+      "wins": 44,
+      "win_rate": 36.4,
+      "time_seconds": 23.5
+    },
+    "FTNT": {
+      "total_signals": 151,
+      "wins": 49,
+      "win_rate": 32.5,
+      "time_seconds": 29.2
+    },
+    "SCHX": {
+      "total_signals": 104,
+      "wins": 41,
+      "win_rate": 39.4,
+      "time_seconds": 24.1
+    },
+    "SPDN": {
+      "total_signals": 130,
+      "wins": 45,
+      "win_rate": 34.6,
+      "time_seconds": 24.0
+    },
+    "FAST": {
+      "total_signals": 124,
+      "wins": 42,
+      "win_rate": 33.9,
+      "time_seconds": 22.5
+    },
+    "TRV": {
+      "total_signals": 135,
+      "wins": 48,
+      "win_rate": 35.6,
+      "time_seconds": 18.6
+    },
+    "SITM": {
+      "total_signals": 174,
+      "wins": 64,
+      "win_rate": 36.8,
+      "time_seconds": 26.1
+    },
+    "DDOG": {
+      "total_signals": 173,
+      "wins": 70,
+      "win_rate": 40.5,
+      "time_seconds": 37.9
+    },
+    "PAAS": {
+      "total_signals": 268,
+      "wins": 101,
+      "win_rate": 37.7,
+      "time_seconds": 62.3
+    },
+    "FCX": {
+      "total_signals": 247,
+      "wins": 82,
+      "win_rate": 33.2,
+      "time_seconds": 58.4
+    },
+    "GM": {
+      "total_signals": 154,
+      "wins": 58,
+      "win_rate": 37.7,
+      "time_seconds": 30.9
+    },
+    "SBUX": {
+      "total_signals": 150,
+      "wins": 55,
+      "win_rate": 36.7,
+      "time_seconds": 34.8
+    },
+    "EMB": {
+      "total_signals": 86,
+      "wins": 34,
+      "win_rate": 39.5,
+      "time_seconds": 16.3
+    },
+    "KMB": {
+      "total_signals": 87,
+      "wins": 27,
+      "win_rate": 31.0,
+      "time_seconds": 27.7
+    },
+    "SPOT": {
+      "total_signals": 133,
+      "wins": 52,
+      "win_rate": 39.1,
+      "time_seconds": 35.1
+    },
+    "BP": {
+      "total_signals": 165,
+      "wins": 59,
+      "win_rate": 35.8,
+      "time_seconds": 52.7
+    },
+    "MDLZ": {
+      "total_signals": 108,
+      "wins": 45,
+      "win_rate": 41.7,
+      "time_seconds": 24.5
+    },
+    "FIX": {
+      "total_signals": 138,
+      "wins": 63,
+      "win_rate": 45.7,
+      "time_seconds": 26.7
+    },
+    "RGLD": {
+      "total_signals": 183,
+      "wins": 61,
+      "win_rate": 33.3,
+      "time_seconds": 36.1
+    },
+    "WDAY": {
+      "total_signals": 118,
+      "wins": 55,
+      "win_rate": 46.6,
+      "time_seconds": 26.2
+    },
+    "JNK": {
+      "total_signals": 79,
+      "wins": 24,
+      "win_rate": 30.4,
+      "time_seconds": 16.3
+    },
+    "QQQM": {
+      "total_signals": 138,
+      "wins": 51,
+      "win_rate": 37.0,
+      "time_seconds": 52.7
+    },
+    "IJH": {
+      "total_signals": 104,
+      "wins": 48,
+      "win_rate": 46.2,
+      "time_seconds": 20.6
+    },
+    "ITOT": {
+      "total_signals": 112,
+      "wins": 49,
+      "win_rate": 43.8,
+      "time_seconds": 17.9
+    },
+    "ARES": {
+      "total_signals": 141,
+      "wins": 59,
+      "win_rate": 41.8,
+      "time_seconds": 22.5
+    },
+    "PNC": {
+      "total_signals": 103,
+      "wins": 39,
+      "win_rate": 37.9,
+      "time_seconds": 19.2
+    },
+    "GLDM": {
+      "total_signals": 176,
+      "wins": 58,
+      "win_rate": 33.0,
+      "time_seconds": 57.0
+    },
+    "AGX": {
+      "total_signals": 151,
+      "wins": 62,
+      "win_rate": 41.1,
       "time_seconds": 22.1
     },
-    "ROP": {
-      "total_signals": 224,
-      "wins": 78,
-      "win_rate": 34.8,
+    "NOC": {
+      "total_signals": 131,
+      "wins": 54,
+      "win_rate": 41.2,
+      "time_seconds": 23.0
+    },
+    "CME": {
+      "total_signals": 111,
+      "wins": 40,
+      "win_rate": 36.0,
+      "time_seconds": 20.7
+    },
+    "CB": {
+      "total_signals": 110,
+      "wins": 34,
+      "win_rate": 30.9,
+      "time_seconds": 19.7
+    },
+    "MDLN": {
+      "total_signals": 74,
+      "wins": 27,
+      "win_rate": 36.5,
+      "time_seconds": 13.7
+    },
+    "HSY": {
+      "total_signals": 119,
+      "wins": 42,
+      "win_rate": 35.3,
       "time_seconds": 19.8
     },
-    "ARKK": {
-      "total_signals": 466,
-      "wins": 181,
+    "UNP": {
+      "total_signals": 122,
+      "wins": 40,
+      "win_rate": 32.8,
+      "time_seconds": 19.1
+    },
+    "DASH": {
+      "total_signals": 136,
+      "wins": 52,
+      "win_rate": 38.2,
+      "time_seconds": 37.2
+    },
+    "IEMG": {
+      "total_signals": 117,
+      "wins": 47,
+      "win_rate": 40.2,
+      "time_seconds": 21.9
+    },
+    "CCL": {
+      "total_signals": 167,
+      "wins": 62,
+      "win_rate": 37.1,
+      "time_seconds": 57.6
+    },
+    "MMM": {
+      "total_signals": 121,
+      "wins": 42,
+      "win_rate": 34.7,
+      "time_seconds": 28.3
+    },
+    "EXPE": {
+      "total_signals": 139,
+      "wins": 50,
+      "win_rate": 36.0,
+      "time_seconds": 24.6
+    },
+    "DAL": {
+      "total_signals": 173,
+      "wins": 60,
+      "win_rate": 34.7,
+      "time_seconds": 41.3
+    },
+    "TJX": {
+      "total_signals": 108,
+      "wins": 42,
+      "win_rate": 38.9,
+      "time_seconds": 21.3
+    },
+    "LYFT": {
+      "total_signals": 165,
+      "wins": 63,
+      "win_rate": 38.2,
+      "time_seconds": 51.1
+    },
+    "XLC": {
+      "total_signals": 98,
+      "wins": 34,
+      "win_rate": 34.7,
+      "time_seconds": 19.7
+    },
+    "AMT": {
+      "total_signals": 100,
+      "wins": 42,
+      "win_rate": 42.0,
+      "time_seconds": 20.2
+    },
+    "CL": {
+      "total_signals": 123,
+      "wins": 40,
+      "win_rate": 32.5,
+      "time_seconds": 23.2
+    },
+    "JCI": {
+      "total_signals": 142,
+      "wins": 43,
+      "win_rate": 30.3,
+      "time_seconds": 20.8
+    },
+    "XOP": {
+      "total_signals": 136,
+      "wins": 51,
+      "win_rate": 37.5,
+      "time_seconds": 29.6
+    },
+    "IWD": {
+      "total_signals": 105,
+      "wins": 42,
+      "win_rate": 40.0,
+      "time_seconds": 18.1
+    },
+    "DRI": {
+      "total_signals": 108,
+      "wins": 41,
+      "win_rate": 38.0,
+      "time_seconds": 18.4
+    },
+    "USB": {
+      "total_signals": 120,
+      "wins": 53,
+      "win_rate": 44.2,
+      "time_seconds": 22.0
+    },
+    "RCL": {
+      "total_signals": 187,
+      "wins": 71,
+      "win_rate": 38.0,
+      "time_seconds": 33.2
+    },
+    "ADM": {
+      "total_signals": 125,
+      "wins": 49,
+      "win_rate": 39.2,
+      "time_seconds": 23.1
+    },
+    "TSEM": {
+      "total_signals": 243,
+      "wins": 94,
+      "win_rate": 38.7,
+      "time_seconds": 40.8
+    },
+    "ADSK": {
+      "total_signals": 109,
+      "wins": 40,
+      "win_rate": 36.7,
+      "time_seconds": 23.4
+    },
+    "AAOI": {
+      "total_signals": 253,
+      "wins": 100,
+      "win_rate": 39.5,
+      "time_seconds": 72.4
+    },
+    "PKG": {
+      "total_signals": 129,
+      "wins": 50,
       "win_rate": 38.8,
-      "time_seconds": 42.9
+      "time_seconds": 18.0
+    },
+    "AEP": {
+      "total_signals": 124,
+      "wins": 54,
+      "win_rate": 43.5,
+      "time_seconds": 21.5
+    },
+    "TMO": {
+      "total_signals": 133,
+      "wins": 54,
+      "win_rate": 40.6,
+      "time_seconds": 20.5
+    },
+    "B": {
+      "total_signals": 218,
+      "wins": 72,
+      "win_rate": 33.0,
+      "time_seconds": 64.0
+    },
+    "VG": {
+      "total_signals": 201,
+      "wins": 77,
+      "win_rate": 38.3,
+      "time_seconds": 62.9
+    },
+    "KEYS": {
+      "total_signals": 138,
+      "wins": 47,
+      "win_rate": 34.1,
+      "time_seconds": 20.8
+    },
+    "RITM": {
+      "total_signals": 153,
+      "wins": 54,
+      "win_rate": 35.3,
+      "time_seconds": 29.0
+    },
+    "PSX": {
+      "total_signals": 138,
+      "wins": 52,
+      "win_rate": 37.7,
+      "time_seconds": 22.2
+    },
+    "ISRG": {
+      "total_signals": 129,
+      "wins": 46,
+      "win_rate": 35.7,
+      "time_seconds": 27.4
+    },
+    "FITB": {
+      "total_signals": 125,
+      "wins": 47,
+      "win_rate": 37.6,
+      "time_seconds": 21.7
+    },
+    "EXE": {
+      "total_signals": 160,
+      "wins": 65,
+      "win_rate": 40.6,
+      "time_seconds": 23.2
+    },
+    "HCA": {
+      "total_signals": 122,
+      "wins": 48,
+      "win_rate": 39.3,
+      "time_seconds": 20.4
+    },
+    "GIS": {
+      "total_signals": 106,
+      "wins": 39,
+      "win_rate": 36.8,
+      "time_seconds": 31.5
+    },
+    "TZA": {
+      "total_signals": 223,
+      "wins": 86,
+      "win_rate": 38.6,
+      "time_seconds": 80.3
+    },
+    "DT": {
+      "total_signals": 102,
+      "wins": 53,
+      "win_rate": 52.0,
+      "time_seconds": 22.8
+    },
+    "CTRA": {
+      "total_signals": 169,
+      "wins": 67,
+      "win_rate": 39.6,
+      "time_seconds": 28.4
+    },
+    "PAYX": {
+      "total_signals": 88,
+      "wins": 29,
+      "win_rate": 33.0,
+      "time_seconds": 20.5
+    },
+    "ROP": {
+      "total_signals": 86,
+      "wins": 35,
+      "win_rate": 40.7,
+      "time_seconds": 19.7
+    },
+    "ARKK": {
+      "total_signals": 163,
+      "wins": 68,
+      "win_rate": 41.7,
+      "time_seconds": 43.2
     },
     "EA": {
-      "total_signals": 198,
-      "wins": 47,
-      "win_rate": 23.7,
-      "time_seconds": 17.6
+      "total_signals": 84,
+      "wins": 25,
+      "win_rate": 29.8,
+      "time_seconds": 17.3
     },
     "NKE": {
-      "total_signals": 410,
-      "wins": 146,
-      "win_rate": 35.6,
-      "time_seconds": 56.3
+      "total_signals": 159,
+      "wins": 57,
+      "win_rate": 35.8,
+      "time_seconds": 56.4
     },
     "HWM": {
-      "total_signals": 320,
-      "wins": 133,
-      "win_rate": 41.6,
-      "time_seconds": 22.6
+      "total_signals": 139,
+      "wins": 54,
+      "win_rate": 38.8,
+      "time_seconds": 22.4
     },
     "SHEL": {
-      "total_signals": 437,
-      "wins": 179,
-      "win_rate": 41.0,
-      "time_seconds": 47.2
+      "total_signals": 137,
+      "wins": 53,
+      "win_rate": 38.7,
+      "time_seconds": 41.6
     },
     "TSLL": {
-      "total_signals": 496,
-      "wins": 179,
-      "win_rate": 36.1,
-      "time_seconds": 96.1
+      "total_signals": 207,
+      "wins": 75,
+      "win_rate": 36.2,
+      "time_seconds": 96.7
     },
     "VSEC": {
-      "total_signals": 291,
-      "wins": 117,
-      "win_rate": 40.2,
-      "time_seconds": 19.5
+      "total_signals": 144,
+      "wins": 50,
+      "win_rate": 34.7,
+      "time_seconds": 17.9
     },
     "CI": {
-      "total_signals": 316,
-      "wins": 108,
-      "win_rate": 34.2,
-      "time_seconds": 22.7
+      "total_signals": 118,
+      "wins": 36,
+      "win_rate": 30.5,
+      "time_seconds": 22.4
     },
     "ALAB": {
-      "total_signals": 509,
-      "wins": 200,
-      "win_rate": 39.3,
-      "time_seconds": 63.1
+      "total_signals": 260,
+      "wins": 97,
+      "win_rate": 37.3,
+      "time_seconds": 63.5
     },
     "OVV": {
-      "total_signals": 330,
-      "wins": 120,
-      "win_rate": 36.4,
-      "time_seconds": 22.1
+      "total_signals": 154,
+      "wins": 57,
+      "win_rate": 37.0,
+      "time_seconds": 21.9
     },
     "GD": {
-      "total_signals": 314,
-      "wins": 112,
-      "win_rate": 35.7,
+      "total_signals": 129,
+      "wins": 48,
+      "win_rate": 37.2,
       "time_seconds": 22.3
     },
     "VTV": {
-      "total_signals": 258,
-      "wins": 110,
-      "win_rate": 42.6,
-      "time_seconds": 21.3
+      "total_signals": 96,
+      "wins": 36,
+      "win_rate": 37.5,
+      "time_seconds": 19.9
     },
     "SAP": {
-      "total_signals": 374,
-      "wins": 157,
-      "win_rate": 42.0,
-      "time_seconds": 36.9
+      "total_signals": 139,
+      "wins": 60,
+      "win_rate": 43.2,
+      "time_seconds": 36.5
     },
     "VRTX": {
-      "total_signals": 367,
-      "wins": 129,
-      "win_rate": 35.1,
-      "time_seconds": 22.5
+      "total_signals": 146,
+      "wins": 48,
+      "win_rate": 32.9,
+      "time_seconds": 22.0
     },
     "REGN": {
-      "total_signals": 319,
-      "wins": 123,
-      "win_rate": 38.6,
-      "time_seconds": 22.2
+      "total_signals": 120,
+      "wins": 46,
+      "win_rate": 38.3,
+      "time_seconds": 21.9
     },
     "CRH": {
-      "total_signals": 396,
-      "wins": 153,
-      "win_rate": 38.6,
-      "time_seconds": 29.3
+      "total_signals": 157,
+      "wins": 52,
+      "win_rate": 33.1,
+      "time_seconds": 29.1
     },
     "SPXL": {
-      "total_signals": 531,
-      "wins": 196,
-      "win_rate": 36.9,
-      "time_seconds": 66.7
+      "total_signals": 187,
+      "wins": 70,
+      "win_rate": 37.4,
+      "time_seconds": 67.9
     },
     "SPXS": {
-      "total_signals": 482,
-      "wins": 186,
-      "win_rate": 38.6,
-      "time_seconds": 65.9
+      "total_signals": 175,
+      "wins": 72,
+      "win_rate": 41.1,
+      "time_seconds": 65.1
     },
     "EQT": {
-      "total_signals": 421,
-      "wins": 152,
-      "win_rate": 36.1,
-      "time_seconds": 35.2
+      "total_signals": 186,
+      "wins": 70,
+      "win_rate": 37.6,
+      "time_seconds": 34.0
     },
     "DUK": {
-      "total_signals": 300,
-      "wins": 94,
-      "win_rate": 31.3,
-      "time_seconds": 22.8
+      "total_signals": 113,
+      "wins": 37,
+      "win_rate": 32.7,
+      "time_seconds": 21.8
     },
     "TT": {
-      "total_signals": 294,
-      "wins": 108,
-      "win_rate": 36.7,
-      "time_seconds": 20.0
+      "total_signals": 110,
+      "wins": 42,
+      "win_rate": 38.2,
+      "time_seconds": 20.1
     },
     "SYK": {
-      "total_signals": 268,
-      "wins": 107,
-      "win_rate": 39.9,
-      "time_seconds": 21.1
+      "total_signals": 109,
+      "wins": 37,
+      "win_rate": 33.9,
+      "time_seconds": 19.9
     },
     "CDE": {
-      "total_signals": 503,
-      "wins": 211,
-      "win_rate": 41.9,
-      "time_seconds": 77.7
+      "total_signals": 239,
+      "wins": 104,
+      "win_rate": 43.5,
+      "time_seconds": 79.2
     },
     "NVO": {
-      "total_signals": 466,
-      "wins": 156,
-      "win_rate": 33.5,
-      "time_seconds": 77.5
+      "total_signals": 185,
+      "wins": 54,
+      "win_rate": 29.2,
+      "time_seconds": 79.0
     },
     "VGLT": {
-      "total_signals": 254,
-      "wins": 92,
-      "win_rate": 36.2,
+      "total_signals": 81,
+      "wins": 28,
+      "win_rate": 34.6,
       "time_seconds": 24.3
     },
     "MDT": {
-      "total_signals": 301,
-      "wins": 103,
-      "win_rate": 34.2,
-      "time_seconds": 22.9
+      "total_signals": 112,
+      "wins": 44,
+      "win_rate": 39.3,
+      "time_seconds": 22.7
     },
     "EBAY": {
-      "total_signals": 317,
-      "wins": 123,
-      "win_rate": 38.8,
-      "time_seconds": 24.5
+      "total_signals": 125,
+      "wins": 60,
+      "win_rate": 48.0,
+      "time_seconds": 24.0
     },
     "CDNS": {
-      "total_signals": 353,
-      "wins": 128,
-      "win_rate": 36.3,
-      "time_seconds": 28.3
+      "total_signals": 134,
+      "wins": 44,
+      "win_rate": 32.8,
+      "time_seconds": 26.4
     },
     "BND": {
-      "total_signals": 209,
-      "wins": 63,
-      "win_rate": 30.1,
-      "time_seconds": 25.7
+      "total_signals": 93,
+      "wins": 26,
+      "win_rate": 28.0,
+      "time_seconds": 25.5
     },
     "SHY": {
-      "total_signals": 203,
-      "wins": 64,
-      "win_rate": 31.5,
+      "total_signals": 83,
+      "wins": 28,
+      "win_rate": 33.7,
       "time_seconds": 23.6
     },
     "APA": {
-      "total_signals": 437,
-      "wins": 144,
-      "win_rate": 33.0,
-      "time_seconds": 38.1
+      "total_signals": 177,
+      "wins": 57,
+      "win_rate": 32.2,
+      "time_seconds": 36.8
     },
     "APO": {
-      "total_signals": 360,
-      "wins": 137,
-      "win_rate": 38.1,
-      "time_seconds": 25.2
+      "total_signals": 148,
+      "wins": 68,
+      "win_rate": 45.9,
+      "time_seconds": 24.2
     },
     "CVNA": {
-      "total_signals": 501,
-      "wins": 178,
-      "win_rate": 35.5,
+      "total_signals": 225,
+      "wins": 77,
+      "win_rate": 34.2,
       "time_seconds": 52.4
     },
     "MSI": {
-      "total_signals": 271,
-      "wins": 101,
-      "win_rate": 37.3,
-      "time_seconds": 19.9
+      "total_signals": 119,
+      "wins": 44,
+      "win_rate": 37.0,
+      "time_seconds": 19.0
     },
     "XLB": {
-      "total_signals": 325,
-      "wins": 142,
-      "win_rate": 43.7,
-      "time_seconds": 26.0
+      "total_signals": 132,
+      "wins": 56,
+      "win_rate": 42.4,
+      "time_seconds": 24.1
     },
     "SO": {
-      "total_signals": 308,
-      "wins": 117,
-      "win_rate": 38.0,
-      "time_seconds": 21.2
+      "total_signals": 110,
+      "wins": 46,
+      "win_rate": 41.8,
+      "time_seconds": 21.0
     },
     "NVD": {
-      "total_signals": 453,
-      "wins": 181,
-      "win_rate": 40.0,
-      "time_seconds": 84.2
+      "total_signals": 210,
+      "wins": 83,
+      "win_rate": 39.5,
+      "time_seconds": 83.5
     },
     "WMB": {
-      "total_signals": 335,
-      "wins": 119,
-      "win_rate": 35.5,
-      "time_seconds": 22.5
+      "total_signals": 135,
+      "wins": 56,
+      "win_rate": 41.5,
+      "time_seconds": 22.3
     },
     "KWEB": {
-      "total_signals": 462,
-      "wins": 185,
-      "win_rate": 40.0,
-      "time_seconds": 50.8
+      "total_signals": 162,
+      "wins": 63,
+      "win_rate": 38.9,
+      "time_seconds": 51.1
     },
     "RDDT": {
-      "total_signals": 478,
-      "wins": 172,
-      "win_rate": 36.0,
-      "time_seconds": 57.6
+      "total_signals": 193,
+      "wins": 75,
+      "win_rate": 38.9,
+      "time_seconds": 59.7
     },
     "ABNB": {
-      "total_signals": 325,
-      "wins": 109,
-      "win_rate": 33.5,
-      "time_seconds": 27.4
+      "total_signals": 147,
+      "wins": 61,
+      "win_rate": 41.5,
+      "time_seconds": 27.6
     },
     "HLT": {
-      "total_signals": 294,
-      "wins": 114,
-      "win_rate": 38.8,
-      "time_seconds": 21.2
+      "total_signals": 106,
+      "wins": 50,
+      "win_rate": 47.2,
+      "time_seconds": 19.8
     },
     "ORLY": {
-      "total_signals": 298,
-      "wins": 108,
-      "win_rate": 36.2,
-      "time_seconds": 22.6
+      "total_signals": 117,
+      "wins": 45,
+      "win_rate": 38.5,
+      "time_seconds": 22.2
     },
     "FTAI": {
-      "total_signals": 321,
-      "wins": 123,
-      "win_rate": 38.3,
-      "time_seconds": 26.6
+      "total_signals": 163,
+      "wins": 68,
+      "win_rate": 41.7,
+      "time_seconds": 27.2
     },
     "HPQ": {
-      "total_signals": 344,
-      "wins": 129,
-      "win_rate": 37.5,
+      "total_signals": 126,
+      "wins": 52,
+      "win_rate": 41.3,
       "time_seconds": 37.8
     },
     "DHI": {
-      "total_signals": 368,
-      "wins": 139,
-      "win_rate": 37.8,
-      "time_seconds": 22.9
+      "total_signals": 125,
+      "wins": 49,
+      "win_rate": 39.2,
+      "time_seconds": 22.7
     },
     "RF": {
-      "total_signals": 287,
-      "wins": 100,
-      "win_rate": 34.8,
-      "time_seconds": 21.3
-    },
-    "FANG": {
-      "total_signals": 347,
-      "wins": 123,
-      "win_rate": 35.4,
-      "time_seconds": 25.3
-    },
-    "CAH": {
-      "total_signals": 285,
-      "wins": 102,
-      "win_rate": 35.8,
-      "time_seconds": 20.0
-    },
-    "MELI": {
-      "total_signals": 396,
-      "wins": 135,
-      "win_rate": 34.1,
-      "time_seconds": 36.1
-    },
-    "ONDS": {
-      "total_signals": 450,
-      "wins": 165,
-      "win_rate": 36.7,
-      "time_seconds": 107.5
-    },
-    "LHX": {
-      "total_signals": 331,
-      "wins": 144,
-      "win_rate": 43.5,
-      "time_seconds": 24.7
-    },
-    "GDXJ": {
-      "total_signals": 542,
-      "wins": 213,
-      "win_rate": 39.3,
-      "time_seconds": 59.4
-    },
-    "KMI": {
-      "total_signals": 320,
-      "wins": 115,
-      "win_rate": 35.9,
-      "time_seconds": 32.1
-    },
-    "CMG": {
-      "total_signals": 351,
-      "wins": 131,
-      "win_rate": 37.3,
-      "time_seconds": 43.3
-    },
-    "TDG": {
-      "total_signals": 273,
-      "wins": 106,
-      "win_rate": 38.8,
-      "time_seconds": 19.3
-    },
-    "BK": {
-      "total_signals": 271,
-      "wins": 102,
-      "win_rate": 37.6,
-      "time_seconds": 19.9
-    },
-    "UNM": {
-      "total_signals": 292,
-      "wins": 111,
-      "win_rate": 38.0,
-      "time_seconds": 17.8
-    },
-    "ROST": {
-      "total_signals": 242,
-      "wins": 83,
-      "win_rate": 34.3,
+      "total_signals": 115,
+      "wins": 48,
+      "win_rate": 41.7,
       "time_seconds": 21.0
     },
-    "NET": {
-      "total_signals": 420,
-      "wins": 159,
+    "FANG": {
+      "total_signals": 133,
+      "wins": 50,
+      "win_rate": 37.6,
+      "time_seconds": 25.7
+    },
+    "CAH": {
+      "total_signals": 135,
+      "wins": 51,
+      "win_rate": 37.8,
+      "time_seconds": 19.9
+    },
+    "MELI": {
+      "total_signals": 142,
+      "wins": 48,
+      "win_rate": 33.8,
+      "time_seconds": 35.6
+    },
+    "ONDS": {
+      "total_signals": 236,
+      "wins": 91,
+      "win_rate": 38.6,
+      "time_seconds": 108.4
+    },
+    "LHX": {
+      "total_signals": 140,
+      "wins": 53,
       "win_rate": 37.9,
-      "time_seconds": 37.9
+      "time_seconds": 24.0
+    },
+    "GDXJ": {
+      "total_signals": 225,
+      "wins": 81,
+      "win_rate": 36.0,
+      "time_seconds": 55.4
+    },
+    "KMI": {
+      "total_signals": 138,
+      "wins": 43,
+      "win_rate": 31.2,
+      "time_seconds": 29.8
+    },
+    "CMG": {
+      "total_signals": 157,
+      "wins": 64,
+      "win_rate": 40.8,
+      "time_seconds": 44.5
+    },
+    "TDG": {
+      "total_signals": 115,
+      "wins": 45,
+      "win_rate": 39.1,
+      "time_seconds": 19.8
+    },
+    "BK": {
+      "total_signals": 121,
+      "wins": 51,
+      "win_rate": 42.1,
+      "time_seconds": 19.8
+    },
+    "UNM": {
+      "total_signals": 112,
+      "wins": 38,
+      "win_rate": 33.9,
+      "time_seconds": 18.1
+    },
+    "ROST": {
+      "total_signals": 100,
+      "wins": 31,
+      "win_rate": 31.0,
+      "time_seconds": 20.4
+    },
+    "NET": {
+      "total_signals": 196,
+      "wins": 74,
+      "win_rate": 37.8,
+      "time_seconds": 37.0
     },
     "FFIV": {
-      "total_signals": 300,
-      "wins": 103,
-      "win_rate": 34.3,
-      "time_seconds": 22.3
+      "total_signals": 126,
+      "wins": 48,
+      "win_rate": 38.1,
+      "time_seconds": 21.6
     },
     "SCHD": {
-      "total_signals": 310,
-      "wins": 123,
-      "win_rate": 39.7,
-      "time_seconds": 60.4
+      "total_signals": 97,
+      "wins": 36,
+      "win_rate": 37.1,
+      "time_seconds": 61.1
     },
     "UAL": {
-      "total_signals": 404,
-      "wins": 139,
-      "win_rate": 34.4,
+      "total_signals": 175,
+      "wins": 61,
+      "win_rate": 34.9,
       "time_seconds": 37.9
     },
     "VCSH": {
-      "total_signals": 200,
-      "wins": 67,
-      "win_rate": 33.5,
-      "time_seconds": 15.7
+      "total_signals": 68,
+      "wins": 25,
+      "win_rate": 36.8,
+      "time_seconds": 14.7
     },
     "MCO": {
-      "total_signals": 277,
-      "wins": 92,
-      "win_rate": 33.2,
-      "time_seconds": 20.9
+      "total_signals": 111,
+      "wins": 38,
+      "win_rate": 34.2,
+      "time_seconds": 18.3
     },
     "AJG": {
-      "total_signals": 242,
-      "wins": 95,
-      "win_rate": 39.3,
-      "time_seconds": 21.2
+      "total_signals": 99,
+      "wins": 38,
+      "win_rate": 38.4,
+      "time_seconds": 18.5
     },
     "VWO": {
-      "total_signals": 329,
-      "wins": 133,
-      "win_rate": 40.4,
-      "time_seconds": 24.8
+      "total_signals": 128,
+      "wins": 53,
+      "win_rate": 41.4,
+      "time_seconds": 22.9
     },
     "PDD": {
-      "total_signals": 428,
-      "wins": 155,
-      "win_rate": 36.2,
-      "time_seconds": 53.1
+      "total_signals": 148,
+      "wins": 54,
+      "win_rate": 36.5,
+      "time_seconds": 48.6
     },
     "ANNA": {
-      "total_signals": 191,
-      "wins": 62,
-      "win_rate": 32.5,
-      "time_seconds": 10.1
+      "total_signals": 104,
+      "wins": 41,
+      "win_rate": 39.4,
+      "time_seconds": 8.7
     },
     "PH": {
-      "total_signals": 281,
-      "wins": 105,
-      "win_rate": 37.4,
-      "time_seconds": 19.6
+      "total_signals": 100,
+      "wins": 48,
+      "win_rate": 48.0,
+      "time_seconds": 18.2
     },
     "MUB": {
-      "total_signals": 190,
-      "wins": 71,
-      "win_rate": 37.4,
-      "time_seconds": 16.5
+      "total_signals": 85,
+      "wins": 27,
+      "win_rate": 31.8,
+      "time_seconds": 14.8
     },
     "NXPI": {
-      "total_signals": 316,
-      "wins": 121,
-      "win_rate": 38.3,
-      "time_seconds": 25.2
+      "total_signals": 139,
+      "wins": 55,
+      "win_rate": 39.6,
+      "time_seconds": 22.6
     },
     "SUNB": {
-      "total_signals": 69,
-      "wins": 33,
-      "win_rate": 47.8,
-      "time_seconds": 3.6
+      "total_signals": 32,
+      "wins": 14,
+      "win_rate": 43.8,
+      "time_seconds": 3.5
     },
     "PCG": {
-      "total_signals": 318,
-      "wins": 107,
-      "win_rate": 33.6,
-      "time_seconds": 28.0
+      "total_signals": 151,
+      "wins": 54,
+      "win_rate": 35.8,
+      "time_seconds": 25.1
     },
     "AMP": {
-      "total_signals": 267,
-      "wins": 114,
-      "win_rate": 42.7,
-      "time_seconds": 19.3
+      "total_signals": 113,
+      "wins": 41,
+      "win_rate": 36.3,
+      "time_seconds": 17.2
     },
     "TFC": {
-      "total_signals": 313,
-      "wins": 113,
-      "win_rate": 36.1,
-      "time_seconds": 21.6
+      "total_signals": 129,
+      "wins": 50,
+      "win_rate": 38.8,
+      "time_seconds": 20.1
     },
     "MRNA": {
-      "total_signals": 451,
-      "wins": 174,
-      "win_rate": 38.6,
-      "time_seconds": 65.3
+      "total_signals": 197,
+      "wins": 81,
+      "win_rate": 41.1,
+      "time_seconds": 60.6
     },
     "VGK": {
-      "total_signals": 301,
-      "wins": 145,
-      "win_rate": 48.2,
-      "time_seconds": 22.3
+      "total_signals": 112,
+      "wins": 43,
+      "win_rate": 38.4,
+      "time_seconds": 20.4
     },
     "MCHP": {
-      "total_signals": 381,
-      "wins": 151,
-      "win_rate": 39.6,
-      "time_seconds": 31.3
+      "total_signals": 159,
+      "wins": 68,
+      "win_rate": 42.8,
+      "time_seconds": 29.5
     },
     "LYV": {
-      "total_signals": 330,
-      "wins": 145,
-      "win_rate": 43.9,
-      "time_seconds": 21.0
+      "total_signals": 167,
+      "wins": 61,
+      "win_rate": 36.5,
+      "time_seconds": 19.3
     },
     "GTLS": {
-      "total_signals": 178,
-      "wins": 65,
-      "win_rate": 36.5,
-      "time_seconds": 15.3
+      "total_signals": 80,
+      "wins": 30,
+      "win_rate": 37.5,
+      "time_seconds": 13.9
     },
     "AON": {
-      "total_signals": 309,
-      "wins": 113,
+      "total_signals": 118,
+      "wins": 46,
+      "win_rate": 39.0,
+      "time_seconds": 16.9
+    },
+    "CTSH": {
+      "total_signals": 133,
+      "wins": 40,
+      "win_rate": 30.1,
+      "time_seconds": 20.6
+    },
+    "NTAP": {
+      "total_signals": 112,
+      "wins": 42,
+      "win_rate": 37.5,
+      "time_seconds": 19.5
+    },
+    "MNST": {
+      "total_signals": 114,
+      "wins": 39,
+      "win_rate": 34.2,
+      "time_seconds": 21.8
+    },
+    "CSX": {
+      "total_signals": 136,
+      "wins": 51,
+      "win_rate": 37.5,
+      "time_seconds": 24.2
+    },
+    "OEF": {
+      "total_signals": 111,
+      "wins": 49,
+      "win_rate": 44.1,
+      "time_seconds": 16.9
+    },
+    "OMC": {
+      "total_signals": 145,
+      "wins": 53,
+      "win_rate": 36.6,
+      "time_seconds": 19.1
+    },
+    "ZS": {
+      "total_signals": 137,
+      "wins": 42,
+      "win_rate": 30.7,
+      "time_seconds": 38.1
+    },
+    "SN": {
+      "total_signals": 158,
+      "wins": 69,
+      "win_rate": 43.7,
+      "time_seconds": 20.8
+    },
+    "VEEV": {
+      "total_signals": 107,
+      "wins": 39,
+      "win_rate": 36.4,
+      "time_seconds": 23.1
+    },
+    "TPL": {
+      "total_signals": 149,
+      "wins": 51,
+      "win_rate": 34.2,
+      "time_seconds": 20.1
+    },
+    "RIVN": {
+      "total_signals": 233,
+      "wins": 88,
+      "win_rate": 37.8,
+      "time_seconds": 71.0
+    },
+    "GEN": {
+      "total_signals": 98,
+      "wins": 33,
+      "win_rate": 33.7,
+      "time_seconds": 19.0
+    },
+    "NVDL": {
+      "total_signals": 229,
+      "wins": 88,
+      "win_rate": 38.4,
+      "time_seconds": 84.8
+    },
+    "EMXC": {
+      "total_signals": 171,
+      "wins": 71,
+      "win_rate": 41.5,
+      "time_seconds": 17.6
+    },
+    "VXUS": {
+      "total_signals": 148,
+      "wins": 57,
+      "win_rate": 38.5,
+      "time_seconds": 32.0
+    },
+    "ON": {
+      "total_signals": 190,
+      "wins": 75,
+      "win_rate": 39.5,
+      "time_seconds": 35.3
+    },
+    "TTWO": {
+      "total_signals": 129,
+      "wins": 48,
+      "win_rate": 37.2,
+      "time_seconds": 21.5
+    },
+    "LDOS": {
+      "total_signals": 116,
+      "wins": 46,
+      "win_rate": 39.7,
+      "time_seconds": 17.9
+    },
+    "VALE": {
+      "total_signals": 175,
+      "wins": 62,
+      "win_rate": 35.4,
+      "time_seconds": 40.7
+    },
+    "HII": {
+      "total_signals": 146,
+      "wins": 59,
+      "win_rate": 40.4,
+      "time_seconds": 22.4
+    },
+    "ECL": {
+      "total_signals": 108,
+      "wins": 35,
+      "win_rate": 32.4,
+      "time_seconds": 17.4
+    },
+    "HIMS": {
+      "total_signals": 186,
+      "wins": 73,
+      "win_rate": 39.2,
+      "time_seconds": 83.3
+    },
+    "ELV": {
+      "total_signals": 132,
+      "wins": 57,
+      "win_rate": 43.2,
+      "time_seconds": 22.0
+    },
+    "CTVA": {
+      "total_signals": 110,
+      "wins": 48,
+      "win_rate": 43.6,
+      "time_seconds": 18.3
+    },
+    "BAH": {
+      "total_signals": 115,
+      "wins": 52,
+      "win_rate": 45.2,
+      "time_seconds": 20.8
+    },
+    "SPYG": {
+      "total_signals": 109,
+      "wins": 38,
+      "win_rate": 34.9,
+      "time_seconds": 21.4
+    },
+    "VT": {
+      "total_signals": 151,
+      "wins": 66,
+      "win_rate": 43.7,
+      "time_seconds": 25.1
+    },
+    "AFL": {
+      "total_signals": 104,
+      "wins": 36,
+      "win_rate": 34.6,
+      "time_seconds": 17.0
+    },
+    "ICE": {
+      "total_signals": 113,
+      "wins": 42,
+      "win_rate": 37.2,
+      "time_seconds": 18.6
+    },
+    "EXC": {
+      "total_signals": 123,
+      "wins": 42,
+      "win_rate": 34.1,
+      "time_seconds": 20.7
+    },
+    "SCHG": {
+      "total_signals": 125,
+      "wins": 57,
+      "win_rate": 45.6,
+      "time_seconds": 38.6
+    },
+    "SPG": {
+      "total_signals": 99,
+      "wins": 46,
+      "win_rate": 46.5,
+      "time_seconds": 17.1
+    },
+    "PLD": {
+      "total_signals": 113,
+      "wins": 36,
+      "win_rate": 31.9,
+      "time_seconds": 17.9
+    },
+    "XEL": {
+      "total_signals": 93,
+      "wins": 34,
       "win_rate": 36.6,
       "time_seconds": 18.4
     },
-    "CTSH": {
-      "total_signals": 306,
-      "wins": 112,
-      "win_rate": 36.6,
-      "time_seconds": 21.2
-    },
-    "NTAP": {
-      "total_signals": 296,
-      "wins": 123,
-      "win_rate": 41.6,
-      "time_seconds": 21.0
-    },
-    "MNST": {
-      "total_signals": 289,
-      "wins": 115,
+    "CRDO": {
+      "total_signals": 251,
+      "wins": 100,
       "win_rate": 39.8,
-      "time_seconds": 23.7
+      "time_seconds": 65.1
     },
-    "CSX": {
-      "total_signals": 315,
-      "wins": 118,
-      "win_rate": 37.5,
+    "VMC": {
+      "total_signals": 140,
+      "wins": 45,
+      "win_rate": 32.1,
+      "time_seconds": 17.9
+    },
+    "PFG": {
+      "total_signals": 111,
+      "wins": 39,
+      "win_rate": 35.1,
+      "time_seconds": 17.2
+    },
+    "ALL": {
+      "total_signals": 134,
+      "wins": 42,
+      "win_rate": 31.3,
+      "time_seconds": 17.6
+    },
+    "FICO": {
+      "total_signals": 137,
+      "wins": 50,
+      "win_rate": 36.5,
+      "time_seconds": 21.6
+    },
+    "ODFL": {
+      "total_signals": 118,
+      "wins": 44,
+      "win_rate": 37.3,
+      "time_seconds": 20.8
+    },
+    "CTAS": {
+      "total_signals": 81,
+      "wins": 31,
+      "win_rate": 38.3,
+      "time_seconds": 18.1
+    },
+    "NLY": {
+      "total_signals": 123,
+      "wins": 44,
+      "win_rate": 35.8,
+      "time_seconds": 28.1
+    },
+    "VXX": {
+      "total_signals": 234,
+      "wins": 86,
+      "win_rate": 36.8,
+      "time_seconds": 68.4
+    },
+    "WPM": {
+      "total_signals": 231,
+      "wins": 65,
+      "win_rate": 28.1,
+      "time_seconds": 34.5
+    },
+    "APD": {
+      "total_signals": 96,
+      "wins": 35,
+      "win_rate": 36.5,
+      "time_seconds": 18.8
+    },
+    "OKLO": {
+      "total_signals": 224,
+      "wins": 73,
+      "win_rate": 32.6,
+      "time_seconds": 87.9
+    },
+    "HUM": {
+      "total_signals": 139,
+      "wins": 57,
+      "win_rate": 41.0,
+      "time_seconds": 26.5
+    },
+    "INDA": {
+      "total_signals": 95,
+      "wins": 31,
+      "win_rate": 32.6,
+      "time_seconds": 23.5
+    },
+    "TNA": {
+      "total_signals": 255,
+      "wins": 86,
+      "win_rate": 33.7,
+      "time_seconds": 73.5
+    },
+    "VUG": {
+      "total_signals": 99,
+      "wins": 47,
+      "win_rate": 47.5,
+      "time_seconds": 23.3
+    },
+    "AGQ": {
+      "total_signals": 258,
+      "wins": 97,
+      "win_rate": 37.6,
+      "time_seconds": 89.0
+    },
+    "OTIS": {
+      "total_signals": 111,
+      "wins": 34,
+      "win_rate": 30.6,
+      "time_seconds": 17.3
+    },
+    "ACWI": {
+      "total_signals": 105,
+      "wins": 45,
+      "win_rate": 42.9,
+      "time_seconds": 16.7
+    },
+    "EME": {
+      "total_signals": 119,
+      "wins": 46,
+      "win_rate": 38.7,
+      "time_seconds": 19.5
+    },
+    "CNQ": {
+      "total_signals": 181,
+      "wins": 76,
+      "win_rate": 42.0,
+      "time_seconds": 26.9
+    },
+    "HL": {
+      "total_signals": 247,
+      "wins": 86,
+      "win_rate": 34.8,
+      "time_seconds": 74.2
+    },
+    "QID": {
+      "total_signals": 188,
+      "wins": 59,
+      "win_rate": 31.4,
+      "time_seconds": 56.9
+    },
+    "CINF": {
+      "total_signals": 102,
+      "wins": 43,
+      "win_rate": 42.2,
+      "time_seconds": 15.6
+    },
+    "LTH": {
+      "total_signals": 113,
+      "wins": 40,
+      "win_rate": 35.4,
+      "time_seconds": 18.3
+    },
+    "USFD": {
+      "total_signals": 107,
+      "wins": 38,
+      "win_rate": 35.5,
+      "time_seconds": 17.6
+    },
+    "CSGP": {
+      "total_signals": 136,
+      "wins": 52,
+      "win_rate": 38.2,
+      "time_seconds": 21.8
+    },
+    "TRGP": {
+      "total_signals": 110,
+      "wins": 48,
+      "win_rate": 43.6,
+      "time_seconds": 18.0
+    },
+    "FTI": {
+      "total_signals": 131,
+      "wins": 48,
+      "win_rate": 36.6,
+      "time_seconds": 21.4
+    },
+    "XLRE": {
+      "total_signals": 108,
+      "wins": 38,
+      "win_rate": 35.2,
+      "time_seconds": 19.5
+    },
+    "ALNY": {
+      "total_signals": 99,
+      "wins": 33,
+      "win_rate": 33.3,
+      "time_seconds": 20.9
+    },
+    "IEI": {
+      "total_signals": 73,
+      "wins": 30,
+      "win_rate": 41.1,
+      "time_seconds": 18.1
+    },
+    "CMI": {
+      "total_signals": 137,
+      "wins": 61,
+      "win_rate": 44.5,
+      "time_seconds": 20.0
+    },
+    "O": {
+      "total_signals": 132,
+      "wins": 41,
+      "win_rate": 31.1,
+      "time_seconds": 37.4
+    },
+    "BBY": {
+      "total_signals": 137,
+      "wins": 53,
+      "win_rate": 38.7,
+      "time_seconds": 23.0
+    },
+    "BG": {
+      "total_signals": 135,
+      "wins": 49,
+      "win_rate": 36.3,
+      "time_seconds": 18.9
+    },
+    "MTZ": {
+      "total_signals": 134,
+      "wins": 51,
+      "win_rate": 38.1,
+      "time_seconds": 19.6
+    },
+    "INSM": {
+      "total_signals": 144,
+      "wins": 56,
+      "win_rate": 38.9,
+      "time_seconds": 21.7
+    },
+    "MSCI": {
+      "total_signals": 122,
+      "wins": 44,
+      "win_rate": 36.1,
+      "time_seconds": 17.7
+    },
+    "LPLA": {
+      "total_signals": 133,
+      "wins": 54,
+      "win_rate": 40.6,
+      "time_seconds": 18.5
+    },
+    "HBAN": {
+      "total_signals": 160,
+      "wins": 65,
+      "win_rate": 40.6,
+      "time_seconds": 23.5
+    },
+    "AAL": {
+      "total_signals": 209,
+      "wins": 101,
+      "win_rate": 48.3,
+      "time_seconds": 57.0
+    },
+    "NRG": {
+      "total_signals": 172,
+      "wins": 68,
+      "win_rate": 39.5,
+      "time_seconds": 22.8
+    },
+    "JHG": {
+      "total_signals": 85,
+      "wins": 40,
+      "win_rate": 47.1,
+      "time_seconds": 17.4
+    },
+    "AXTI": {
+      "total_signals": 233,
+      "wins": 85,
+      "win_rate": 36.5,
+      "time_seconds": 71.2
+    },
+    "LEN": {
+      "total_signals": 148,
+      "wins": 61,
+      "win_rate": 41.2,
+      "time_seconds": 25.2
+    },
+    "ATO": {
+      "total_signals": 94,
+      "wins": 36,
+      "win_rate": 38.3,
+      "time_seconds": 16.0
+    },
+    "UL": {
+      "total_signals": 122,
+      "wins": 48,
+      "win_rate": 39.3,
+      "time_seconds": 31.6
+    },
+    "UCO": {
+      "total_signals": 227,
+      "wins": 88,
+      "win_rate": 38.8,
+      "time_seconds": 57.9
+    },
+    "XYZ": {
+      "total_signals": 175,
+      "wins": 55,
+      "win_rate": 31.4,
+      "time_seconds": 41.1
+    },
+    "WAT": {
+      "total_signals": 117,
+      "wins": 49,
+      "win_rate": 41.9,
+      "time_seconds": 18.3
+    },
+    "UPRO": {
+      "total_signals": 199,
+      "wins": 86,
+      "win_rate": 43.2,
+      "time_seconds": 66.7
+    },
+    "EIX": {
+      "total_signals": 116,
+      "wins": 40,
+      "win_rate": 34.5,
+      "time_seconds": 21.1
+    },
+    "WM": {
+      "total_signals": 93,
+      "wins": 33,
+      "win_rate": 35.5,
+      "time_seconds": 19.9
+    },
+    "TTD": {
+      "total_signals": 177,
+      "wins": 68,
+      "win_rate": 38.4,
+      "time_seconds": 59.0
+    },
+    "KTOS": {
+      "total_signals": 242,
+      "wins": 90,
+      "win_rate": 37.2,
+      "time_seconds": 50.5
+    },
+    "VTWO": {
+      "total_signals": 139,
+      "wins": 64,
+      "win_rate": 46.0,
+      "time_seconds": 27.7
+    },
+    "CVE": {
+      "total_signals": 158,
+      "wins": 68,
+      "win_rate": 43.0,
       "time_seconds": 26.1
     },
-    "OEF": {
-      "total_signals": 288,
-      "wins": 115,
-      "win_rate": 39.9,
-      "time_seconds": 32.0
+    "SNA": {
+      "total_signals": 104,
+      "wins": 37,
+      "win_rate": 35.6,
+      "time_seconds": 16.0
     },
-    "OMC": {
-      "total_signals": 296,
-      "wins": 96,
-      "win_rate": 32.4,
-      "time_seconds": 31.1
+    "MKC": {
+      "total_signals": 132,
+      "wins": 33,
+      "win_rate": 25.0,
+      "time_seconds": 18.6
     },
-    "ZS": {
-      "total_signals": 379,
-      "wins": 124,
-      "win_rate": 32.7,
-      "time_seconds": 46.8
+    "EWBC": {
+      "total_signals": 138,
+      "wins": 47,
+      "win_rate": 34.1,
+      "time_seconds": 17.0
     },
-    "SN": {
-      "total_signals": 327,
-      "wins": 139,
+    "ROIV": {
+      "total_signals": 153,
+      "wins": 58,
+      "win_rate": 37.9,
+      "time_seconds": 22.1
+    },
+    "IQV": {
+      "total_signals": 107,
+      "wins": 45,
+      "win_rate": 42.1,
+      "time_seconds": 18.4
+    },
+    "PSQ": {
+      "total_signals": 127,
+      "wins": 46,
+      "win_rate": 36.2,
+      "time_seconds": 45.6
+    },
+    "BDX": {
+      "total_signals": 121,
+      "wins": 44,
+      "win_rate": 36.4,
+      "time_seconds": 18.2
+    },
+    "IEX": {
+      "total_signals": 109,
+      "wins": 38,
+      "win_rate": 34.9,
+      "time_seconds": 16.6
+    },
+    "SH": {
+      "total_signals": 138,
+      "wins": 61,
+      "win_rate": 44.2,
+      "time_seconds": 42.2
+    },
+    "SYF": {
+      "total_signals": 118,
+      "wins": 48,
+      "win_rate": 40.7,
+      "time_seconds": 19.4
+    },
+    "WRB": {
+      "total_signals": 121,
+      "wins": 42,
+      "win_rate": 34.7,
+      "time_seconds": 18.0
+    },
+    "PEG": {
+      "total_signals": 112,
+      "wins": 39,
+      "win_rate": 34.8,
+      "time_seconds": 17.6
+    },
+    "VNQ": {
+      "total_signals": 94,
+      "wins": 38,
+      "win_rate": 40.4,
+      "time_seconds": 19.2
+    },
+    "YUM": {
+      "total_signals": 118,
+      "wins": 47,
+      "win_rate": 39.8,
+      "time_seconds": 17.8
+    },
+    "WSM": {
+      "total_signals": 119,
+      "wins": 51,
+      "win_rate": 42.9,
+      "time_seconds": 18.2
+    },
+    "TLN": {
+      "total_signals": 183,
+      "wins": 62,
+      "win_rate": 33.9,
+      "time_seconds": 25.5
+    },
+    "UVIX": {
+      "total_signals": 235,
+      "wins": 77,
+      "win_rate": 32.8,
+      "time_seconds": 95.9
+    },
+    "AWK": {
+      "total_signals": 85,
+      "wins": 28,
+      "win_rate": 32.9,
+      "time_seconds": 17.5
+    },
+    "VCLT": {
+      "total_signals": 80,
+      "wins": 24,
+      "win_rate": 30.0,
+      "time_seconds": 16.2
+    },
+    "MLM": {
+      "total_signals": 111,
+      "wins": 45,
+      "win_rate": 40.5,
+      "time_seconds": 16.8
+    },
+    "LUV": {
+      "total_signals": 181,
+      "wins": 67,
+      "win_rate": 37.0,
+      "time_seconds": 32.7
+    },
+    "CCJ": {
+      "total_signals": 259,
+      "wins": 86,
+      "win_rate": 33.2,
+      "time_seconds": 45.3
+    },
+    "MTB": {
+      "total_signals": 106,
+      "wins": 41,
+      "win_rate": 38.7,
+      "time_seconds": 17.1
+    },
+    "RWM": {
+      "total_signals": 128,
+      "wins": 62,
+      "win_rate": 48.4,
+      "time_seconds": 27.5
+    },
+    "JBL": {
+      "total_signals": 166,
+      "wins": 63,
+      "win_rate": 38.0,
+      "time_seconds": 20.6
+    },
+    "IT": {
+      "total_signals": 114,
+      "wins": 41,
+      "win_rate": 36.0,
+      "time_seconds": 20.9
+    },
+    "EFV": {
+      "total_signals": 104,
+      "wins": 37,
+      "win_rate": 35.6,
+      "time_seconds": 15.4
+    },
+    "NDAQ": {
+      "total_signals": 113,
+      "wins": 48,
       "win_rate": 42.5,
       "time_seconds": 22.0
     },
-    "VEEV": {
-      "total_signals": 317,
-      "wins": 114,
-      "win_rate": 36.0,
-      "time_seconds": 25.7
-    },
-    "TPL": {
-      "total_signals": 347,
-      "wins": 128,
-      "win_rate": 36.9,
-      "time_seconds": 21.9
-    },
-    "RIVN": {
-      "total_signals": 482,
-      "wins": 186,
-      "win_rate": 38.6,
-      "time_seconds": 75.3
-    },
-    "GEN": {
-      "total_signals": 288,
-      "wins": 101,
-      "win_rate": 35.1,
-      "time_seconds": 22.0
-    },
-    "NVDL": {
-      "total_signals": 523,
-      "wins": 195,
-      "win_rate": 37.3,
-      "time_seconds": 99.0
-    },
-    "EMXC": {
-      "total_signals": 342,
-      "wins": 161,
-      "win_rate": 47.1,
-      "time_seconds": 19.9
-    },
-    "VXUS": {
-      "total_signals": 346,
-      "wins": 128,
-      "win_rate": 37.0,
-      "time_seconds": 34.5
-    },
-    "ON": {
-      "total_signals": 419,
-      "wins": 170,
-      "win_rate": 40.6,
-      "time_seconds": 38.3
-    },
-    "TTWO": {
-      "total_signals": 307,
-      "wins": 109,
-      "win_rate": 35.5,
-      "time_seconds": 23.5
-    },
-    "LDOS": {
-      "total_signals": 302,
-      "wins": 106,
-      "win_rate": 35.1,
-      "time_seconds": 19.3
-    },
-    "VALE": {
-      "total_signals": 432,
-      "wins": 163,
-      "win_rate": 37.7,
-      "time_seconds": 44.5
-    },
-    "HII": {
-      "total_signals": 352,
-      "wins": 145,
-      "win_rate": 41.2,
-      "time_seconds": 24.6
-    },
-    "ECL": {
-      "total_signals": 264,
-      "wins": 93,
-      "win_rate": 35.2,
-      "time_seconds": 21.6
-    },
-    "HIMS": {
-      "total_signals": 438,
-      "wins": 175,
-      "win_rate": 40.0,
-      "time_seconds": 91.4
-    },
-    "ELV": {
-      "total_signals": 287,
-      "wins": 97,
-      "win_rate": 33.8,
-      "time_seconds": 23.9
-    },
-    "CTVA": {
-      "total_signals": 304,
-      "wins": 112,
-      "win_rate": 36.8,
-      "time_seconds": 20.9
-    },
-    "BAH": {
-      "total_signals": 287,
-      "wins": 113,
-      "win_rate": 39.4,
-      "time_seconds": 23.4
-    },
-    "SPYG": {
-      "total_signals": 342,
-      "wins": 138,
-      "win_rate": 40.4,
-      "time_seconds": 22.9
-    },
-    "VT": {
-      "total_signals": 325,
-      "wins": 124,
-      "win_rate": 38.2,
-      "time_seconds": 26.6
-    },
-    "AFL": {
-      "total_signals": 252,
-      "wins": 88,
-      "win_rate": 34.9,
-      "time_seconds": 18.7
-    },
-    "ICE": {
-      "total_signals": 248,
-      "wins": 89,
-      "win_rate": 35.9,
-      "time_seconds": 20.0
-    },
-    "EXC": {
-      "total_signals": 295,
-      "wins": 101,
-      "win_rate": 34.2,
-      "time_seconds": 22.2
-    },
-    "SCHG": {
-      "total_signals": 372,
-      "wins": 162,
-      "win_rate": 43.5,
-      "time_seconds": 43.5
-    },
-    "SPG": {
-      "total_signals": 248,
-      "wins": 94,
-      "win_rate": 37.9,
-      "time_seconds": 20.0
-    },
-    "PLD": {
-      "total_signals": 283,
-      "wins": 100,
-      "win_rate": 35.3,
-      "time_seconds": 31.4
-    },
-    "XEL": {
-      "total_signals": 262,
-      "wins": 96,
-      "win_rate": 36.6,
-      "time_seconds": 28.3
-    },
-    "CRDO": {
-      "total_signals": 552,
-      "wins": 207,
-      "win_rate": 37.5,
-      "time_seconds": 70.2
-    },
-    "VMC": {
-      "total_signals": 291,
-      "wins": 92,
-      "win_rate": 31.6,
-      "time_seconds": 19.8
-    },
-    "PFG": {
-      "total_signals": 266,
-      "wins": 106,
-      "win_rate": 39.8,
-      "time_seconds": 19.8
-    },
-    "ALL": {
-      "total_signals": 302,
-      "wins": 100,
-      "win_rate": 33.1,
-      "time_seconds": 21.1
-    },
-    "FICO": {
-      "total_signals": 308,
-      "wins": 124,
-      "win_rate": 40.3,
-      "time_seconds": 26.8
-    },
-    "ODFL": {
-      "total_signals": 305,
-      "wins": 123,
-      "win_rate": 40.3,
-      "time_seconds": 23.0
-    },
-    "CTAS": {
-      "total_signals": 261,
-      "wins": 103,
-      "win_rate": 39.5,
-      "time_seconds": 20.3
-    },
-    "NLY": {
-      "total_signals": 313,
-      "wins": 115,
-      "win_rate": 36.7,
-      "time_seconds": 30.3
-    },
-    "VXX": {
-      "total_signals": 484,
-      "wins": 193,
-      "win_rate": 39.9,
-      "time_seconds": 75.6
-    },
-    "WPM": {
-      "total_signals": 497,
-      "wins": 189,
-      "win_rate": 38.0,
-      "time_seconds": 37.4
-    },
-    "APD": {
-      "total_signals": 261,
-      "wins": 93,
-      "win_rate": 35.6,
-      "time_seconds": 20.8
-    },
-    "OKLO": {
-      "total_signals": 482,
-      "wins": 171,
-      "win_rate": 35.5,
-      "time_seconds": 94.8
-    },
-    "HUM": {
-      "total_signals": 327,
-      "wins": 137,
-      "win_rate": 41.9,
-      "time_seconds": 28.6
-    },
-    "INDA": {
-      "total_signals": 288,
-      "wins": 112,
-      "win_rate": 38.9,
-      "time_seconds": 25.6
-    },
-    "TNA": {
-      "total_signals": 546,
-      "wins": 187,
-      "win_rate": 34.2,
-      "time_seconds": 80.6
-    },
-    "VUG": {
-      "total_signals": 344,
-      "wins": 132,
-      "win_rate": 38.4,
-      "time_seconds": 24.3
-    },
-    "AGQ": {
-      "total_signals": 530,
-      "wins": 204,
-      "win_rate": 38.5,
-      "time_seconds": 94.7
-    },
-    "OTIS": {
-      "total_signals": 256,
-      "wins": 97,
-      "win_rate": 37.9,
-      "time_seconds": 18.3
-    },
-    "ACWI": {
-      "total_signals": 256,
-      "wins": 106,
-      "win_rate": 41.4,
-      "time_seconds": 19.4
-    },
-    "EME": {
-      "total_signals": 296,
-      "wins": 139,
-      "win_rate": 47.0,
-      "time_seconds": 22.0
-    },
-    "CNQ": {
-      "total_signals": 397,
-      "wins": 177,
-      "win_rate": 44.6,
-      "time_seconds": 29.6
-    },
-    "HL": {
-      "total_signals": 508,
-      "wins": 193,
-      "win_rate": 38.0,
-      "time_seconds": 89.8
-    },
-    "QID": {
-      "total_signals": 511,
-      "wins": 198,
-      "win_rate": 38.7,
-      "time_seconds": 62.3
-    },
-    "CINF": {
-      "total_signals": 291,
-      "wins": 118,
-      "win_rate": 40.5,
-      "time_seconds": 18.2
-    },
-    "LTH": {
-      "total_signals": 273,
-      "wins": 83,
-      "win_rate": 30.4,
-      "time_seconds": 24.7
-    },
-    "USFD": {
-      "total_signals": 256,
-      "wins": 81,
-      "win_rate": 31.6,
-      "time_seconds": 19.9
-    },
-    "CSGP": {
-      "total_signals": 308,
-      "wins": 118,
-      "win_rate": 38.3,
-      "time_seconds": 26.5
-    },
-    "TRGP": {
-      "total_signals": 288,
-      "wins": 110,
-      "win_rate": 38.2,
-      "time_seconds": 21.0
-    },
-    "FTI": {
-      "total_signals": 320,
-      "wins": 120,
-      "win_rate": 37.5,
-      "time_seconds": 22.9
-    },
-    "XLRE": {
-      "total_signals": 250,
-      "wins": 105,
-      "win_rate": 42.0,
-      "time_seconds": 21.4
-    },
-    "ALNY": {
-      "total_signals": 277,
-      "wins": 100,
-      "win_rate": 36.1,
-      "time_seconds": 23.1
-    },
-    "IEI": {
-      "total_signals": 224,
-      "wins": 94,
-      "win_rate": 42.0,
-      "time_seconds": 21.2
-    },
-    "CMI": {
-      "total_signals": 350,
-      "wins": 140,
-      "win_rate": 40.0,
-      "time_seconds": 22.2
-    },
-    "O": {
-      "total_signals": 340,
-      "wins": 137,
-      "win_rate": 40.3,
-      "time_seconds": 41.0
-    },
-    "BBY": {
-      "total_signals": 351,
-      "wins": 127,
-      "win_rate": 36.2,
-      "time_seconds": 28.3
-    },
-    "BG": {
-      "total_signals": 324,
-      "wins": 109,
-      "win_rate": 33.6,
-      "time_seconds": 21.5
-    },
-    "MTZ": {
-      "total_signals": 303,
-      "wins": 100,
-      "win_rate": 33.0,
-      "time_seconds": 21.4
-    },
-    "INSM": {
-      "total_signals": 296,
-      "wins": 120,
-      "win_rate": 40.5,
-      "time_seconds": 24.0
-    },
-    "MSCI": {
-      "total_signals": 293,
-      "wins": 98,
-      "win_rate": 33.4,
-      "time_seconds": 21.0
-    },
-    "LPLA": {
-      "total_signals": 307,
-      "wins": 111,
-      "win_rate": 36.2,
-      "time_seconds": 19.9
-    },
-    "HBAN": {
-      "total_signals": 325,
-      "wins": 122,
-      "win_rate": 37.5,
-      "time_seconds": 26.4
-    },
-    "AAL": {
-      "total_signals": 413,
-      "wins": 164,
-      "win_rate": 39.7,
-      "time_seconds": 61.3
-    },
-    "NRG": {
-      "total_signals": 353,
-      "wins": 142,
-      "win_rate": 40.2,
-      "time_seconds": 26.4
-    },
-    "JHG": {
-      "total_signals": 209,
-      "wins": 90,
-      "win_rate": 43.1,
-      "time_seconds": 19.3
-    },
-    "AXTI": {
-      "total_signals": 439,
-      "wins": 170,
-      "win_rate": 38.7,
-      "time_seconds": 77.0
-    },
-    "LEN": {
-      "total_signals": 367,
-      "wins": 140,
-      "win_rate": 38.1,
-      "time_seconds": 29.1
-    },
-    "ATO": {
-      "total_signals": 201,
-      "wins": 80,
-      "win_rate": 39.8,
-      "time_seconds": 17.4
-    },
-    "UL": {
-      "total_signals": 365,
-      "wins": 147,
-      "win_rate": 40.3,
-      "time_seconds": 33.7
-    },
-    "UCO": {
-      "total_signals": 504,
-      "wins": 173,
-      "win_rate": 34.3,
-      "time_seconds": 63.3
-    },
-    "XYZ": {
-      "total_signals": 361,
-      "wins": 127,
-      "win_rate": 35.2,
-      "time_seconds": 43.5
-    },
-    "WAT": {
-      "total_signals": 269,
-      "wins": 101,
-      "win_rate": 37.5,
-      "time_seconds": 27.8
-    },
-    "UPRO": {
-      "total_signals": 504,
-      "wins": 203,
-      "win_rate": 40.3,
-      "time_seconds": 72.3
-    },
-    "EIX": {
-      "total_signals": 317,
-      "wins": 109,
-      "win_rate": 34.4,
-      "time_seconds": 22.6
-    },
-    "WM": {
-      "total_signals": 299,
-      "wins": 108,
-      "win_rate": 36.1,
-      "time_seconds": 21.7
-    },
-    "TTD": {
-      "total_signals": 365,
-      "wins": 152,
-      "win_rate": 41.6,
-      "time_seconds": 62.7
-    },
-    "KTOS": {
-      "total_signals": 490,
-      "wins": 221,
-      "win_rate": 45.1,
-      "time_seconds": 54.0
-    },
-    "VTWO": {
-      "total_signals": 408,
-      "wins": 173,
-      "win_rate": 42.4,
-      "time_seconds": 30.7
-    },
-    "CVE": {
-      "total_signals": 369,
-      "wins": 145,
-      "win_rate": 39.3,
-      "time_seconds": 28.7
-    },
-    "SNA": {
-      "total_signals": 245,
-      "wins": 91,
-      "win_rate": 37.1,
-      "time_seconds": 18.2
-    },
-    "MKC": {
-      "total_signals": 289,
-      "wins": 115,
-      "win_rate": 39.8,
-      "time_seconds": 22.5
-    },
-    "EWBC": {
-      "total_signals": 254,
-      "wins": 86,
-      "win_rate": 33.9,
-      "time_seconds": 18.6
-    },
-    "ROIV": {
-      "total_signals": 327,
-      "wins": 114,
-      "win_rate": 34.9,
-      "time_seconds": 25.7
-    },
-    "IQV": {
-      "total_signals": 256,
-      "wins": 112,
-      "win_rate": 43.8,
-      "time_seconds": 20.3
-    },
-    "PSQ": {
-      "total_signals": 385,
-      "wins": 161,
-      "win_rate": 41.8,
-      "time_seconds": 48.7
-    },
-    "BDX": {
-      "total_signals": 267,
-      "wins": 98,
-      "win_rate": 36.7,
-      "time_seconds": 19.4
-    },
-    "IEX": {
-      "total_signals": 270,
-      "wins": 99,
-      "win_rate": 36.7,
-      "time_seconds": 17.9
-    },
-    "SH": {
-      "total_signals": 362,
-      "wins": 136,
-      "win_rate": 37.6,
-      "time_seconds": 49.4
-    },
-    "SYF": {
-      "total_signals": 289,
-      "wins": 116,
-      "win_rate": 40.1,
-      "time_seconds": 22.1
-    },
-    "WRB": {
-      "total_signals": 279,
-      "wins": 101,
-      "win_rate": 36.2,
-      "time_seconds": 20.9
-    },
-    "PEG": {
-      "total_signals": 280,
-      "wins": 109,
-      "win_rate": 38.9,
-      "time_seconds": 19.1
-    },
-    "VNQ": {
-      "total_signals": 271,
-      "wins": 95,
-      "win_rate": 35.1,
-      "time_seconds": 21.1
-    },
-    "YUM": {
-      "total_signals": 292,
-      "wins": 112,
-      "win_rate": 38.4,
-      "time_seconds": 20.6
-    },
-    "WSM": {
-      "total_signals": 306,
-      "wins": 128,
-      "win_rate": 41.8,
-      "time_seconds": 20.2
-    },
-    "TLN": {
-      "total_signals": 358,
-      "wins": 111,
-      "win_rate": 31.0,
-      "time_seconds": 28.9
-    },
-    "UVIX": {
-      "total_signals": 457,
-      "wins": 160,
-      "win_rate": 35.0,
-      "time_seconds": 104.7
-    },
-    "AWK": {
-      "total_signals": 254,
-      "wins": 79,
-      "win_rate": 31.1,
-      "time_seconds": 20.7
-    },
-    "VCLT": {
-      "total_signals": 243,
-      "wins": 97,
-      "win_rate": 39.9,
-      "time_seconds": 26.0
-    },
-    "MLM": {
-      "total_signals": 293,
-      "wins": 99,
-      "win_rate": 33.8,
-      "time_seconds": 19.4
-    },
-    "LUV": {
-      "total_signals": 383,
-      "wins": 137,
-      "win_rate": 35.8,
-      "time_seconds": 45.4
-    },
-    "CCJ": {
-      "total_signals": 496,
-      "wins": 173,
-      "win_rate": 34.9,
-      "time_seconds": 55.3
-    },
-    "MTB": {
-      "total_signals": 258,
-      "wins": 107,
-      "win_rate": 41.5,
-      "time_seconds": 18.4
-    },
-    "RWM": {
-      "total_signals": 374,
-      "wins": 138,
-      "win_rate": 36.9,
-      "time_seconds": 29.6
-    },
-    "JBL": {
-      "total_signals": 344,
-      "wins": 132,
-      "win_rate": 38.4,
-      "time_seconds": 22.3
-    },
-    "IT": {
-      "total_signals": 268,
-      "wins": 90,
-      "win_rate": 33.6,
-      "time_seconds": 22.3
-    },
-    "EFV": {
-      "total_signals": 257,
-      "wins": 106,
-      "win_rate": 41.2,
-      "time_seconds": 16.7
-    },
-    "NDAQ": {
-      "total_signals": 292,
-      "wins": 102,
-      "win_rate": 34.9,
-      "time_seconds": 23.5
-    },
     "Q": {
-      "total_signals": 305,
-      "wins": 110,
-      "win_rate": 36.1,
-      "time_seconds": 26.0
-    },
-    "ETHA": {
-      "total_signals": 427,
-      "wins": 175,
-      "win_rate": 41.0,
-      "time_seconds": 88.6
-    },
-    "PSA": {
-      "total_signals": 336,
-      "wins": 134,
-      "win_rate": 39.9,
-      "time_seconds": 18.4
-    },
-    "LIF": {
-      "total_signals": 349,
-      "wins": 140,
-      "win_rate": 40.1,
-      "time_seconds": 27.7
-    },
-    "GPGI": {
-      "total_signals": 77,
-      "wins": 23,
-      "win_rate": 29.9,
-      "time_seconds": 6.5
-    },
-    "DXCM": {
-      "total_signals": 328,
-      "wins": 114,
-      "win_rate": 34.8,
-      "time_seconds": 25.7
-    },
-    "WSO": {
-      "total_signals": 256,
-      "wins": 108,
-      "win_rate": 42.2,
-      "time_seconds": 19.0
-    },
-    "IONQ": {
-      "total_signals": 464,
-      "wins": 179,
-      "win_rate": 38.6,
-      "time_seconds": 95.6
-    },
-    "TEL": {
-      "total_signals": 307,
-      "wins": 107,
-      "win_rate": 34.9,
-      "time_seconds": 19.6
-    },
-    "FN": {
-      "total_signals": 389,
-      "wins": 143,
-      "win_rate": 36.8,
-      "time_seconds": 27.2
-    },
-    "SHV": {
-      "total_signals": 227,
-      "wins": 46,
-      "win_rate": 20.3,
-      "time_seconds": 28.5
-    },
-    "SCHF": {
-      "total_signals": 301,
-      "wins": 116,
-      "win_rate": 38.5,
+      "total_signals": 159,
+      "wins": 48,
+      "win_rate": 30.2,
       "time_seconds": 23.8
     },
-    "HPE": {
-      "total_signals": 404,
-      "wins": 162,
-      "win_rate": 40.1,
-      "time_seconds": 35.3
+    "ETHA": {
+      "total_signals": 198,
+      "wins": 70,
+      "win_rate": 35.4,
+      "time_seconds": 84.3
     },
-    "AGNC": {
-      "total_signals": 351,
-      "wins": 129,
-      "win_rate": 36.8,
-      "time_seconds": 52.2
+    "PSA": {
+      "total_signals": 141,
+      "wins": 56,
+      "win_rate": 39.7,
+      "time_seconds": 17.5
     },
-    "XRT": {
-      "total_signals": 318,
-      "wins": 114,
-      "win_rate": 35.8,
-      "time_seconds": 20.3
+    "LIF": {
+      "total_signals": 152,
+      "wins": 66,
+      "win_rate": 43.4,
+      "time_seconds": 25.4
     },
-    "SRE": {
-      "total_signals": 249,
-      "wins": 86,
-      "win_rate": 34.5,
-      "time_seconds": 18.9
-    },
-    "OKTA": {
-      "total_signals": 358,
-      "wins": 131,
-      "win_rate": 36.6,
-      "time_seconds": 31.0
-    },
-    "CFG": {
-      "total_signals": 292,
-      "wins": 109,
-      "win_rate": 37.3,
-      "time_seconds": 21.7
-    },
-    "KVUE": {
-      "total_signals": 319,
-      "wins": 115,
-      "win_rate": 36.1,
-      "time_seconds": 34.0
-    },
-    "DG": {
-      "total_signals": 332,
-      "wins": 140,
-      "win_rate": 42.2,
-      "time_seconds": 23.7
-    },
-    "BKLN": {
-      "total_signals": 162,
-      "wins": 42,
-      "win_rate": 25.9,
-      "time_seconds": 18.1
-    },
-    "MOS": {
-      "total_signals": 415,
-      "wins": 148,
-      "win_rate": 35.7,
-      "time_seconds": 38.1
-    },
-    "CLX": {
-      "total_signals": 310,
-      "wins": 134,
-      "win_rate": 43.2,
-      "time_seconds": 23.4
-    },
-    "SEDG": {
-      "total_signals": 388,
-      "wins": 141,
-      "win_rate": 36.3,
-      "time_seconds": 50.1
-    },
-    "APTV": {
-      "total_signals": 287,
-      "wins": 110,
-      "win_rate": 38.3,
-      "time_seconds": 19.6
-    },
-    "EFX": {
-      "total_signals": 301,
-      "wins": 108,
+    "GPGI": {
+      "total_signals": 39,
+      "wins": 14,
       "win_rate": 35.9,
-      "time_seconds": 20.3
+      "time_seconds": 5.8
     },
-    "KEY": {
-      "total_signals": 303,
-      "wins": 116,
-      "win_rate": 38.3,
-      "time_seconds": 22.8
-    },
-    "VLTO": {
-      "total_signals": 218,
-      "wins": 77,
+    "DXCM": {
+      "total_signals": 139,
+      "wins": 49,
       "win_rate": 35.3,
+      "time_seconds": 23.9
+    },
+    "WSO": {
+      "total_signals": 107,
+      "wins": 47,
+      "win_rate": 43.9,
       "time_seconds": 17.9
     },
-    "BNO": {
-      "total_signals": 393,
-      "wins": 152,
-      "win_rate": 38.7,
+    "IONQ": {
+      "total_signals": 218,
+      "wins": 95,
+      "win_rate": 43.6,
+      "time_seconds": 90.4
+    },
+    "TEL": {
+      "total_signals": 112,
+      "wins": 44,
+      "win_rate": 39.3,
+      "time_seconds": 18.5
+    },
+    "FN": {
+      "total_signals": 176,
+      "wins": 55,
+      "win_rate": 31.2,
+      "time_seconds": 25.7
+    },
+    "SHV": {
+      "total_signals": 113,
+      "wins": 29,
+      "win_rate": 25.7,
       "time_seconds": 26.5
     },
+    "SCHF": {
+      "total_signals": 118,
+      "wins": 48,
+      "win_rate": 40.7,
+      "time_seconds": 22.1
+    },
+    "HPE": {
+      "total_signals": 189,
+      "wins": 64,
+      "win_rate": 33.9,
+      "time_seconds": 33.4
+    },
+    "AGNC": {
+      "total_signals": 152,
+      "wins": 52,
+      "win_rate": 34.2,
+      "time_seconds": 48.0
+    },
+    "XRT": {
+      "total_signals": 115,
+      "wins": 42,
+      "win_rate": 36.5,
+      "time_seconds": 18.9
+    },
+    "SRE": {
+      "total_signals": 104,
+      "wins": 42,
+      "win_rate": 40.4,
+      "time_seconds": 17.8
+    },
+    "OKTA": {
+      "total_signals": 137,
+      "wins": 52,
+      "win_rate": 38.0,
+      "time_seconds": 28.1
+    },
+    "CFG": {
+      "total_signals": 121,
+      "wins": 45,
+      "win_rate": 37.2,
+      "time_seconds": 19.6
+    },
+    "KVUE": {
+      "total_signals": 129,
+      "wins": 52,
+      "win_rate": 40.3,
+      "time_seconds": 31.7
+    },
+    "DG": {
+      "total_signals": 143,
+      "wins": 57,
+      "win_rate": 39.9,
+      "time_seconds": 22.3
+    },
+    "BKLN": {
+      "total_signals": 106,
+      "wins": 33,
+      "win_rate": 31.1,
+      "time_seconds": 15.9
+    },
+    "MOS": {
+      "total_signals": 157,
+      "wins": 51,
+      "win_rate": 32.5,
+      "time_seconds": 35.2
+    },
+    "CLX": {
+      "total_signals": 135,
+      "wins": 56,
+      "win_rate": 41.5,
+      "time_seconds": 21.6
+    },
+    "SEDG": {
+      "total_signals": 164,
+      "wins": 59,
+      "win_rate": 36.0,
+      "time_seconds": 47.1
+    },
+    "APTV": {
+      "total_signals": 116,
+      "wins": 48,
+      "win_rate": 41.4,
+      "time_seconds": 18.9
+    },
+    "EFX": {
+      "total_signals": 128,
+      "wins": 43,
+      "win_rate": 33.6,
+      "time_seconds": 19.1
+    },
+    "KEY": {
+      "total_signals": 134,
+      "wins": 57,
+      "win_rate": 42.5,
+      "time_seconds": 21.3
+    },
+    "VLTO": {
+      "total_signals": 91,
+      "wins": 36,
+      "win_rate": 39.6,
+      "time_seconds": 17.0
+    },
+    "BNO": {
+      "total_signals": 162,
+      "wins": 62,
+      "win_rate": 38.3,
+      "time_seconds": 25.7
+    },
     "RBLX": {
-      "total_signals": 404,
-      "wins": 182,
-      "win_rate": 45.0,
-      "time_seconds": 52.7
+      "total_signals": 155,
+      "wins": 67,
+      "win_rate": 43.2,
+      "time_seconds": 49.7
     },
     "ULTA": {
-      "total_signals": 340,
-      "wins": 133,
-      "win_rate": 39.1,
-      "time_seconds": 21.7
+      "total_signals": 131,
+      "wins": 49,
+      "win_rate": 37.4,
+      "time_seconds": 20.4
     }
   },
   "patterns": {
+    "52W High Momentum": {
+      "total_signals": 28,
+      "wins": 0,
+      "partial_wins": 0,
+      "losses": 27,
+      "timeouts": 1,
+      "win_rate": 0.0,
+      "t1_hit_rate": 0.0,
+      "t2_hit_rate": 0.0,
+      "profit_factor": 0.0,
+      "expectancy": -0.02,
+      "avg_win_r": 0,
+      "avg_loss_r": 0.02,
+      "avg_r": -0.017,
+      "best_r": 0.07,
+      "worst_r": -0.02,
+      "edge_score": 24.7,
+      "sample_size": 28
+    },
     "ATR Expansion Long": {
-      "total_signals": 1347,
-      "wins": 330,
+      "total_signals": 1332,
+      "wins": 318,
       "partial_wins": 366,
-      "losses": 620,
-      "timeouts": 31,
-      "win_rate": 51.7,
-      "t1_hit_rate": 51.7,
-      "t2_hit_rate": 24.5,
-      "profit_factor": 1.04,
-      "expectancy": -0.002,
-      "avg_win_r": 0.89,
-      "avg_loss_r": 0.95,
-      "avg_r": 0.026,
+      "losses": 622,
+      "timeouts": 26,
+      "win_rate": 51.4,
+      "t1_hit_rate": 51.4,
+      "t2_hit_rate": 23.9,
+      "profit_factor": 1.01,
+      "expectancy": -0.015,
+      "avg_win_r": 0.88,
+      "avg_loss_r": 0.96,
+      "avg_r": 0.009,
       "best_r": 3.07,
       "worst_r": -1.0,
-      "edge_score": 48.1,
-      "sample_size": 1347
+      "edge_score": 47.3,
+      "sample_size": 1332
     },
     "ATR Expansion Short": {
-      "total_signals": 1518,
+      "total_signals": 1505,
       "wins": 218,
-      "partial_wins": 375,
-      "losses": 876,
-      "timeouts": 49,
-      "win_rate": 39.1,
-      "t1_hit_rate": 39.1,
-      "t2_hit_rate": 14.4,
+      "partial_wins": 368,
+      "losses": 865,
+      "timeouts": 54,
+      "win_rate": 38.9,
+      "t1_hit_rate": 38.9,
+      "t2_hit_rate": 14.5,
       "profit_factor": 0.57,
-      "expectancy": -0.269,
-      "avg_win_r": 0.79,
-      "avg_loss_r": 0.95,
-      "avg_r": -0.229,
-      "best_r": 2.89,
+      "expectancy": -0.272,
+      "avg_win_r": 0.8,
+      "avg_loss_r": 0.96,
+      "avg_r": -0.228,
+      "best_r": 2.91,
       "worst_r": -1.0,
-      "edge_score": 29.2,
-      "sample_size": 1518
+      "edge_score": 29.1,
+      "sample_size": 1505
     },
     "Accumulation Long": {
-      "total_signals": 1280,
+      "total_signals": 1292,
       "wins": 379,
-      "partial_wins": 297,
-      "losses": 592,
-      "timeouts": 12,
-      "win_rate": 52.8,
-      "t1_hit_rate": 52.8,
-      "t2_hit_rate": 29.6,
-      "profit_factor": 1.52,
-      "expectancy": 0.229,
-      "avg_win_r": 1.31,
-      "avg_loss_r": 0.98,
-      "avg_r": 0.243,
-      "best_r": 21.37,
+      "partial_wins": 306,
+      "losses": 597,
+      "timeouts": 10,
+      "win_rate": 53.0,
+      "t1_hit_rate": 53.0,
+      "t2_hit_rate": 29.3,
+      "profit_factor": 1.46,
+      "expectancy": 0.203,
+      "avg_win_r": 1.26,
+      "avg_loss_r": 0.99,
+      "avg_r": 0.214,
+      "best_r": 20.97,
       "worst_r": -1.0,
-      "edge_score": 54.1,
-      "sample_size": 1280
+      "edge_score": 53.5,
+      "sample_size": 1292
     },
     "BAB Long": {
-      "total_signals": 769,
+      "total_signals": 782,
       "wins": 232,
-      "partial_wins": 207,
-      "losses": 323,
-      "timeouts": 7,
-      "win_rate": 57.1,
-      "t1_hit_rate": 57.1,
-      "t2_hit_rate": 30.2,
-      "profit_factor": 1.41,
-      "expectancy": 0.163,
-      "avg_win_r": 1.03,
+      "partial_wins": 211,
+      "losses": 336,
+      "timeouts": 3,
+      "win_rate": 56.6,
+      "t1_hit_rate": 56.6,
+      "t2_hit_rate": 29.7,
+      "profit_factor": 1.34,
+      "expectancy": 0.141,
+      "avg_win_r": 1.01,
       "avg_loss_r": 0.99,
-      "avg_r": 0.176,
-      "best_r": 8.62,
+      "avg_r": 0.147,
+      "best_r": 9.01,
       "worst_r": -1.0,
-      "edge_score": 57.3,
-      "sample_size": 769
+      "edge_score": 56.0,
+      "sample_size": 782
     },
     "BB Squeeze Long": {
-      "total_signals": 186,
-      "wins": 73,
-      "partial_wins": 49,
+      "total_signals": 189,
+      "wins": 72,
+      "partial_wins": 50,
       "losses": 63,
-      "timeouts": 1,
-      "win_rate": 65.6,
-      "t1_hit_rate": 65.6,
-      "t2_hit_rate": 39.2,
-      "profit_factor": 1.72,
-      "expectancy": 0.203,
-      "avg_win_r": 0.76,
-      "avg_loss_r": 0.85,
-      "avg_r": 0.209,
-      "best_r": 5.55,
+      "timeouts": 4,
+      "win_rate": 64.6,
+      "t1_hit_rate": 64.6,
+      "t2_hit_rate": 38.1,
+      "profit_factor": 1.67,
+      "expectancy": 0.176,
+      "avg_win_r": 0.75,
+      "avg_loss_r": 0.88,
+      "avg_r": 0.203,
+      "best_r": 5.76,
       "worst_r": -1.0,
-      "edge_score": 69.7,
-      "sample_size": 186
+      "edge_score": 67.9,
+      "sample_size": 189
     },
     "BB Squeeze Short": {
-      "total_signals": 217,
+      "total_signals": 225,
       "wins": 30,
-      "partial_wins": 50,
-      "losses": 99,
-      "timeouts": 38,
-      "win_rate": 36.9,
-      "t1_hit_rate": 36.9,
-      "t2_hit_rate": 13.8,
-      "profit_factor": 0.82,
-      "expectancy": -0.167,
-      "avg_win_r": 0.65,
-      "avg_loss_r": 0.65,
-      "avg_r": -0.019,
-      "best_r": 1.37,
+      "partial_wins": 56,
+      "losses": 86,
+      "timeouts": 53,
+      "win_rate": 38.2,
+      "t1_hit_rate": 38.2,
+      "t2_hit_rate": 13.3,
+      "profit_factor": 1.0,
+      "expectancy": -0.165,
+      "avg_win_r": 0.7,
+      "avg_loss_r": 0.7,
+      "avg_r": 0.074,
+      "best_r": 1.61,
       "worst_r": -1.0,
-      "edge_score": 31.9,
-      "sample_size": 217
+      "edge_score": 34.9,
+      "sample_size": 225
     },
     "Cup & Handle": {
-      "total_signals": 230,
-      "wins": 31,
-      "partial_wins": 22,
-      "losses": 162,
-      "timeouts": 15,
-      "win_rate": 23.0,
-      "t1_hit_rate": 23.0,
-      "t2_hit_rate": 13.5,
-      "profit_factor": 1.01,
-      "expectancy": -0.059,
-      "avg_win_r": 3.03,
+      "total_signals": 225,
+      "wins": 26,
+      "partial_wins": 16,
+      "losses": 170,
+      "timeouts": 13,
+      "win_rate": 18.7,
+      "t1_hit_rate": 18.7,
+      "t2_hit_rate": 11.6,
+      "profit_factor": 0.82,
+      "expectancy": -0.189,
+      "avg_win_r": 3.29,
       "avg_loss_r": 0.99,
-      "avg_r": 0.096,
-      "best_r": 7.2,
+      "avg_r": -0.054,
+      "best_r": 8.58,
       "worst_r": -1.0,
-      "edge_score": 29.7,
-      "sample_size": 230
+      "edge_score": 26.1,
+      "sample_size": 225
     },
     "Descending Triangle": {
-      "total_signals": 158,
-      "wins": 56,
-      "partial_wins": 21,
-      "losses": 63,
+      "total_signals": 159,
+      "wins": 44,
+      "partial_wins": 28,
+      "losses": 69,
       "timeouts": 18,
-      "win_rate": 48.7,
-      "t1_hit_rate": 48.7,
-      "t2_hit_rate": 35.4,
-      "profit_factor": 1.16,
-      "expectancy": -0.038,
-      "avg_win_r": 0.73,
-      "avg_loss_r": 0.77,
-      "avg_r": 0.084,
-      "best_r": 2.04,
+      "win_rate": 45.3,
+      "t1_hit_rate": 45.3,
+      "t2_hit_rate": 27.7,
+      "profit_factor": 0.86,
+      "expectancy": -0.142,
+      "avg_win_r": 0.66,
+      "avg_loss_r": 0.81,
+      "avg_r": -0.008,
+      "best_r": 1.92,
       "worst_r": -1.0,
-      "edge_score": 46.9,
-      "sample_size": 158
+      "edge_score": 39.6,
+      "sample_size": 159
     },
     "Distribution Short": {
-      "total_signals": 1116,
-      "wins": 179,
-      "partial_wins": 290,
-      "losses": 598,
-      "timeouts": 49,
-      "win_rate": 42.0,
-      "t1_hit_rate": 42.0,
-      "t2_hit_rate": 16.0,
-      "profit_factor": 0.82,
-      "expectancy": -0.132,
-      "avg_win_r": 1.0,
-      "avg_loss_r": 0.96,
-      "avg_r": -0.075,
-      "best_r": 12.39,
+      "total_signals": 1117,
+      "wins": 188,
+      "partial_wins": 291,
+      "losses": 583,
+      "timeouts": 55,
+      "win_rate": 42.9,
+      "t1_hit_rate": 42.9,
+      "t2_hit_rate": 16.8,
+      "profit_factor": 0.89,
+      "expectancy": -0.103,
+      "avg_win_r": 1.05,
+      "avg_loss_r": 0.97,
+      "avg_r": -0.034,
+      "best_r": 12.56,
       "worst_r": -1.0,
-      "edge_score": 35.1,
-      "sample_size": 1116
+      "edge_score": 36.8,
+      "sample_size": 1117
     },
     "Donchian Breakout": {
-      "total_signals": 1228,
-      "wins": 256,
-      "partial_wins": 273,
+      "total_signals": 1255,
+      "wins": 257,
+      "partial_wins": 289,
       "losses": 622,
-      "timeouts": 77,
-      "win_rate": 43.1,
-      "t1_hit_rate": 43.1,
-      "t2_hit_rate": 20.8,
-      "profit_factor": 0.97,
-      "expectancy": -0.072,
+      "timeouts": 87,
+      "win_rate": 43.5,
+      "t1_hit_rate": 43.5,
+      "t2_hit_rate": 20.5,
+      "profit_factor": 1.02,
+      "expectancy": -0.056,
       "avg_win_r": 1.07,
       "avg_loss_r": 0.93,
-      "avg_r": 0.01,
+      "avg_r": 0.036,
       "best_r": 5.45,
       "worst_r": -1.0,
-      "edge_score": 38.8,
-      "sample_size": 1228
+      "edge_score": 39.9,
+      "sample_size": 1255
     },
     "Double Bottom": {
-      "total_signals": 158,
-      "wins": 29,
-      "partial_wins": 12,
-      "losses": 80,
-      "timeouts": 37,
-      "win_rate": 25.9,
-      "t1_hit_rate": 25.9,
-      "t2_hit_rate": 18.4,
-      "profit_factor": 0.76,
-      "expectancy": -0.177,
-      "avg_win_r": 0.74,
-      "avg_loss_r": 0.5,
-      "avg_r": -0.014,
-      "best_r": 1.12,
+      "total_signals": 175,
+      "wins": 38,
+      "partial_wins": 13,
+      "losses": 79,
+      "timeouts": 45,
+      "win_rate": 29.1,
+      "t1_hit_rate": 29.1,
+      "t2_hit_rate": 21.7,
+      "profit_factor": 0.86,
+      "expectancy": -0.189,
+      "avg_win_r": 0.78,
+      "avg_loss_r": 0.59,
+      "avg_r": 0.014,
+      "best_r": 1.61,
       "worst_r": -1.0,
-      "edge_score": 29.9,
-      "sample_size": 158
+      "edge_score": 30.6,
+      "sample_size": 175
     },
     "Falling Wedge": {
-      "total_signals": 11,
-      "wins": 1,
-      "partial_wins": 2,
+      "total_signals": 13,
+      "wins": 3,
+      "partial_wins": 1,
       "losses": 3,
-      "timeouts": 5,
-      "win_rate": 27.3,
-      "t1_hit_rate": 27.3,
-      "t2_hit_rate": 9.1,
-      "profit_factor": 1.59,
-      "expectancy": -0.135,
-      "avg_win_r": 0.73,
-      "avg_loss_r": 0.46,
-      "avg_r": 0.211,
-      "best_r": 0.94,
-      "worst_r": -0.71,
-      "edge_score": 27.3,
-      "sample_size": 11
+      "timeouts": 6,
+      "win_rate": 30.8,
+      "t1_hit_rate": 30.8,
+      "t2_hit_rate": 23.1,
+      "profit_factor": 1.25,
+      "expectancy": -0.365,
+      "avg_win_r": 0.85,
+      "avg_loss_r": 0.9,
+      "avg_r": 0.201,
+      "best_r": 1.21,
+      "worst_r": -1.0,
+      "edge_score": 20.8,
+      "sample_size": 13
     },
     "Fashionably Late": {
-      "total_signals": 2434,
-      "wins": 621,
-      "partial_wins": 282,
-      "losses": 1335,
-      "timeouts": 196,
-      "win_rate": 37.1,
-      "t1_hit_rate": 37.1,
-      "t2_hit_rate": 25.5,
-      "profit_factor": 1.04,
-      "expectancy": -0.056,
-      "avg_win_r": 1.48,
-      "avg_loss_r": 0.96,
-      "avg_r": 0.11,
-      "best_r": 19.46,
+      "total_signals": 2528,
+      "wins": 639,
+      "partial_wins": 309,
+      "losses": 1381,
+      "timeouts": 199,
+      "win_rate": 37.5,
+      "t1_hit_rate": 37.5,
+      "t2_hit_rate": 25.3,
+      "profit_factor": 1.06,
+      "expectancy": -0.044,
+      "avg_win_r": 1.49,
+      "avg_loss_r": 0.97,
+      "avg_r": 0.119,
+      "best_r": 37.63,
       "worst_r": -1.0,
-      "edge_score": 33.2,
-      "sample_size": 2434
+      "edge_score": 33.6,
+      "sample_size": 2528
     },
     "Gap Fade": {
-      "total_signals": 1,
+      "total_signals": 2,
       "wins": 0,
       "partial_wins": 0,
       "losses": 1,
-      "timeouts": 0,
+      "timeouts": 1,
       "win_rate": 0.0,
       "t1_hit_rate": 0.0,
       "t2_hit_rate": 0.0,
@@ -3789,866 +3808,790 @@
       "expectancy": -0.033,
       "avg_win_r": 0,
       "avg_loss_r": 0.03,
-      "avg_r": -0.033,
-      "best_r": -0.03,
+      "avg_r": -0.013,
+      "best_r": 0.01,
       "worst_r": -0.03,
-      "edge_score": 9.9,
-      "sample_size": 1
+      "edge_score": 16.8,
+      "sample_size": 2
     },
     "Gap Reversal Long": {
-      "total_signals": 236,
-      "wins": 62,
-      "partial_wins": 69,
-      "losses": 103,
-      "timeouts": 2,
-      "win_rate": 55.5,
-      "t1_hit_rate": 55.5,
-      "t2_hit_rate": 26.3,
-      "profit_factor": 0.88,
-      "expectancy": -0.061,
-      "avg_win_r": 0.67,
-      "avg_loss_r": 0.98,
-      "avg_r": -0.051,
+      "total_signals": 245,
+      "wins": 64,
+      "partial_wins": 66,
+      "losses": 111,
+      "timeouts": 4,
+      "win_rate": 53.1,
+      "t1_hit_rate": 53.1,
+      "t2_hit_rate": 26.1,
+      "profit_factor": 0.85,
+      "expectancy": -0.083,
+      "avg_win_r": 0.7,
+      "avg_loss_r": 0.97,
+      "avg_r": -0.063,
       "best_r": 4.0,
       "worst_r": -1.0,
-      "edge_score": 49.2,
-      "sample_size": 236
+      "edge_score": 46.4,
+      "sample_size": 245
     },
     "Gap Reversal Short": {
-      "total_signals": 255,
-      "wins": 72,
-      "partial_wins": 77,
-      "losses": 104,
-      "timeouts": 2,
-      "win_rate": 58.4,
-      "t1_hit_rate": 58.4,
-      "t2_hit_rate": 28.2,
-      "profit_factor": 1.01,
-      "expectancy": -0.003,
-      "avg_win_r": 0.69,
-      "avg_loss_r": 0.98,
-      "avg_r": 0.005,
-      "best_r": 3.87,
+      "total_signals": 260,
+      "wins": 74,
+      "partial_wins": 70,
+      "losses": 115,
+      "timeouts": 1,
+      "win_rate": 55.4,
+      "t1_hit_rate": 55.4,
+      "t2_hit_rate": 28.5,
+      "profit_factor": 0.92,
+      "expectancy": -0.037,
+      "avg_win_r": 0.7,
+      "avg_loss_r": 0.95,
+      "avg_r": -0.033,
+      "best_r": 3.12,
       "worst_r": -1.0,
-      "edge_score": 53.7,
-      "sample_size": 255
+      "edge_score": 49.8,
+      "sample_size": 260
     },
     "Head & Shoulders": {
-      "total_signals": 5524,
-      "wins": 1285,
-      "partial_wins": 607,
-      "losses": 2690,
-      "timeouts": 942,
-      "win_rate": 34.3,
-      "t1_hit_rate": 34.3,
+      "total_signals": 5621,
+      "wins": 1308,
+      "partial_wins": 605,
+      "losses": 2752,
+      "timeouts": 956,
+      "win_rate": 34.0,
+      "t1_hit_rate": 34.0,
       "t2_hit_rate": 23.3,
-      "profit_factor": 0.99,
-      "expectancy": -0.136,
-      "avg_win_r": 1.11,
+      "profit_factor": 1.07,
+      "expectancy": -0.107,
+      "avg_win_r": 1.2,
       "avg_loss_r": 0.78,
-      "avg_r": 0.067,
-      "best_r": 75.32,
+      "avg_r": 0.096,
+      "best_r": 237.61,
       "worst_r": -1.0,
-      "edge_score": 29.9,
-      "sample_size": 5524
-    },
-    "Inside Bar Long": {
-      "total_signals": 4474,
-      "wins": 541,
-      "partial_wins": 555,
-      "losses": 3338,
-      "timeouts": 40,
-      "win_rate": 24.5,
-      "t1_hit_rate": 24.5,
-      "t2_hit_rate": 12.1,
-      "profit_factor": 0.48,
-      "expectancy": -0.388,
-      "avg_win_r": 1.45,
-      "avg_loss_r": 0.99,
-      "avg_r": -0.375,
-      "best_r": 8.94,
-      "worst_r": -1.0,
-      "edge_score": 22.6,
-      "sample_size": 4474
-    },
-    "Inside Bar Short": {
-      "total_signals": 4304,
-      "wins": 328,
-      "partial_wins": 497,
-      "losses": 3432,
-      "timeouts": 47,
-      "win_rate": 19.2,
-      "t1_hit_rate": 19.2,
-      "t2_hit_rate": 7.6,
-      "profit_factor": 0.32,
-      "expectancy": -0.544,
-      "avg_win_r": 1.33,
-      "avg_loss_r": 0.99,
-      "avg_r": -0.527,
-      "best_r": 4.76,
-      "worst_r": -1.0,
-      "edge_score": 21.7,
-      "sample_size": 4304
+      "edge_score": 25.9,
+      "sample_size": 5621
     },
     "Juicer Long": {
-      "total_signals": 539,
-      "wins": 170,
-      "partial_wins": 137,
-      "losses": 228,
-      "timeouts": 4,
+      "total_signals": 544,
+      "wins": 171,
+      "partial_wins": 139,
+      "losses": 227,
+      "timeouts": 7,
       "win_rate": 57.0,
       "t1_hit_rate": 57.0,
-      "t2_hit_rate": 31.5,
-      "profit_factor": 2.89,
-      "expectancy": 0.783,
-      "avg_win_r": 2.12,
+      "t2_hit_rate": 31.4,
+      "profit_factor": 2.86,
+      "expectancy": 0.756,
+      "avg_win_r": 2.07,
       "avg_loss_r": 0.99,
-      "avg_r": 0.792,
-      "best_r": 68.1,
+      "avg_r": 0.772,
+      "best_r": 70.77,
       "worst_r": -1.0,
-      "edge_score": 74.9,
-      "sample_size": 539
+      "edge_score": 74.2,
+      "sample_size": 544
     },
     "Keltner Breakout Long": {
-      "total_signals": 26061,
-      "wins": 4945,
-      "partial_wins": 7070,
-      "losses": 12047,
-      "timeouts": 1999,
-      "win_rate": 46.1,
-      "t1_hit_rate": 46.1,
-      "t2_hit_rate": 19.0,
-      "profit_factor": 0.73,
-      "expectancy": -0.16,
-      "avg_win_r": 0.59,
-      "avg_loss_r": 0.8,
-      "avg_r": -0.083,
-      "best_r": 4.06,
+      "total_signals": 1053,
+      "wins": 172,
+      "partial_wins": 292,
+      "losses": 461,
+      "timeouts": 128,
+      "win_rate": 44.1,
+      "t1_hit_rate": 44.1,
+      "t2_hit_rate": 16.3,
+      "profit_factor": 0.83,
+      "expectancy": -0.144,
+      "avg_win_r": 0.61,
+      "avg_loss_r": 0.74,
+      "avg_r": -0.03,
+      "best_r": 3.11,
       "worst_r": -1.0,
-      "edge_score": 38.9,
-      "sample_size": 26061
+      "edge_score": 38.4,
+      "sample_size": 1053
     },
     "Keltner Breakout Short": {
-      "total_signals": 24768,
-      "wins": 4420,
-      "partial_wins": 6924,
-      "losses": 11769,
-      "timeouts": 1655,
-      "win_rate": 45.8,
-      "t1_hit_rate": 45.8,
-      "t2_hit_rate": 17.8,
-      "profit_factor": 0.66,
-      "expectancy": -0.186,
-      "avg_win_r": 0.56,
-      "avg_loss_r": 0.81,
-      "avg_r": -0.118,
-      "best_r": 3.55,
+      "total_signals": 897,
+      "wins": 158,
+      "partial_wins": 251,
+      "losses": 402,
+      "timeouts": 86,
+      "win_rate": 45.6,
+      "t1_hit_rate": 45.6,
+      "t2_hit_rate": 17.6,
+      "profit_factor": 0.78,
+      "expectancy": -0.147,
+      "avg_win_r": 0.58,
+      "avg_loss_r": 0.75,
+      "avg_r": -0.056,
+      "best_r": 1.72,
       "worst_r": -1.0,
-      "edge_score": 37.6,
-      "sample_size": 24768
+      "edge_score": 39.2,
+      "sample_size": 897
     },
     "MACD Turn Long": {
-      "total_signals": 1307,
-      "wins": 207,
-      "partial_wins": 278,
-      "losses": 738,
-      "timeouts": 84,
-      "win_rate": 37.1,
-      "t1_hit_rate": 37.1,
-      "t2_hit_rate": 15.8,
-      "profit_factor": 0.64,
-      "expectancy": -0.239,
+      "total_signals": 1271,
+      "wins": 205,
+      "partial_wins": 287,
+      "losses": 692,
+      "timeouts": 87,
+      "win_rate": 38.7,
+      "t1_hit_rate": 38.7,
+      "t2_hit_rate": 16.1,
+      "profit_factor": 0.69,
+      "expectancy": -0.209,
       "avg_win_r": 0.87,
-      "avg_loss_r": 0.9,
-      "avg_r": -0.164,
-      "best_r": 5.05,
+      "avg_loss_r": 0.89,
+      "avg_r": -0.131,
+      "best_r": 5.42,
       "worst_r": -1.0,
-      "edge_score": 28.5,
-      "sample_size": 1307
+      "edge_score": 30.8,
+      "sample_size": 1271
     },
     "MACD Turn Short": {
-      "total_signals": 1245,
-      "wins": 207,
-      "partial_wins": 272,
-      "losses": 696,
-      "timeouts": 70,
-      "win_rate": 38.5,
-      "t1_hit_rate": 38.5,
-      "t2_hit_rate": 16.6,
-      "profit_factor": 0.61,
-      "expectancy": -0.247,
-      "avg_win_r": 0.79,
-      "avg_loss_r": 0.9,
-      "avg_r": -0.183,
-      "best_r": 3.38,
+      "total_signals": 1337,
+      "wins": 236,
+      "partial_wins": 290,
+      "losses": 730,
+      "timeouts": 81,
+      "win_rate": 39.3,
+      "t1_hit_rate": 39.3,
+      "t2_hit_rate": 17.7,
+      "profit_factor": 0.7,
+      "expectancy": -0.198,
+      "avg_win_r": 0.87,
+      "avg_loss_r": 0.89,
+      "avg_r": -0.128,
+      "best_r": 4.48,
       "worst_r": -1.0,
-      "edge_score": 29.4,
-      "sample_size": 1245
+      "edge_score": 31.6,
+      "sample_size": 1337
     },
     "Mean Reversion": {
-      "total_signals": 2973,
-      "wins": 727,
-      "partial_wins": 563,
-      "losses": 1668,
-      "timeouts": 15,
-      "win_rate": 43.4,
-      "t1_hit_rate": 43.4,
+      "total_signals": 3027,
+      "wins": 743,
+      "partial_wins": 535,
+      "losses": 1736,
+      "timeouts": 13,
+      "win_rate": 42.2,
+      "t1_hit_rate": 42.2,
       "t2_hit_rate": 24.5,
-      "profit_factor": 1.43,
-      "expectancy": 0.233,
-      "avg_win_r": 1.84,
+      "profit_factor": 1.28,
+      "expectancy": 0.156,
+      "avg_win_r": 1.74,
       "avg_loss_r": 1.0,
-      "avg_r": 0.248,
-      "best_r": 178.61,
+      "avg_r": 0.166,
+      "best_r": 66.65,
       "worst_r": -1.0,
-      "edge_score": 41.2,
-      "sample_size": 2973
+      "edge_score": 39.6,
+      "sample_size": 3027
     },
     "Midday Reversal Long": {
-      "total_signals": 1684,
-      "wins": 238,
-      "partial_wins": 1000,
-      "losses": 437,
-      "timeouts": 9,
-      "win_rate": 73.5,
-      "t1_hit_rate": 73.5,
-      "t2_hit_rate": 14.1,
-      "profit_factor": 0.83,
-      "expectancy": -0.048,
-      "avg_win_r": 0.28,
-      "avg_loss_r": 0.96,
-      "avg_r": -0.041,
-      "best_r": 2.98,
+      "total_signals": 308,
+      "wins": 69,
+      "partial_wins": 96,
+      "losses": 143,
+      "timeouts": 0,
+      "win_rate": 53.6,
+      "t1_hit_rate": 53.6,
+      "t2_hit_rate": 22.4,
+      "profit_factor": 0.68,
+      "expectancy": -0.148,
+      "avg_win_r": 0.57,
+      "avg_loss_r": 0.98,
+      "avg_r": -0.148,
+      "best_r": 1.65,
       "worst_r": -1.0,
-      "edge_score": 62.2,
-      "sample_size": 1684
+      "edge_score": 44.6,
+      "sample_size": 308
     },
     "Midday Reversal Short": {
-      "total_signals": 1705,
-      "wins": 242,
-      "partial_wins": 986,
-      "losses": 471,
-      "timeouts": 6,
-      "win_rate": 72.0,
-      "t1_hit_rate": 72.0,
-      "t2_hit_rate": 14.2,
-      "profit_factor": 0.85,
-      "expectancy": -0.042,
-      "avg_win_r": 0.3,
-      "avg_loss_r": 0.93,
-      "avg_r": -0.038,
-      "best_r": 15.36,
+      "total_signals": 392,
+      "wins": 110,
+      "partial_wins": 114,
+      "losses": 166,
+      "timeouts": 2,
+      "win_rate": 57.1,
+      "t1_hit_rate": 57.1,
+      "t2_hit_rate": 28.1,
+      "profit_factor": 0.76,
+      "expectancy": -0.104,
+      "avg_win_r": 0.56,
+      "avg_loss_r": 0.98,
+      "avg_r": -0.098,
+      "best_r": 1.96,
       "worst_r": -1.0,
-      "edge_score": 62.1,
-      "sample_size": 1705
+      "edge_score": 49.2,
+      "sample_size": 392
     },
     "Momentum Breakout": {
       "total_signals": 981,
       "wins": 306,
-      "partial_wins": 235,
-      "losses": 429,
-      "timeouts": 11,
-      "win_rate": 55.1,
-      "t1_hit_rate": 55.1,
+      "partial_wins": 234,
+      "losses": 433,
+      "timeouts": 8,
+      "win_rate": 55.0,
+      "t1_hit_rate": 55.0,
       "t2_hit_rate": 31.2,
-      "profit_factor": 1.47,
-      "expectancy": 0.192,
+      "profit_factor": 1.46,
+      "expectancy": 0.191,
       "avg_win_r": 1.15,
       "avg_loss_r": 0.98,
-      "avg_r": 0.208,
+      "avg_r": 0.202,
       "best_r": 4.23,
       "worst_r": -1.0,
-      "edge_score": 57.4,
+      "edge_score": 57.1,
       "sample_size": 981
     },
     "Multi-TF Trend Long": {
-      "total_signals": 757,
-      "wins": 159,
-      "partial_wins": 211,
-      "losses": 356,
-      "timeouts": 31,
+      "total_signals": 751,
+      "wins": 158,
+      "partial_wins": 209,
+      "losses": 364,
+      "timeouts": 20,
       "win_rate": 48.9,
       "t1_hit_rate": 48.9,
       "t2_hit_rate": 21.0,
-      "profit_factor": 0.84,
-      "expectancy": -0.097,
+      "profit_factor": 0.79,
+      "expectancy": -0.108,
       "avg_win_r": 0.67,
-      "avg_loss_r": 0.83,
-      "avg_r": -0.056,
-      "best_r": 4.29,
+      "avg_loss_r": 0.85,
+      "avg_r": -0.08,
+      "best_r": 4.73,
       "worst_r": -1.0,
-      "edge_score": 42.5,
-      "sample_size": 757
+      "edge_score": 41.9,
+      "sample_size": 751
     },
     "Multi-TF Trend Short": {
-      "total_signals": 272,
-      "wins": 46,
-      "partial_wins": 81,
-      "losses": 124,
-      "timeouts": 21,
-      "win_rate": 46.7,
-      "t1_hit_rate": 46.7,
-      "t2_hit_rate": 16.9,
-      "profit_factor": 1.08,
-      "expectancy": -0.034,
-      "avg_win_r": 0.89,
-      "avg_loss_r": 0.84,
-      "avg_r": 0.05,
-      "best_r": 3.57,
+      "total_signals": 265,
+      "wins": 48,
+      "partial_wins": 83,
+      "losses": 107,
+      "timeouts": 27,
+      "win_rate": 49.4,
+      "t1_hit_rate": 49.4,
+      "t2_hit_rate": 18.1,
+      "profit_factor": 1.33,
+      "expectancy": 0.029,
+      "avg_win_r": 0.97,
+      "avg_loss_r": 0.89,
+      "avg_r": 0.149,
+      "best_r": 3.85,
       "worst_r": -1.0,
-      "edge_score": 43.7,
-      "sample_size": 272
-    },
-    "NR7 Breakout Long": {
-      "total_signals": 5093,
-      "wins": 521,
-      "partial_wins": 555,
-      "losses": 4007,
-      "timeouts": 10,
-      "win_rate": 21.1,
-      "t1_hit_rate": 21.1,
-      "t2_hit_rate": 10.2,
-      "profit_factor": 0.57,
-      "expectancy": -0.342,
-      "avg_win_r": 2.09,
-      "avg_loss_r": 0.99,
-      "avg_r": -0.339,
-      "best_r": 11.15,
-      "worst_r": -1.0,
-      "edge_score": 23.1,
-      "sample_size": 5093
-    },
-    "NR7 Breakout Short": {
-      "total_signals": 4291,
-      "wins": 253,
-      "partial_wins": 426,
-      "losses": 3565,
-      "timeouts": 47,
-      "win_rate": 15.8,
-      "t1_hit_rate": 15.8,
-      "t2_hit_rate": 5.9,
-      "profit_factor": 0.38,
-      "expectancy": -0.523,
-      "avg_win_r": 1.96,
-      "avg_loss_r": 0.99,
-      "avg_r": -0.503,
-      "best_r": 6.1,
-      "worst_r": -1.0,
-      "edge_score": 21.1,
-      "sample_size": 4291
+      "edge_score": 49.2,
+      "sample_size": 265
     },
     "Opening Drive Long": {
-      "total_signals": 178,
-      "wins": 42,
-      "partial_wins": 50,
-      "losses": 86,
+      "total_signals": 181,
+      "wins": 45,
+      "partial_wins": 49,
+      "losses": 87,
       "timeouts": 0,
-      "win_rate": 51.7,
-      "t1_hit_rate": 51.7,
-      "t2_hit_rate": 23.6,
-      "profit_factor": 0.89,
-      "expectancy": -0.053,
-      "avg_win_r": 0.82,
-      "avg_loss_r": 0.99,
-      "avg_r": -0.053,
-      "best_r": 4.15,
+      "win_rate": 51.9,
+      "t1_hit_rate": 51.9,
+      "t2_hit_rate": 24.9,
+      "profit_factor": 0.88,
+      "expectancy": -0.058,
+      "avg_win_r": 0.81,
+      "avg_loss_r": 1.0,
+      "avg_r": -0.058,
+      "best_r": 6.99,
       "worst_r": -1.0,
-      "edge_score": 45.7,
-      "sample_size": 178
+      "edge_score": 45.5,
+      "sample_size": 181
     },
     "Opening Drive Short": {
-      "total_signals": 195,
+      "total_signals": 177,
       "wins": 43,
-      "partial_wins": 44,
-      "losses": 107,
-      "timeouts": 1,
-      "win_rate": 44.6,
-      "t1_hit_rate": 44.6,
-      "t2_hit_rate": 22.1,
-      "profit_factor": 0.67,
-      "expectancy": -0.181,
-      "avg_win_r": 0.82,
+      "partial_wins": 48,
+      "losses": 84,
+      "timeouts": 2,
+      "win_rate": 51.4,
+      "t1_hit_rate": 51.4,
+      "t2_hit_rate": 24.3,
+      "profit_factor": 0.89,
+      "expectancy": -0.061,
+      "avg_win_r": 0.81,
       "avg_loss_r": 0.99,
-      "avg_r": -0.176,
-      "best_r": 3.16,
+      "avg_r": -0.047,
+      "best_r": 3.57,
       "worst_r": -1.0,
-      "edge_score": 35.9,
-      "sample_size": 195
+      "edge_score": 45.5,
+      "sample_size": 177
     },
     "Power Hour Long": {
-      "total_signals": 243,
+      "total_signals": 226,
       "wins": 53,
-      "partial_wins": 44,
-      "losses": 146,
+      "partial_wins": 31,
+      "losses": 142,
       "timeouts": 0,
-      "win_rate": 39.9,
-      "t1_hit_rate": 39.9,
-      "t2_hit_rate": 21.8,
-      "profit_factor": 0.69,
-      "expectancy": -0.184,
-      "avg_win_r": 1.04,
+      "win_rate": 37.2,
+      "t1_hit_rate": 37.2,
+      "t2_hit_rate": 23.5,
+      "profit_factor": 0.64,
+      "expectancy": -0.229,
+      "avg_win_r": 1.07,
       "avg_loss_r": 1.0,
-      "avg_r": -0.184,
-      "best_r": 8.68,
+      "avg_r": -0.229,
+      "best_r": 8.28,
       "worst_r": -1.0,
-      "edge_score": 30.9,
-      "sample_size": 243
+      "edge_score": 27.7,
+      "sample_size": 226
     },
     "Power Hour Short": {
-      "total_signals": 348,
-      "wins": 80,
+      "total_signals": 329,
+      "wins": 74,
       "partial_wins": 70,
-      "losses": 198,
+      "losses": 185,
       "timeouts": 0,
-      "win_rate": 43.1,
-      "t1_hit_rate": 43.1,
-      "t2_hit_rate": 23.0,
-      "profit_factor": 0.7,
-      "expectancy": -0.169,
-      "avg_win_r": 0.93,
+      "win_rate": 43.8,
+      "t1_hit_rate": 43.8,
+      "t2_hit_rate": 22.5,
+      "profit_factor": 0.84,
+      "expectancy": -0.092,
+      "avg_win_r": 1.07,
       "avg_loss_r": 1.0,
-      "avg_r": -0.169,
-      "best_r": 16.62,
+      "avg_r": -0.092,
+      "best_r": 12.82,
       "worst_r": -1.0,
-      "edge_score": 33.8,
-      "sample_size": 348
+      "edge_score": 36.3,
+      "sample_size": 329
     },
     "RS Persistence Long": {
-      "total_signals": 1294,
-      "wins": 418,
+      "total_signals": 1327,
+      "wins": 422,
       "partial_wins": 285,
-      "losses": 585,
-      "timeouts": 6,
-      "win_rate": 54.3,
-      "t1_hit_rate": 54.3,
-      "t2_hit_rate": 32.3,
-      "profit_factor": 2.97,
-      "expectancy": 0.872,
-      "avg_win_r": 2.43,
+      "losses": 612,
+      "timeouts": 8,
+      "win_rate": 53.3,
+      "t1_hit_rate": 53.3,
+      "t2_hit_rate": 31.8,
+      "profit_factor": 2.42,
+      "expectancy": 0.642,
+      "avg_win_r": 2.07,
       "avg_loss_r": 0.99,
-      "avg_r": 0.878,
-      "best_r": 109.54,
+      "avg_r": 0.651,
+      "best_r": 65.71,
       "worst_r": -1.0,
-      "edge_score": 74.5,
-      "sample_size": 1294
+      "edge_score": 65.1,
+      "sample_size": 1327
     },
     "RSI Divergence Long": {
-      "total_signals": 4420,
-      "wins": 782,
-      "partial_wins": 795,
-      "losses": 2842,
-      "timeouts": 1,
-      "win_rate": 35.7,
-      "t1_hit_rate": 35.7,
-      "t2_hit_rate": 17.7,
-      "profit_factor": 0.9,
-      "expectancy": -0.061,
-      "avg_win_r": 1.63,
+      "total_signals": 2861,
+      "wins": 467,
+      "partial_wins": 481,
+      "losses": 1913,
+      "timeouts": 0,
+      "win_rate": 33.1,
+      "t1_hit_rate": 33.1,
+      "t2_hit_rate": 16.3,
+      "profit_factor": 0.87,
+      "expectancy": -0.09,
+      "avg_win_r": 1.75,
       "avg_loss_r": 1.0,
-      "avg_r": -0.061,
-      "best_r": 26.83,
+      "avg_r": -0.09,
+      "best_r": 21.13,
       "worst_r": -1.0,
-      "edge_score": 29.5,
-      "sample_size": 4420
+      "edge_score": 28.3,
+      "sample_size": 2861
     },
     "RSI Divergence Short": {
-      "total_signals": 4982,
-      "wins": 838,
-      "partial_wins": 864,
-      "losses": 3279,
-      "timeouts": 1,
-      "win_rate": 34.2,
-      "t1_hit_rate": 34.2,
-      "t2_hit_rate": 16.8,
-      "profit_factor": 0.88,
-      "expectancy": -0.076,
-      "avg_win_r": 1.7,
-      "avg_loss_r": 1.0,
-      "avg_r": -0.076,
-      "best_r": 28.33,
-      "worst_r": -1.0,
-      "edge_score": 28.6,
-      "sample_size": 4982
-    },
-    "Rising Wedge": {
-      "total_signals": 7571,
-      "wins": 1800,
-      "partial_wins": 866,
-      "losses": 3828,
-      "timeouts": 1077,
-      "win_rate": 35.2,
-      "t1_hit_rate": 35.2,
-      "t2_hit_rate": 23.8,
-      "profit_factor": 1.0,
-      "expectancy": -0.124,
-      "avg_win_r": 1.26,
-      "avg_loss_r": 0.88,
-      "avg_r": 0.106,
-      "best_r": 126.47,
-      "worst_r": -1.0,
-      "edge_score": 28.9,
-      "sample_size": 7571
-    },
-    "RubberBand Scalp": {
-      "total_signals": 106,
-      "wins": 41,
-      "partial_wins": 18,
-      "losses": 47,
-      "timeouts": 0,
-      "win_rate": 55.7,
-      "t1_hit_rate": 55.7,
-      "t2_hit_rate": 38.7,
-      "profit_factor": 1.18,
-      "expectancy": 0.082,
-      "avg_win_r": 0.94,
-      "avg_loss_r": 1.0,
-      "avg_r": 0.082,
-      "best_r": 2.57,
-      "worst_r": -1.0,
-      "edge_score": 53.7,
-      "sample_size": 106
-    },
-    "ST Reversal Long": {
-      "total_signals": 220,
-      "wins": 39,
-      "partial_wins": 54,
-      "losses": 115,
-      "timeouts": 12,
-      "win_rate": 42.3,
-      "t1_hit_rate": 42.3,
-      "t2_hit_rate": 17.7,
-      "profit_factor": 1.11,
-      "expectancy": 0.005,
-      "avg_win_r": 1.33,
-      "avg_loss_r": 0.97,
-      "avg_r": 0.098,
-      "best_r": 4.78,
-      "worst_r": -1.0,
-      "edge_score": 39.8,
-      "sample_size": 220
-    },
-    "ST Reversal Short": {
-      "total_signals": 308,
-      "wins": 35,
-      "partial_wins": 59,
-      "losses": 206,
-      "timeouts": 8,
-      "win_rate": 30.5,
-      "t1_hit_rate": 30.5,
-      "t2_hit_rate": 11.4,
-      "profit_factor": 0.73,
-      "expectancy": -0.204,
-      "avg_win_r": 1.58,
-      "avg_loss_r": 0.99,
-      "avg_r": -0.145,
-      "best_r": 3.72,
-      "worst_r": -1.0,
-      "edge_score": 26.9,
-      "sample_size": 308
-    },
-    "Second Chance Scalp": {
-      "total_signals": 1229,
-      "wins": 119,
-      "partial_wins": 425,
-      "losses": 654,
-      "timeouts": 31,
-      "win_rate": 44.3,
-      "t1_hit_rate": 44.3,
-      "t2_hit_rate": 9.7,
-      "profit_factor": 0.84,
-      "expectancy": -0.109,
-      "avg_win_r": 0.97,
-      "avg_loss_r": 0.97,
-      "avg_r": -0.075,
-      "best_r": 9.22,
-      "worst_r": -1.0,
-      "edge_score": 37.5,
-      "sample_size": 1229
-    },
-    "Streak Reversal Long": {
-      "total_signals": 1496,
-      "wins": 324,
-      "partial_wins": 153,
-      "losses": 1013,
-      "timeouts": 6,
+      "total_signals": 3272,
+      "wins": 495,
+      "partial_wins": 549,
+      "losses": 2226,
+      "timeouts": 2,
       "win_rate": 31.9,
       "t1_hit_rate": 31.9,
-      "t2_hit_rate": 21.7,
+      "t2_hit_rate": 15.1,
+      "profit_factor": 0.9,
+      "expectancy": -0.072,
+      "avg_win_r": 1.91,
+      "avg_loss_r": 1.0,
+      "avg_r": -0.071,
+      "best_r": 99.73,
+      "worst_r": -1.0,
+      "edge_score": 25.4,
+      "sample_size": 3272
+    },
+    "Rising Wedge": {
+      "total_signals": 7533,
+      "wins": 1840,
+      "partial_wins": 847,
+      "losses": 3800,
+      "timeouts": 1046,
+      "win_rate": 35.7,
+      "t1_hit_rate": 35.7,
+      "t2_hit_rate": 24.4,
+      "profit_factor": 1.11,
+      "expectancy": -0.073,
+      "avg_win_r": 1.38,
+      "avg_loss_r": 0.88,
+      "avg_r": 0.138,
+      "best_r": 155.11,
+      "worst_r": -1.0,
+      "edge_score": 29.1,
+      "sample_size": 7533
+    },
+    "RubberBand Scalp": {
+      "total_signals": 91,
+      "wins": 29,
+      "partial_wins": 11,
+      "losses": 51,
+      "timeouts": 0,
+      "win_rate": 44.0,
+      "t1_hit_rate": 44.0,
+      "t2_hit_rate": 31.9,
+      "profit_factor": 0.72,
+      "expectancy": -0.151,
+      "avg_win_r": 0.91,
+      "avg_loss_r": 0.98,
+      "avg_r": -0.151,
+      "best_r": 2.38,
+      "worst_r": -1.0,
+      "edge_score": 36.2,
+      "sample_size": 91
+    },
+    "ST Reversal Long": {
+      "total_signals": 267,
+      "wins": 52,
+      "partial_wins": 59,
+      "losses": 148,
+      "timeouts": 8,
+      "win_rate": 41.6,
+      "t1_hit_rate": 41.6,
+      "t2_hit_rate": 19.5,
+      "profit_factor": 0.97,
+      "expectancy": -0.047,
+      "avg_win_r": 1.25,
+      "avg_loss_r": 0.97,
+      "avg_r": 0.009,
+      "best_r": 4.54,
+      "worst_r": -1.0,
+      "edge_score": 37.2,
+      "sample_size": 267
+    },
+    "ST Reversal Short": {
+      "total_signals": 334,
+      "wins": 55,
+      "partial_wins": 69,
+      "losses": 192,
+      "timeouts": 18,
+      "win_rate": 37.1,
+      "t1_hit_rate": 37.1,
+      "t2_hit_rate": 16.5,
+      "profit_factor": 1.14,
+      "expectancy": 0.028,
+      "avg_win_r": 1.75,
+      "avg_loss_r": 0.99,
+      "avg_r": 0.132,
+      "best_r": 3.79,
+      "worst_r": -1.0,
+      "edge_score": 35.5,
+      "sample_size": 334
+    },
+    "Second Chance Scalp": {
+      "total_signals": 1272,
+      "wins": 127,
+      "partial_wins": 451,
+      "losses": 662,
+      "timeouts": 32,
+      "win_rate": 45.4,
+      "t1_hit_rate": 45.4,
+      "t2_hit_rate": 10.0,
+      "profit_factor": 0.92,
+      "expectancy": -0.065,
+      "avg_win_r": 1.02,
+      "avg_loss_r": 0.97,
+      "avg_r": -0.031,
+      "best_r": 10.94,
+      "worst_r": -1.0,
+      "edge_score": 39.7,
+      "sample_size": 1272
+    },
+    "Streak Reversal Long": {
+      "total_signals": 1497,
+      "wins": 324,
+      "partial_wins": 154,
+      "losses": 1016,
+      "timeouts": 3,
+      "win_rate": 31.9,
+      "t1_hit_rate": 31.9,
+      "t2_hit_rate": 21.6,
       "profit_factor": 1.4,
-      "expectancy": 0.268,
+      "expectancy": 0.267,
       "avg_win_r": 2.96,
       "avg_loss_r": 0.99,
-      "avg_r": 0.274,
+      "avg_r": 0.27,
       "best_r": 26.16,
       "worst_r": -1.0,
       "edge_score": 35.8,
-      "sample_size": 1496
+      "sample_size": 1497
     },
     "Streak Reversal Short": {
-      "total_signals": 2350,
-      "wins": 376,
-      "partial_wins": 257,
-      "losses": 1713,
-      "timeouts": 4,
-      "win_rate": 26.9,
-      "t1_hit_rate": 26.9,
-      "t2_hit_rate": 16.0,
-      "profit_factor": 0.85,
-      "expectancy": -0.109,
-      "avg_win_r": 2.3,
+      "total_signals": 2347,
+      "wins": 379,
+      "partial_wins": 256,
+      "losses": 1711,
+      "timeouts": 1,
+      "win_rate": 27.1,
+      "t1_hit_rate": 27.1,
+      "t2_hit_rate": 16.1,
+      "profit_factor": 0.86,
+      "expectancy": -0.099,
+      "avg_win_r": 2.32,
       "avg_loss_r": 1.0,
-      "avg_r": -0.106,
-      "best_r": 15.96,
+      "avg_r": -0.099,
+      "best_r": 15.02,
       "worst_r": -1.0,
-      "edge_score": 27.7,
-      "sample_size": 2350
+      "edge_score": 27.9,
+      "sample_size": 2347
     },
     "TS Momentum Long": {
-      "total_signals": 1391,
-      "wins": 440,
-      "partial_wins": 380,
-      "losses": 540,
-      "timeouts": 31,
-      "win_rate": 59.0,
-      "t1_hit_rate": 59.0,
-      "t2_hit_rate": 31.6,
-      "profit_factor": 1.56,
-      "expectancy": 0.181,
-      "avg_win_r": 0.95,
-      "avg_loss_r": 0.92,
-      "avg_r": 0.206,
-      "best_r": 18.44,
+      "total_signals": 1374,
+      "wins": 442,
+      "partial_wins": 383,
+      "losses": 535,
+      "timeouts": 14,
+      "win_rate": 60.0,
+      "t1_hit_rate": 60.0,
+      "t2_hit_rate": 32.2,
+      "profit_factor": 1.57,
+      "expectancy": 0.192,
+      "avg_win_r": 0.93,
+      "avg_loss_r": 0.91,
+      "avg_r": 0.204,
+      "best_r": 19.15,
       "worst_r": -1.0,
-      "edge_score": 60.6,
-      "sample_size": 1391
+      "edge_score": 61.7,
+      "sample_size": 1374
     },
     "TS Momentum Short": {
-      "total_signals": 780,
-      "wins": 190,
-      "partial_wins": 217,
+      "total_signals": 795,
+      "wins": 187,
+      "partial_wins": 235,
       "losses": 339,
       "timeouts": 34,
-      "win_rate": 52.2,
-      "t1_hit_rate": 52.2,
-      "t2_hit_rate": 24.4,
-      "profit_factor": 1.0,
-      "expectancy": -0.041,
-      "avg_win_r": 0.79,
-      "avg_loss_r": 0.95,
-      "avg_r": 0.011,
-      "best_r": 3.74,
+      "win_rate": 53.1,
+      "t1_hit_rate": 53.1,
+      "t2_hit_rate": 23.5,
+      "profit_factor": 1.04,
+      "expectancy": -0.026,
+      "avg_win_r": 0.81,
+      "avg_loss_r": 0.97,
+      "avg_r": 0.031,
+      "best_r": 4.01,
       "worst_r": -1.0,
-      "edge_score": 47.5,
-      "sample_size": 780
+      "edge_score": 48.7,
+      "sample_size": 795
     },
     "Tidal Wave": {
-      "total_signals": 503,
-      "wins": 162,
-      "partial_wins": 141,
-      "losses": 199,
-      "timeouts": 1,
-      "win_rate": 60.2,
-      "t1_hit_rate": 60.2,
-      "t2_hit_rate": 32.2,
+      "total_signals": 500,
+      "wins": 148,
+      "partial_wins": 159,
+      "losses": 188,
+      "timeouts": 5,
+      "win_rate": 61.4,
+      "t1_hit_rate": 61.4,
+      "t2_hit_rate": 29.6,
       "profit_factor": 1.28,
-      "expectancy": 0.104,
-      "avg_win_r": 0.81,
-      "avg_loss_r": 0.96,
-      "avg_r": 0.107,
-      "best_r": 5.01,
+      "expectancy": 0.094,
+      "avg_win_r": 0.76,
+      "avg_loss_r": 0.97,
+      "avg_r": 0.105,
+      "best_r": 3.73,
       "worst_r": -1.0,
-      "edge_score": 59.1,
-      "sample_size": 503
+      "edge_score": 60.2,
+      "sample_size": 500
     },
     "Turtle Breakout Long": {
-      "total_signals": 626,
+      "total_signals": 628,
       "wins": 175,
-      "partial_wins": 119,
-      "losses": 324,
-      "timeouts": 8,
+      "partial_wins": 120,
+      "losses": 327,
+      "timeouts": 6,
       "win_rate": 47.0,
       "t1_hit_rate": 47.0,
-      "t2_hit_rate": 28.0,
-      "profit_factor": 1.57,
-      "expectancy": 0.282,
-      "avg_win_r": 1.72,
+      "t2_hit_rate": 27.9,
+      "profit_factor": 1.52,
+      "expectancy": 0.256,
+      "avg_win_r": 1.66,
       "avg_loss_r": 0.99,
-      "avg_r": 0.298,
-      "best_r": 68.66,
+      "avg_r": 0.27,
+      "best_r": 67.34,
       "worst_r": -1.0,
-      "edge_score": 46.4,
-      "sample_size": 626
+      "edge_score": 45.5,
+      "sample_size": 628
     },
     "Turtle Breakout Short": {
-      "total_signals": 482,
-      "wins": 73,
-      "partial_wins": 112,
-      "losses": 247,
-      "timeouts": 50,
-      "win_rate": 38.4,
-      "t1_hit_rate": 38.4,
-      "t2_hit_rate": 15.1,
-      "profit_factor": 0.74,
-      "expectancy": -0.209,
-      "avg_win_r": 0.87,
-      "avg_loss_r": 0.88,
-      "avg_r": -0.077,
-      "best_r": 6.85,
+      "total_signals": 505,
+      "wins": 74,
+      "partial_wins": 129,
+      "losses": 244,
+      "timeouts": 58,
+      "win_rate": 40.2,
+      "t1_hit_rate": 40.2,
+      "t2_hit_rate": 14.7,
+      "profit_factor": 0.9,
+      "expectancy": -0.143,
+      "avg_win_r": 0.94,
+      "avg_loss_r": 0.87,
+      "avg_r": 0.001,
+      "best_r": 6.89,
       "worst_r": -1.0,
-      "edge_score": 30.7,
-      "sample_size": 482
+      "edge_score": 34.6,
+      "sample_size": 505
     },
     "VP Divergence Long": {
-      "total_signals": 18710,
-      "wins": 3038,
-      "partial_wins": 2721,
-      "losses": 12916,
-      "timeouts": 35,
-      "win_rate": 30.8,
-      "t1_hit_rate": 30.8,
-      "t2_hit_rate": 16.2,
+      "total_signals": 5735,
+      "wins": 878,
+      "partial_wins": 750,
+      "losses": 4100,
+      "timeouts": 7,
+      "win_rate": 28.4,
+      "t1_hit_rate": 28.4,
+      "t2_hit_rate": 15.3,
       "profit_factor": 1.45,
-      "expectancy": 0.311,
-      "avg_win_r": 3.26,
+      "expectancy": 0.32,
+      "avg_win_r": 3.65,
       "avg_loss_r": 1.0,
-      "avg_r": 0.315,
-      "best_r": 47.61,
+      "avg_r": 0.323,
+      "best_r": 28.47,
       "worst_r": -1.0,
       "edge_score": 36.2,
-      "sample_size": 18710
+      "sample_size": 5735
     },
     "VP Divergence Short": {
-      "total_signals": 22870,
-      "wins": 3397,
-      "partial_wins": 3301,
-      "losses": 16119,
-      "timeouts": 53,
-      "win_rate": 29.3,
-      "t1_hit_rate": 29.3,
-      "t2_hit_rate": 14.9,
-      "profit_factor": 1.26,
-      "expectancy": 0.18,
-      "avg_win_r": 3.03,
+      "total_signals": 7002,
+      "wins": 989,
+      "partial_wins": 901,
+      "losses": 5102,
+      "timeouts": 10,
+      "win_rate": 27.0,
+      "t1_hit_rate": 27.0,
+      "t2_hit_rate": 14.1,
+      "profit_factor": 1.29,
+      "expectancy": 0.213,
+      "avg_win_r": 3.49,
       "avg_loss_r": 1.0,
-      "avg_r": 0.184,
-      "best_r": 31.94,
+      "avg_r": 0.215,
+      "best_r": 32.22,
       "worst_r": -1.0,
-      "edge_score": 33.3,
-      "sample_size": 22870
+      "edge_score": 33.6,
+      "sample_size": 7002
     },
     "VWAP Reversion": {
-      "total_signals": 2267,
-      "wins": 230,
-      "partial_wins": 207,
-      "losses": 1823,
-      "timeouts": 7,
-      "win_rate": 19.3,
-      "t1_hit_rate": 19.3,
-      "t2_hit_rate": 10.1,
-      "profit_factor": 1.02,
-      "expectancy": 0.015,
-      "avg_win_r": 4.26,
+      "total_signals": 2402,
+      "wins": 256,
+      "partial_wins": 233,
+      "losses": 1903,
+      "timeouts": 10,
+      "win_rate": 20.4,
+      "t1_hit_rate": 20.4,
+      "t2_hit_rate": 10.7,
+      "profit_factor": 1.12,
+      "expectancy": 0.089,
+      "avg_win_r": 4.35,
       "avg_loss_r": 1.0,
-      "avg_r": 0.025,
-      "best_r": 67.47,
+      "avg_r": 0.1,
+      "best_r": 80.03,
       "worst_r": -1.0,
-      "edge_score": 27.1,
-      "sample_size": 2267
+      "edge_score": 29.0,
+      "sample_size": 2402
     },
     "VWAP Trend Long": {
-      "total_signals": 1162,
-      "wins": 145,
-      "partial_wins": 149,
-      "losses": 868,
+      "total_signals": 1186,
+      "wins": 158,
+      "partial_wins": 145,
+      "losses": 883,
       "timeouts": 0,
-      "win_rate": 25.3,
-      "t1_hit_rate": 25.3,
-      "t2_hit_rate": 12.5,
-      "profit_factor": 0.86,
-      "expectancy": -0.107,
-      "avg_win_r": 2.53,
+      "win_rate": 25.5,
+      "t1_hit_rate": 25.5,
+      "t2_hit_rate": 13.3,
+      "profit_factor": 0.85,
+      "expectancy": -0.114,
+      "avg_win_r": 2.46,
       "avg_loss_r": 1.0,
-      "avg_r": -0.107,
-      "best_r": 17.67,
+      "avg_r": -0.114,
+      "best_r": 14.07,
       "worst_r": -1.0,
       "edge_score": 27.6,
-      "sample_size": 1162
+      "sample_size": 1186
     },
     "VWAP Trend Short": {
-      "total_signals": 1068,
-      "wins": 155,
-      "partial_wins": 126,
-      "losses": 787,
+      "total_signals": 1051,
+      "wins": 126,
+      "partial_wins": 136,
+      "losses": 789,
       "timeouts": 0,
-      "win_rate": 26.3,
-      "t1_hit_rate": 26.3,
-      "t2_hit_rate": 14.5,
-      "profit_factor": 1.02,
-      "expectancy": 0.017,
-      "avg_win_r": 2.87,
+      "win_rate": 24.9,
+      "t1_hit_rate": 24.9,
+      "t2_hit_rate": 12.0,
+      "profit_factor": 0.9,
+      "expectancy": -0.075,
+      "avg_win_r": 2.71,
       "avg_loss_r": 1.0,
-      "avg_r": 0.017,
-      "best_r": 25.16,
+      "avg_r": -0.075,
+      "best_r": 29.78,
       "worst_r": -1.0,
-      "edge_score": 29.7,
-      "sample_size": 1068
+      "edge_score": 27.5,
+      "sample_size": 1051
     },
     "Volume Breakout": {
-      "total_signals": 637,
-      "wins": 134,
+      "total_signals": 634,
+      "wins": 135,
       "partial_wins": 144,
-      "losses": 329,
-      "timeouts": 30,
-      "win_rate": 43.6,
-      "t1_hit_rate": 43.6,
-      "t2_hit_rate": 21.0,
-      "profit_factor": 0.96,
-      "expectancy": -0.064,
-      "avg_win_r": 1.04,
-      "avg_loss_r": 0.92,
-      "avg_r": -0.005,
+      "losses": 318,
+      "timeouts": 37,
+      "win_rate": 44.0,
+      "t1_hit_rate": 44.0,
+      "t2_hit_rate": 21.3,
+      "profit_factor": 0.97,
+      "expectancy": -0.069,
+      "avg_win_r": 1.05,
+      "avg_loss_r": 0.95,
+      "avg_r": 0.007,
       "best_r": 4.56,
       "worst_r": -1.0,
-      "edge_score": 39.3,
-      "sample_size": 637
+      "edge_score": 39.6,
+      "sample_size": 634
     },
     "Volume Climax Long": {
-      "total_signals": 1603,
-      "wins": 359,
-      "partial_wins": 376,
-      "losses": 868,
+      "total_signals": 754,
+      "wins": 171,
+      "partial_wins": 177,
+      "losses": 406,
       "timeouts": 0,
-      "win_rate": 45.9,
-      "t1_hit_rate": 45.9,
-      "t2_hit_rate": 22.4,
-      "profit_factor": 0.81,
-      "expectancy": -0.103,
-      "avg_win_r": 0.96,
+      "win_rate": 46.2,
+      "t1_hit_rate": 46.2,
+      "t2_hit_rate": 22.7,
+      "profit_factor": 0.78,
+      "expectancy": -0.119,
+      "avg_win_r": 0.91,
       "avg_loss_r": 1.0,
-      "avg_r": -0.103,
-      "best_r": 22.04,
+      "avg_r": -0.119,
+      "best_r": 9.96,
       "worst_r": -1.0,
-      "edge_score": 38.6,
-      "sample_size": 1603
+      "edge_score": 38.7,
+      "sample_size": 754
     },
     "Volume Climax Short": {
-      "total_signals": 1634,
-      "wins": 342,
-      "partial_wins": 378,
-      "losses": 913,
+      "total_signals": 739,
+      "wins": 164,
+      "partial_wins": 172,
+      "losses": 402,
       "timeouts": 1,
-      "win_rate": 44.1,
-      "t1_hit_rate": 44.1,
-      "t2_hit_rate": 20.9,
-      "profit_factor": 0.88,
-      "expectancy": -0.068,
-      "avg_win_r": 1.11,
+      "win_rate": 45.5,
+      "t1_hit_rate": 45.5,
+      "t2_hit_rate": 22.2,
+      "profit_factor": 0.77,
+      "expectancy": -0.125,
+      "avg_win_r": 0.92,
       "avg_loss_r": 1.0,
-      "avg_r": -0.067,
-      "best_r": 60.43,
+      "avg_r": -0.123,
+      "best_r": 11.19,
       "worst_r": -1.0,
-      "edge_score": 35.4,
-      "sample_size": 1634
+      "edge_score": 37.8,
+      "sample_size": 739
     }
   }
 }
