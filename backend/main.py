@@ -23,6 +23,8 @@ import numpy as np
 
 app = FastAPI(title="Juicer API", version="1.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173","http://localhost:3000","http://127.0.0.1:5173"], allow_methods=["*"], allow_headers=["*"])
+from backend.tracker.routes import router as tracker_router
+app.include_router(tracker_router, prefix="/api/tracker")
 
 _evaluator = StrategyEvaluator()
 _evaluator.load()

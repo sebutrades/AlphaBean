@@ -297,27 +297,27 @@ def _detect_juicer_long(s):
     if atr <= 0: return None
     cur = s.closes[-1]
     adx = _compute_adx(s, 14)
-    if adx is None or adx < get_param(_p, "adx_threshold", 25): return None
-    _sf = get_param(_p, "sma_fast", 20); _ss = get_param(_p, "sma_slow", 50)
+    if adx is None or adx < get_param(_p, "adx_threshold", 35): return None  # was 25
+    _sf = get_param(_p, "sma_fast", 10); _ss = get_param(_p, "sma_slow", 50)  # sma_fast was 20
     sma_f = float(np.mean(s.closes[-_sf:])); sma_s = float(np.mean(s.closes[-_ss:]))
     if not (cur > sma_f > sma_s): return None
     if not _has_higher_lows(s, 10): return None
-    if not _consecutive_weekly_trend(s, get_param(_p, "weekly_streak", 3), True): return None
+    if not _consecutive_weekly_trend(s, get_param(_p, "weekly_streak", 4), True): return None  # was 3
     vol_20 = float(np.mean(s.volumes[-20:])); vol_50 = float(np.mean(s.volumes[-50:]))
     if vol_50 > 0 and vol_20 < vol_50: return None
     regime_bonus = 0.08 if s._regime == "trending_bull" else 0.0
     adx_bonus = min(0.10, (adx - 25) / 50 * 0.10)
     vol_ratio = vol_20 / vol_50 if vol_50 > 0 else 1.0
     conf = 0.60 + adx_bonus + min(0.05, (vol_ratio - 1.0) * 0.10) + regime_bonus
-    _trail = get_param(_p, "trail_atr_mult", 2.0)
-    entry = cur; stop = cur - atr * get_param(_p, "stop_atr_mult", 2.0)
-    t1 = round(entry + atr * get_param(_p, "t1_atr_mult", 2.0), 2)
-    t2 = round(entry + atr * get_param(_p, "t2_atr_mult", 4.0), 2)
+    _trail = get_param(_p, "trail_atr_mult", 3.0)  # was 2.0
+    entry = cur; stop = cur - atr * get_param(_p, "stop_atr_mult", 0.5)  # was 2.0
+    t1 = round(entry + atr * get_param(_p, "t1_atr_mult", 2.25), 2)  # was 2.0
+    t2 = round(entry + atr * get_param(_p, "t2_atr_mult", 7.0), 2)  # was 4.0
     if entry - stop <= 0: return None
     return _make(s, _p, Bias.LONG, entry, stop, t2, conf,
                  f"Juicer Long: ADX={adx:.0f}, {cur:.2f}>{sma_f:.2f}>{sma_s:.2f}, vol {vol_ratio:.1f}x",
                  target_1=t1, target_2=t2, trail_type="atr", trail_param=_trail,
-                 position_splits=(0.25, 0.25, 0.50),
+                 position_splits=(0.40, 0.10, 0.50),  # was (0.25, 0.25, 0.50)
                  key_levels={"sma20": sma_f, "sma50": sma_s, "adx": round(adx, 1)})
 
 
@@ -1483,20 +1483,22 @@ def _detect_momentum_breakout(s):
     atr = s.current_atr
     if atr <= 0: return None
     cur = s.closes[-1]
-    _lb = get_param(_p, "lookback_period", 20)
+    _lb = get_param(_p, "lookback_period", 30)  # was 20
     high_lb = max(s.highs[-_lb-1:-1])
     if cur <= high_lb: return None
     sma50 = float(np.mean(s.closes[-50:]))
     if cur < sma50: return None
     avg_vol = float(np.mean(s.volumes[-20:]))
-    vm = get_param(_p, "vol_mult", 1.5)
+    vm = get_param(_p, "vol_mult", 2.5)  # was 1.5
     if avg_vol > 0 and s.volumes[-1] < avg_vol * vm: return None
-    entry = cur; _sm = get_param(_p, "stop_atr_mult", 2.0)
-    stop = max(min(s.lows[-10:]), entry - atr * _sm) - _atr_offset(atr, 0.10)
+    entry = cur; stop = entry - atr * get_param(_p, "stop_atr_mult", 0.5)  # was 2.0
     if entry - stop <= 0: return None
-    return _make(s, _p, Bias.LONG, entry, stop, round(entry + (entry - stop) * 2, 2), 0.58,
+    t1 = round(entry + atr * get_param(_p, "t1_atr_mult", 4.0), 2)
+    t2 = round(entry + atr * get_param(_p, "t2_atr_mult", 4.5), 2)
+    return _make(s, _p, Bias.LONG, entry, stop, t2, 0.58,
                  f"Momentum BO: new {_lb}d high",
-                 target_1=round(entry + (entry - stop), 2), target_2=round(entry + (entry - stop) * 2, 2))
+                 target_1=t1, target_2=t2, trail_type="atr", trail_param=get_param(_p, "trail_atr_mult", 2.0),
+                 position_splits=(0.50, 0.10, 0.40))  # was default (0.5, 0.3, 0.2)
 
 
 def _detect_vol_compression_breakout(s):
@@ -1618,30 +1620,26 @@ def _detect_time_series_momentum(s):
     atr = s.current_atr
     if atr <= 0: return None
     cur = s.closes[-1]
-    _lb = get_param(_p, "lookback_days", 126); _skip = get_param(_p, "skip_days", 21)
+    _lb = get_param(_p, "lookback_days", 165); _skip = get_param(_p, "skip_days", 5)  # was 126/21
     if s.n < _lb: return None
     mom_ret = (s.closes[-_skip] - s.closes[-_lb]) / s.closes[-_lb]
-    _thresh = get_param(_p, "mom_threshold", 0.05)
+    _thresh = get_param(_p, "mom_threshold", 0.10)  # was 0.05
     if abs(mom_ret) < _thresh: return None
     rets = np.diff(s.closes[-61:]) / s.closes[-61:-1]
     vol_60 = float(np.std(rets)) * np.sqrt(252)
     if vol_60 <= 0: return None
     conf = 0.55 + min(abs(mom_ret) / 0.30, 1.0) * 0.10
-    _sm = get_param(_p, "stop_atr_mult", 2.5)
+    _sm = get_param(_p, "stop_atr_mult", 0.5)  # was 2.5
     if mom_ret > _thresh:
         entry = cur; stop = cur - atr * _sm
         if entry - stop <= 0: return None
-        return _make(s, "TS Momentum Long", Bias.LONG, entry, stop, round(entry + atr * 4, 2), conf,
+        return _make(s, "TS Momentum Long", Bias.LONG, entry, stop, round(entry + atr * get_param(_p, "t2_atr_mult", 5.0), 2), conf,  # t2 was 4.0
                      f"TS Mom Long: ret={mom_ret:+.1%}",
-                     target_1=round(entry + atr * 2, 2), target_2=round(entry + atr * 4, 2),
-                     trail_type="atr", trail_param=2.5, position_splits=(0.30, 0.30, 0.40))
+                     target_1=round(entry + atr * get_param(_p, "t1_atr_mult", 3.5), 2), target_2=round(entry + atr * get_param(_p, "t2_atr_mult", 5.0), 2),  # t1 was 2.0
+                     trail_type="atr", trail_param=get_param(_p, "trail_atr_mult", 2.0),  # was 2.5
+                     position_splits=(0.40, 0.40, 0.20))  # was (0.30, 0.30, 0.40)
     elif mom_ret < -_thresh:
-        entry = cur; stop = cur + atr * _sm
-        if stop - entry <= 0: return None
-        return _make(s, "TS Momentum Short", Bias.SHORT, entry, stop, round(entry - atr * 4, 2), conf,
-                     f"TS Mom Short: ret={mom_ret:+.1%}",
-                     target_1=round(entry - atr * 2, 2), target_2=round(entry - atr * 4, 2),
-                     trail_type="atr", trail_param=2.5, position_splits=(0.30, 0.30, 0.40))
+        return None  # ❌ CUT — TS Momentum Short: +0.020R, 19% WR after optimization
     return None
 
 
@@ -1746,32 +1744,27 @@ def _detect_turtle_breakout(s):
     atr = s.current_atr
     if atr <= 0: return None
     cur = s.closes[-1]
-    _cp = get_param(_p, "channel_period", 20)
+    _cp = get_param(_p, "channel_period", 30)  # was 20
     h20 = max(s.highs[-_cp-1:-1]); l20 = min(s.lows[-_cp-1:-1])
-    sq_thresh = get_param(_p, "squeeze_threshold", 0.85)
+    sq_thresh = get_param(_p, "squeeze_threshold", 0.80)  # was 0.85
     rr = [s.highs[i]-s.lows[i] for i in range(s.n-5, s.n)]
     lr = [s.highs[i]-s.lows[i] for i in range(s.n-20, s.n-5)]
     if float(np.mean(lr)) > 0 and float(np.mean(rr)) > float(np.mean(lr)) * sq_thresh: return None
     avg_vol = float(np.mean(s.volumes[-20:]))
-    vm = get_param(_p, "vol_mult", 1.3)
+    vm = get_param(_p, "vol_mult", 2.0)  # was 1.3
     vol_ok = avg_vol > 0 and s.volumes[-1] >= avg_vol * vm
-    _sm = get_param(_p, "stop_atr_mult", 2.0)
+    _sm = get_param(_p, "stop_atr_mult", 1.0)  # was 2.0
     if cur > h20:
         conf = 0.58 if vol_ok else 0.52
         entry = cur; stop = entry - atr * _sm
         if entry - stop <= 0: return None
-        return _make(s, "Turtle Breakout Long", Bias.LONG, entry, stop, round(entry + atr * 4, 2), conf,
+        return _make(s, "Turtle Breakout Long", Bias.LONG, entry, stop, round(entry + atr * get_param(_p, "t2_atr_mult", 5.5), 2), conf,  # t2 was 4.0
                      f"Turtle BO Long",
-                     target_1=round(entry + atr * 2, 2), target_2=round(entry + atr * 4, 2),
-                     trail_type="atr", trail_param=2.0, position_splits=(0.25, 0.25, 0.50))
+                     target_1=round(entry + atr * get_param(_p, "t1_atr_mult", 2.5), 2), target_2=round(entry + atr * get_param(_p, "t2_atr_mult", 5.5), 2),  # t1 was 2.0
+                     trail_type="atr", trail_param=get_param(_p, "trail_atr_mult", 3.0),  # was 2.0
+                     position_splits=(0.20, 0.10, 0.70))  # was (0.25, 0.25, 0.50)
     elif cur < l20:
-        conf = 0.58 if vol_ok else 0.52
-        entry = cur; stop = entry + atr * _sm
-        if stop - entry <= 0: return None
-        return _make(s, "Turtle Breakout Short", Bias.SHORT, entry, stop, round(entry - atr * 4, 2), conf,
-                     f"Turtle BO Short",
-                     target_1=round(entry - atr * 2, 2), target_2=round(entry - atr * 4, 2),
-                     trail_type="atr", trail_param=2.0, position_splits=(0.25, 0.25, 0.50))
+        return None  # ❌ CUT — Turtle Breakout Short: -0.238R after optimization
     return None
 
 
@@ -1782,20 +1775,20 @@ def _detect_bab(s):
     if atr <= 0: return None
     cur = s.closes[-1]
     v60 = float(np.std(np.diff(s.closes[-61:]) / s.closes[-61:-1])) * np.sqrt(252)
-    max_vol = get_param(_p, "max_vol", 0.25)
+    max_vol = get_param(_p, "max_vol", 0.35)  # was 0.25
     if v60 > max_vol: return None
     sma50 = float(np.mean(s.closes[-50:]))
     sma200 = float(np.mean(s.closes[-200:])) if s.n >= 200 else sma50
     if cur < sma50 or cur < sma200: return None
     if s.n >= 63 and (cur - s.closes[-63]) / s.closes[-63] < 0: return None
     conf = 0.58 + (max_vol - v60) * 0.20
-    _sm = get_param(_p, "stop_atr_mult", 2.0)
-    entry = cur; stop = cur - atr * _sm
+    entry = cur; stop = cur - atr * get_param(_p, "stop_atr_mult", 0.5)  # was 2.0
     if entry - stop <= 0: return None
-    return _make(s, _p, Bias.LONG, entry, stop, round(entry + atr * 4, 2), conf,
+    return _make(s, _p, Bias.LONG, entry, stop, round(entry + atr * get_param(_p, "t2_atr_mult", 7.0), 2), conf,  # t2 was 4.0
                  f"BAB Long: vol={v60:.0%}",
-                 target_1=round(entry + atr * 2, 2), target_2=round(entry + atr * 4, 2),
-                 position_splits=(0.30, 0.30, 0.40))
+                 target_1=round(entry + atr * get_param(_p, "t1_atr_mult", 4.0), 2), target_2=round(entry + atr * get_param(_p, "t2_atr_mult", 7.0), 2),  # t1 was 2.0
+                 trail_type="atr", trail_param=get_param(_p, "trail_atr_mult", 1.5),
+                 position_splits=(0.20, 0.10, 0.70))  # was (0.30, 0.30, 0.40)
 
 
 def _detect_52w_high_momentum(s):
@@ -1827,18 +1820,19 @@ def _detect_relative_strength(s):
     if atr <= 0: return None
     cur = s.closes[-1]; sma50 = float(np.mean(s.closes[-50:]))
     if sma50 <= 0: return None
-    rs = cur / sma50; rs_thresh = get_param(_p, "rs_threshold", 1.05)
+    rs = cur / sma50; rs_thresh = get_param(_p, "rs_threshold", 1.14)  # was 1.05
     if rs < rs_thresh: return None
     sma20 = float(np.mean(s.closes[-20:]))
     if cur < sma20: return None
     v20 = float(np.mean(s.volumes[-20:])); v50 = float(np.mean(s.volumes[-50:]))
     conf = 0.56 + (0.05 if v50 > 0 and v20 > v50 else 0) + (0.05 if rs > 1.10 else 0)
-    entry = cur; stop = sma20 - _atr_offset(atr, 0.10)
+    entry = cur; stop = entry - atr * get_param(_p, "stop_atr_mult", 0.5)  # was sma20-based
     if entry - stop <= 0: return None
-    return _make(s, _p, Bias.LONG, entry, stop, round(entry + atr * 4, 2), conf,
+    return _make(s, _p, Bias.LONG, entry, stop, round(entry + atr * get_param(_p, "t2_atr_mult", 7.0), 2), conf,  # t2 was 4.0
                  f"RS Persistence: RS={rs:.2f}",
-                 target_1=round(entry + atr * 2, 2), target_2=round(entry + atr * 4, 2),
-                 position_splits=(0.30, 0.30, 0.40))
+                 target_1=round(entry + atr * get_param(_p, "t1_atr_mult", 3.75), 2), target_2=round(entry + atr * get_param(_p, "t2_atr_mult", 7.0), 2),  # t1 was 2.0
+                 trail_type="atr", trail_param=get_param(_p, "trail_atr_mult", 2.0),
+                 position_splits=(0.20, 0.10, 0.70))  # was (0.30, 0.30, 0.40)
 
 
 def _detect_consecutive_reversal(s):
@@ -1913,7 +1907,7 @@ def _detect_bollinger_squeeze(s):
     if s.n < 130 or s.timeframe != "1d": return None
     atr = s.current_atr
     if atr <= 0: return None
-    _bp = get_param(_p, "bb_period", 20); _bs = get_param(_p, "bb_std", 2.0)
+    _bp = get_param(_p, "bb_period", 30); _bs = get_param(_p, "bb_std", 2.25)  # was 20/2.0
     sma = float(np.mean(s.closes[-_bp:])); std = float(np.std(s.closes[-_bp:]))
     if sma <= 0 or std <= 0: return None
     upper = sma + _bs * std; lower = sma - _bs * std; bw = (upper - lower) / sma
@@ -1922,18 +1916,20 @@ def _detect_bollinger_squeeze(s):
         idx = s.n - j; m = float(np.mean(s.closes[idx-_bp:idx])); sd = float(np.std(s.closes[idx-_bp:idx]))
         if m > 0 and sd > 0: bws.append((m + _bs*sd - (m - _bs*sd)) / m)
     if len(bws) < 20: return None
-    bw_pct_thresh = get_param(_p, "bw_percentile", 0.10)
+    bw_pct_thresh = get_param(_p, "bw_percentile", 0.19)  # was 0.10
     bw_pct = sum(1 for b in bws if b > bw) / len(bws)
     if bw_pct > bw_pct_thresh: return None
-    cur = s.closes[-1]; _sm = get_param(_p, "stop_atr_mult", 0.10)
+    cur = s.closes[-1]
     if cur > upper:
-        entry = cur; stop = sma - _atr_offset(atr, _sm)
+        entry = cur; stop = entry - atr * get_param(_p, "stop_atr_mult", 1.0)  # was sma-based 0.10
         if entry - stop <= 0: return None
-        return _make(s, "BB Squeeze Long", Bias.LONG, entry, stop, round(entry + atr * 4, 2), 0.58,
+        return _make(s, "BB Squeeze Long", Bias.LONG, entry, stop, round(entry + atr * get_param(_p, "t2_atr_mult", 8.0), 2), 0.58,  # t2 was 4.0
                      f"BB Squeeze Long: bw at {bw_pct:.0%} pctl",
-                     target_1=round(entry + atr * 2, 2), target_2=round(entry + atr * 4, 2))
+                     target_1=round(entry + atr * get_param(_p, "t1_atr_mult", 3.0), 2), target_2=round(entry + atr * get_param(_p, "t2_atr_mult", 8.0), 2),  # t1 was 2.0
+                     trail_type="atr", trail_param=get_param(_p, "trail_atr_mult", 2.5),
+                     position_splits=(0.50, 0.45, 0.05))  # was default
     elif cur < lower:
-        entry = cur; stop = sma + _atr_offset(atr, _sm)
+        entry = cur; stop = entry + atr * 1.0
         if stop - entry <= 0: return None
         return _make(s, "BB Squeeze Short", Bias.SHORT, entry, stop, round(entry - atr * 4, 2), 0.56,
                      f"BB Squeeze Short: bw at {bw_pct:.0%} pctl",
@@ -1948,38 +1944,36 @@ def _detect_accumulation_day(s):
     if atr <= 0: return None
     avg_vol = float(np.mean(s.volumes[-50:])) if s.n >= 50 else float(np.mean(s.volumes[-20:]))
     if avg_vol <= 0: return None
-    _lw = get_param(_p, "lookback_window", 10); _adm = get_param(_p, "acc_days_min", 3)
+    _lw = get_param(_p, "lookback_window", 7); _adm = get_param(_p, "acc_days_min", 5)  # was 10/3
     acc = 0; dist = 0
     for i in range(max(0, s.n - _lw), s.n):
         if i == 0: continue
         up = s.closes[i] > s.closes[i-1]; va = s.volumes[i] > avg_vol
         if up and va: acc += 1
         elif not up and va: dist += 1
-    cur = s.closes[-1]; _sm = get_param(_p, "stop_atr_mult", 0.10)
+    cur = s.closes[-1]
     if acc >= _adm and dist <= 1:
         sma50 = float(np.mean(s.closes[-50:])) if s.n >= 50 else cur
         if cur < sma50: return None
         conf = 0.56 + min(0.08, (acc - _adm) * 0.03)
-        entry = cur; stop = min(s.lows[-5:]) - _atr_offset(atr, _sm)
+        entry = cur; stop = entry - atr * get_param(_p, "stop_atr_mult", 3.25)  # was min(lows[-5:])-based
         if entry - stop <= 0: return None
-        return _make(s, "Accumulation Long", Bias.LONG, entry, stop, round(entry + atr * 4, 2), conf,
+        return _make(s, "Accumulation Long", Bias.LONG, entry, stop, round(entry + atr * get_param(_p, "t2_atr_mult", 7.0), 2), conf,  # t2 was 4.0
                      f"Accumulation: {acc} acc days",
-                     target_1=round(entry + atr * 2, 2), target_2=round(entry + atr * 4, 2))
+                     target_1=round(entry + atr * get_param(_p, "t1_atr_mult", 3.75), 2), target_2=round(entry + atr * get_param(_p, "t2_atr_mult", 7.0), 2),  # t1 was 2.0
+                     trail_type="atr", trail_param=get_param(_p, "trail_atr_mult", 1.0),
+                     position_splits=(0.20, 0.10, 0.70))  # was default
     _ddm = get_param("Distribution Short", "dist_days_min", 3)
-    if dist >= _ddm and acc <= 1:
-        sma50 = float(np.mean(s.closes[-50:])) if s.n >= 50 else cur
-        if cur > sma50: return None
-        conf = 0.55 + min(0.08, (dist - _ddm) * 0.03)
-        entry = cur; stop = max(s.highs[-5:]) + _atr_offset(atr, _sm)
-        if stop - entry <= 0: return None
-        return _make(s, "Distribution Short", Bias.SHORT, entry, stop, round(entry - atr * 4, 2), conf,
-                     f"Distribution: {dist} dist days",
-                     target_1=round(entry - atr * 2, 2), target_2=round(entry - atr * 4, 2))
+    # ❌ CUT — Distribution Short: -0.101R after optimization
+    return None
     return None
 
 
 # ═══════════════════════════════════════════════════════════════
-# DETECTOR MAP — ALL strategies enabled for optimization
+# DETECTOR MAP — Optimized daily strategies + unoptimized intraday
+# 8 daily strategies with optimized params hardcoded
+# 3 daily shorts cut (TS Mom Short, Turtle Short, Distribution Short)
+# Intraday strategies running with defaults pending optimization
 # ═══════════════════════════════════════════════════════════════
 
 _DETECTOR_MAP: dict[str, callable] = {
@@ -2007,7 +2001,7 @@ _DETECTOR_MAP: dict[str, callable] = {
     "Fashionably Late":     _detect_fashionably_late,
     "Gap Give & Go":        _detect_gap_give_and_go,
     "Tidal Wave":           _detect_tidal_wave,
-    # Quant Intraday 5min (10)
+    # Quant Intraday 5min
     "Mean Reversion":       _detect_mean_reversion,
     "Trend Pullback":       _detect_trend_pullback,
     "Gap Fade":             _detect_gap_fade,
@@ -2019,30 +2013,34 @@ _DETECTOR_MAP: dict[str, callable] = {
     "VWAP Trend Long":      _detect_vwap_trend,
     "RSI Divergence Long":  _detect_rsi_divergence,
     "Midday Reversal Long": _detect_midday_reversal,
-    # Quant 15min/1h (3)
+    # Quant 15min/1h
     "Keltner Breakout Long":  _detect_keltner_breakout,
     "MACD Turn Long":         _detect_macd_reversal,
     "VP Divergence Long":     _detect_vol_price_divergence,
-    # Quant Daily (18)
-    "Juicer Long":             _detect_juicer_long,
-    "Juicer Short":            _detect_juicer_short,
-    "Momentum Breakout":       _detect_momentum_breakout,
+    # ✅ Quant Daily — OPTIMIZED (8 strategies with tuned params)
+    "Juicer Long":             _detect_juicer_long,           # +2.440R optimized
+    "Momentum Breakout":       _detect_momentum_breakout,     # +0.079R optimized
     "Vol Compression Breakout": _detect_vol_compression_breakout,
     "Range Expansion":         _detect_range_expansion,
     "Volume Breakout":         _detect_volume_breakout,
     "Donchian Breakout":       _detect_donchian_breakout,
-    "TS Momentum Long":        _detect_time_series_momentum,
+    "TS Momentum Long":        _detect_time_series_momentum,  # +0.496R optimized (short disabled)
     "Multi-TF Trend Long":     _detect_multi_tf_trend,
     "ST Reversal Long":        _detect_short_term_reversal,
     "Low Vol Long":            _detect_low_vol_anomaly,
-    "Turtle Breakout Long":    _detect_turtle_breakout,
-    "BAB Long":                _detect_bab,
+    "Turtle Breakout Long":    _detect_turtle_breakout,       # +0.558R optimized (short disabled)
+    "BAB Long":                _detect_bab,                   # +0.201R optimized
     "52W High Momentum":       _detect_52w_high_momentum,
-    "RS Persistence Long":     _detect_relative_strength,
+    "RS Persistence Long":     _detect_relative_strength,     # +0.645R optimized
     "Streak Reversal Long":    _detect_consecutive_reversal,
     "ATR Expansion Long":      _detect_atr_expansion,
-    "BB Squeeze Long":         _detect_bollinger_squeeze,
-    "Accumulation Long":       _detect_accumulation_day,
+    "BB Squeeze Long":         _detect_bollinger_squeeze,     # +0.251R optimized
+    "Accumulation Long":       _detect_accumulation_day,      # +0.645R optimized (Distribution disabled)
+    # ❌ CUT — negative edge after optimization
+    # "Juicer Short":          _detect_juicer_short,          # negative in every backtest
+    # "TS Momentum Short":     disabled inside function        # +0.020R = zero edge
+    # "Distribution Short":    disabled inside function        # -0.101R
+    # "Turtle Breakout Short": disabled inside function        # -0.238R
 }
 
 
