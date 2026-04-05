@@ -376,18 +376,39 @@ def _parse_response(text: str) -> AgentVerdict:
     # Strip thinking block if present
     text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
 
-    # Extract JSON block
+    # Extract JSON block — try fenced first, then depth-tracked scan
+    d = None
     m = re.search(r"```json\s*(\{.*?\})\s*```", text, flags=re.DOTALL)
-    if not m:
-        # Try bare JSON object
-        m = re.search(r"\{[^{}]*\"verdict\"[^{}]*\}", text, flags=re.DOTALL)
-    if not m:
-        return _default_verdict("Could not parse model response")
+    if m:
+        try:
+            d = json.loads(m.group(1))
+        except json.JSONDecodeError:
+            pass
 
-    try:
-        d = json.loads(m.group(1) if "```json" in text else m.group(0))
-    except json.JSONDecodeError:
-        return _default_verdict("JSON decode error")
+    if d is None:
+        # Depth-counting extractor: handles nested JSON correctly
+        start = text.find("{")
+        while start != -1:
+            depth = 0
+            for i in range(start, len(text)):
+                if text[i] == "{":
+                    depth += 1
+                elif text[i] == "}":
+                    depth -= 1
+                    if depth == 0:
+                        try:
+                            candidate = json.loads(text[start:i+1])
+                            if "verdict" in candidate:
+                                d = candidate
+                        except json.JSONDecodeError:
+                            pass
+                        break
+            start = text.find("{", start + 1)
+            if d is not None:
+                break
+
+    if d is None:
+        return _default_verdict("Could not parse model response")
 
     verdict = str(d.get("verdict", "CAUTION")).upper()
     if verdict not in ("CONFIRMED", "CAUTION", "DENIED"):

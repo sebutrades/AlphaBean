@@ -94,7 +94,10 @@ def _fetch_finnhub(symbol: str, days_back: int = 3) -> list[NewsItem]:
                 continue
 
             pub_ts = a.get("datetime", 0)
-            pub_str = datetime.fromtimestamp(pub_ts).isoformat() if pub_ts else ""
+            try:
+                pub_str = datetime.fromtimestamp(int(pub_ts)).isoformat() if pub_ts and int(pub_ts) > 0 else ""
+            except (ValueError, OSError):
+                pub_str = ""
 
             items.append(NewsItem(
                 headline=headline,
@@ -135,7 +138,10 @@ def _fetch_finnhub_general() -> list[NewsItem]:
             if not headline:
                 continue
             pub_ts = a.get("datetime", 0)
-            pub_str = datetime.fromtimestamp(pub_ts).isoformat() if pub_ts else ""
+            try:
+                pub_str = datetime.fromtimestamp(int(pub_ts)).isoformat() if pub_ts and int(pub_ts) > 0 else ""
+            except (ValueError, OSError):
+                pub_str = ""
             items.append(NewsItem(
                 headline=headline, source=a.get("source", "Finnhub"),
                 url=a.get("url", ""), published=pub_str,

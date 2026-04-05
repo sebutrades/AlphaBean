@@ -23,6 +23,7 @@ from typing import Optional
 import numpy as np
 
 from backend.tracker.trade_tracker import TradeTracker
+from backend.structures.indicators import wilder_atr
 
 router = APIRouter(tags=["tracker"])
 
@@ -199,10 +200,15 @@ def get_trade_chart_data(trade_id: str, bars: int = 60):
                 "v": int(b.volume),
             })
 
-        # Simple ATR from last 14 bars
+        # Wilder's ATR (14) — consistent with rest of system
         current_atr = 0.0
         if len(bar_data.bars) >= 14:
-            current_atr = round(float(np.mean([b.high - b.low for b in bar_data.bars[-14:]])), 2)
+            highs  = np.array([b.high  for b in bar_data.bars[-50:]])
+            lows   = np.array([b.low   for b in bar_data.bars[-50:]])
+            closes = np.array([b.close for b in bar_data.bars[-50:]])
+            atr_series = wilder_atr(highs, lows, closes, 14)
+            if len(atr_series) > 0 and not np.isnan(atr_series[-1]):
+                current_atr = round(float(atr_series[-1]), 2)
 
         return {
             "symbol": symbol,

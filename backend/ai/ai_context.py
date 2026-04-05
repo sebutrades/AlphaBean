@@ -246,7 +246,8 @@ def get_scoring_context(setup: dict) -> str:
     for key, label, weight in factor_map:
         val = scoring.get(key)
         if val is not None:
-            bar = "█" * int(val / 10) + "░" * (10 - int(val / 10))
+            filled = max(0, min(10, int(val / 10)))
+            bar = "█" * filled + "░" * (10 - filled)
             lines.append(f"  {label:<24} {bar}  {val:.0f}/100  (wt {weight})")
 
     return "\n".join(lines) + "\n"

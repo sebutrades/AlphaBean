@@ -2,10 +2,10 @@
 scanner/engine.py — The orchestrator. Connects all 6 phases into one scan.
 
 Pipeline per symbol:
-  1. Fetch 5min + 15min bars from Massive.com
+  1. Fetch 5min + 15min + 1h bars from Massive.com
   2. Extract structural primitives (swings, trendlines, S/R)
   3. Compute 8 statistical features (vectorized)
-  4. Run 47 pattern classifiers
+  4. Run 54 pattern classifiers (TF-routed)
   5. Detect market regime
   6. Score everything with multi-factor system
   7. Merge multi-TF detections

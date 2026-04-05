@@ -186,7 +186,7 @@ def _filter_tickers(tickers: list[str]) -> list[str]:
     skip = {"USD", "EUR", "GBP", "JPY", "BTC", "ETH", "GC", "CL", "SI", "ES", "NQ", "YM", "RTY"}
     for t in tickers:
         t = t.strip().upper()
-        if not t or t in seen or len(t) > 5 or not t.isalpha() or t in skip:
+        if not t or t in seen or len(t) > 6 or not t.isalpha() or t in skip:
             continue
         seen.add(t)
         filtered.append(t)

@@ -337,7 +337,6 @@ def run_single_strategy_backtest(
     days_back: int = 90,
 ) -> dict:
     """Run a mini-backtest with injected params. This is Optuna's objective."""
-    from backend.data.massive_client import fetch_bars
     from backend.data.schemas import BarSeries
     from backend.patterns.classifier import classify_all
     from backend.patterns.registry import PATTERN_META
@@ -370,11 +369,10 @@ def run_single_strategy_backtest(
     for symbol in symbols:
         for tf in allowed_tfs:
             try:
-                # Cache-first: read from disk, fall back to API
+                # Cache-only: skip if not cached — no API calls
                 bars_data = load_cached_bars(symbol, tf)
                 if bars_data is None:
-                    fetch_days = max(days_back, 365) if tf == "1d" else days_back
-                    bars_data = fetch_bars(symbol, tf, fetch_days)
+                    continue
                 bars = bars_data.bars
                 n = len(bars)
 

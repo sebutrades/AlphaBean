@@ -102,7 +102,8 @@ def _regime_str() -> str:
         _regime_cache["value"] = val
         _regime_cache["ts"]    = time.time()
         return val
-    except:
+    except Exception as e:
+        print(f"  [Regime] Error: {e}")
         return _regime_cache["value"]
 
 def _mkt_hours_filter(setups):
@@ -112,7 +113,8 @@ def _mkt_hours_filter(setups):
             dt = datetime.fromisoformat(s.get("detected_at",""))
             if (dt.hour > 9 or (dt.hour == 9 and dt.minute >= 30)) and dt.hour < 16: out.append(s)
             elif dt.hour == 16 and dt.minute == 0: out.append(s)
-        except: out.append(s)
+        except Exception:
+            out.append(s)
     return out
 
 
@@ -148,7 +150,8 @@ async def scan(symbol:str=Query(...),mode:str=Query("today"),ai:bool=Query(True)
     try:
         corr = compute_correlation_live(symbol.upper()).to_dict()
         for s in setups: s["spy_correlation"] = corr
-    except: pass
+    except Exception as e:
+        print(f"  [Correlation] {symbol}: {e}")
     # Remove anything below 45 score
     setups = [s for s in setups if s.get("composite_score", 0) >= 40]
     return {"symbol":symbol.upper(),"mode":mode,"count":len(setups),"setups":setups,"market_open":_mkt_open()}
@@ -200,7 +203,7 @@ async def top_opportunities(ai:bool=Query(True),per_symbol:int=Query(2),max_symb
     # Only filter market hours when market is open
     if _mkt_open(): capped = _mkt_hours_filter(capped)
     # Only AI-evaluate top 50% by composite score — cuts Ollama calls in half
-    cutoff = len(capped) // 2 or len(capped)
+    cutoff = max(len(capped) // 2, 1)
     ai_batch = capped[:cutoff]
     skip_batch = capped[cutoff:]
     print(f"  Top 50% filter: {len(ai_batch)} for AI, {len(skip_batch)} skipped")
@@ -222,7 +225,9 @@ async def top_opportunities(ai:bool=Query(True),per_symbol:int=Query(2),max_symb
         sym = s.get("symbol","")
         if sym and sym not in corr_map:
             try: corr_map[sym] = compute_correlation_live(sym).to_dict()
-            except: corr_map[sym] = {}
+            except Exception as e:
+                print(f"  [Correlation] {sym}: {e}")
+                corr_map[sym] = {}
         s["spy_correlation"] = corr_map.get(sym, {})
 
     # Enrich with in-play info
@@ -248,7 +253,7 @@ async def track_prices(symbols:str=Query(...)):
             bars=fetch_bars(sym,"5min",1)
             if bars.bars:
                 l=bars.bars[-1]; r[sym]={"price":l.close,"high":l.high,"low":l.low,"volume":l.volume,"timestamp":l.timestamp.isoformat()}
-        except: r[sym]={"error":"failed"}
+        except Exception as e: r[sym]={"error":str(e)}
     return {"prices":r,"market_open":_mkt_open()}
 
 

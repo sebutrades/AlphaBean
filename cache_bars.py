@@ -81,7 +81,10 @@ def cache_symbol(symbol: str, timeframe: str, days_back: int) -> dict:
         }
         
         cache_file.parent.mkdir(parents=True, exist_ok=True)
-        cache_file.write_text(json.dumps(cache_data))
+        # Atomic write: temp file + rename prevents corrupt cache on crash
+        tmp = cache_file.with_suffix(".tmp")
+        tmp.write_text(json.dumps(cache_data))
+        tmp.replace(cache_file)
         
         return {"bars": len(bar_list), "cached": True, "error": None, "skipped": False}
     
@@ -102,6 +105,7 @@ def load_cached_bars(symbol: str, timeframe: str) -> BarSeries | None:
         bars = []
         for b in data["bars"]:
             bars.append(Bar(
+                symbol=symbol,
                 timestamp=datetime.fromisoformat(b["t"]),
                 open=b["o"], high=b["h"], low=b["l"], close=b["c"],
                 volume=b["v"],

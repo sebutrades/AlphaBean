@@ -26,12 +26,12 @@ from pathlib import Path
 
 import numpy as np
 
-from backend.data.massive_client import fetch_bars
 from backend.data.schemas import BarSeries, Bar
 from backend.patterns.classifier import classify_all
 from backend.patterns.registry import PATTERN_META, PatternCategory, get_patterns_for_timeframe
 from backend.structures.indicators import wilder_atr
 from backend.patterns.classifier import _DETECTOR_MAP
+from cache_bars import load_cached_bars
 
 
 # ==============================================================================
@@ -282,10 +282,10 @@ def backtest_symbol_tf(
     # Auto-expand to 365 calendar days minimum for 1d timeframe
     fetch_days = max(days_back, 365) if timeframe == "1d" else days_back
 
-    try:
-        bars_data = fetch_bars(symbol, timeframe, fetch_days)
-    except Exception as e:
-        if verbose: print(f"        ✗ {timeframe} FETCH ERROR: {e}")
+    # Cache-only: skip symbol if not cached — no API calls
+    bars_data = load_cached_bars(symbol, timeframe)
+    if bars_data is None:
+        if verbose: print(f"        ✗ {timeframe} NOT CACHED — skipping")
         return []
 
     bars = bars_data.bars

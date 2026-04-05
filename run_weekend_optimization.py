@@ -154,8 +154,7 @@ def run_optimization(
     for tier in sorted(tiers):
         tier_list = {1: TIER_1, 2: TIER_2, 3: TIER_3}.get(tier, [])
         for name in tier_list:
-            if name in STRATEGY_SPECIFIC_PARAMS or True:  # Universal params always available
-                strategies.append((name, tier))
+            strategies.append((name, tier))
 
     # Load checkpoint
     state = load_checkpoint() if resume else {

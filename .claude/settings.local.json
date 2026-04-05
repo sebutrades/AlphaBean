@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python -c \":*)"
+      "Bash(python -c \":*)",
+      "Bash(grep -r run_backtest_selective /c/Users/seisaian/Desktop/AlphaBean --include=*.py)",
+      "Bash(grep -r 'from backend.patterns.classical' /c/Users/seisaian/Desktop/AlphaBean --include=*.py)",
+      "Bash(rm -rf cache/bars/ cache/correlation/ cache/backtest_by_symbol/)",
+      "Bash(rm -f cache/backtest_results_old.json cache/meta_model.pkl cache/test_briefing.txt cache/test_briefing_full.txt cache/trade_writeups.txt cache/ai_test_results.json cache/optimization_checkpoint.json cache/backtest_checkpoint.json)",
+      "Bash(python -m py_compile run_backtest.py)",
+      "Bash(python -m py_compile run_weekend_optimization.py)",
+      "Bash(python -m py_compile backend/optimization/param_optimizer.py)"
     ]
   }
 }

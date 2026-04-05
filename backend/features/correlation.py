@@ -107,7 +107,7 @@ def compute_correlation_live(symbol: str) -> CorrelationResult:
                 if s_green == p_green:
                     same_dir += 1
 
-        agreement = (same_dir / total * 100) if total > 0 else 50
+        agreement = (same_dir / total * 100) if total > 0 else 0
 
         # --- Correlation score (0-100, lower = more independent) ---
         score = agreement  # Simple: just use direction agreement

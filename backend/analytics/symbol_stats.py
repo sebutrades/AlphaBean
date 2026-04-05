@@ -149,7 +149,9 @@ def _compute_on_demand(symbol: str) -> dict | None:
                 # Check each setup's outcome
                 for setup in setups:
                     # Only count if detected at the last bar of the slice
-                    if setup.detected_at != bars.bars[i].timestamp:
+                    # Use date+hour+minute comparison to avoid microsecond mismatches
+                    if (setup.detected_at.replace(second=0, microsecond=0) !=
+                            bars.bars[i].timestamp.replace(second=0, microsecond=0)):
                         continue
 
                     entry = setup.entry_price
@@ -198,7 +200,9 @@ def _compute_on_demand(symbol: str) -> dict | None:
             wr = data["wins"] / total * 100
             avg_w = sum(data["win_rs"]) / max(len(data["win_rs"]), 1)
             avg_l = abs(sum(data["loss_rs"]) / max(len(data["loss_rs"]), 1))
-            pf = (avg_w * data["wins"]) / max(avg_l * data["losses"], 0.001)
+            gross_win  = avg_w * data["wins"]
+            gross_loss = avg_l * data["losses"]
+            pf = (gross_win / gross_loss) if gross_loss > 0 else (99.0 if gross_win > 0 else 0.0)
             exp = (wr / 100 * avg_w) - ((100 - wr) / 100 * avg_l)
             edge = min(100, wr * 0.4 + min(pf, 5) * 10 + min(exp, 1) * 20 + min(total, 20))
 
