@@ -80,6 +80,7 @@ CHECKPOINT_EVERY = 10
 RESULTS_PATH = Path("cache/backtest_results.json")
 EVALUATOR_PATH = Path("cache/strategy_performance.json")
 SYMBOLS_CACHE = Path("cache/top_symbols.json")
+SYM_STATS_DIR = Path("cache/backtest_by_symbol")
 
 # Import evaluator
 from backend.strategies.evaluator import StrategyEvaluator, TradeOutcome
@@ -487,6 +488,9 @@ def run_full_backtest(
             errors.append(symbol)
         print(f"      TOTAL: {sym_total} signals, {sym_wr:.0f}% WR ({sym_time:.1f}s)")
 
+        # Save per-symbol pattern breakdown for AI context enrichment
+        _save_symbol_stats(symbol, sym_outcomes)
+
         symbol_stats[symbol] = {
             "total_signals": sym_total, "wins": sym_wins,
             "win_rate": round(sym_wr, 1), "time_seconds": round(sym_time, 1),
@@ -715,6 +719,26 @@ def _compute_pattern_stats(pattern_name: str, trades: list[TradeOutcome]) -> dic
         "edge_score": edge,
         "sample_size": n,
     }
+
+
+def _save_symbol_stats(symbol: str, outcomes: list[TradeOutcome]) -> None:
+    """Save per-symbol pattern breakdown for AI context enrichment."""
+    if not outcomes:
+        return
+    by_pattern: dict = defaultdict(list)
+    for o in outcomes:
+        by_pattern[o.pattern_name].append(o)
+    patterns = {}
+    for pname, trades in by_pattern.items():
+        stats = _compute_pattern_stats(pname, trades)
+        if stats["total_signals"] >= 1:
+            patterns[pname] = stats
+    if not patterns:
+        return
+    SYM_STATS_DIR.mkdir(parents=True, exist_ok=True)
+    (SYM_STATS_DIR / f"{symbol}.json").write_text(
+        json.dumps({"symbol": symbol, "patterns": patterns, "total_signals": len(outcomes)})
+    )
 
 
 def _save_checkpoint(completed: set[str], symbol_stats: dict):

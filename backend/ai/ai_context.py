@@ -5,13 +5,16 @@ Builds a structured briefing string sent to the Qwen3 trade analysis agent.
 Each section is independently computed and gracefully degrades on failure.
 
 SECTIONS (in order):
-  1. [SETUP MATH]      Entry, stop, targets in $ and ATR multiples
-  2. [PATTERN HISTORY] Historical backtest stats for this specific pattern
-  3. [TECHNICAL]       Price structure, volatility, S/R levels, momentum
-  4. [SCORING]         Multi-factor score breakdown with weights
-  5. [MARKET]          SPY regime interpretation + recent macro headlines
-  6. [NEWS]            Per-ticker headlines with Polygon AI sentiment
-  7. [RISK ASSESSMENT] Flagged risks (earnings, IV, correlation, volume, ATR)
+  1. [SETUP MATH]           Entry, stop, targets in $ and ATR multiples
+  2. [PATTERN HISTORY]      Aggregate backtest stats for this pattern (all symbols)
+  3. [SYMBOL PERFORMANCE]   How THIS pattern performs on THIS specific stock
+  4. [PRICE ACTION]         Candlestick narrative over the relevant lookback window
+  5. [TECHNICAL]            Price vs SMAs, volatility regime, S/R, RVOL
+  6. [SCORING]              Multi-factor score breakdown with weights
+  7. [STRATEGY HOT/COLD]    Rolling live performance of this pattern (StrategyEvaluator)
+  8. [MARKET]               SPY regime interpretation + recent macro headlines
+  9. [NEWS]                 Per-ticker headlines with Polygon AI sentiment
+  10. [RISK ASSESSMENT]     Flagged risks (earnings, IV, correlation, volume, ATR)
 """
 import json
 import numpy as np
@@ -20,6 +23,10 @@ from pathlib import Path
 from typing import Optional
 
 BACKTEST_CACHE = Path("cache/backtest_results.json")
+SYM_STATS_DIR = Path("cache/backtest_by_symbol")
+
+# Bars to include in price action narrative per timeframe
+_PA_WINDOW = {"5min": 24, "15min": 16, "1h": 16, "1d": 20}
 
 
 # ==============================================================================
@@ -495,6 +502,216 @@ def _technical_from_bars(symbol: str, bars) -> str:
 
 
 # ==============================================================================
+# 8. SYMBOL-SPECIFIC PATTERN PERFORMANCE
+# ==============================================================================
+
+def get_symbol_pattern_context(symbol: str, pattern_name: str) -> str:
+    """
+    Show how THIS specific pattern has performed on THIS stock historically.
+    Sourced from per-symbol backtest data saved by run_backtest.py.
+    More actionable than aggregate stats — a pattern may work well overall
+    but consistently fail on a specific stock (sector mismatch, price behaviour, etc.)
+    """
+    lines = [f"[SYMBOL PERFORMANCE — {symbol}]"]
+
+    path = SYM_STATS_DIR / f"{symbol}.json"
+    if not path.exists():
+        lines.append("No per-symbol backtest data yet — aggregate stats apply.")
+        return "\n".join(lines) + "\n"
+
+    try:
+        data = json.loads(path.read_text())
+    except Exception:
+        lines.append("Could not load per-symbol data.")
+        return "\n".join(lines) + "\n"
+
+    patterns = data.get("patterns", {})
+    if not patterns:
+        lines.append("No signals recorded for this stock in last backtest.")
+        return "\n".join(lines) + "\n"
+
+    # Highlight the current pattern on this stock
+    this = patterns.get(pattern_name)
+    if this and this.get("total_signals", 0) >= 2:
+        n = this["total_signals"]; wr = this["win_rate"]; exp = this.get("expectancy", 0)
+        pf = this.get("profit_factor", 0); edge = this.get("edge_score", 0)
+        lines.append(f"{pattern_name} on {symbol}: {n} signals | WR {wr:.1f}% | PF {pf:.2f} | Exp {exp:+.3f}R | Edge {edge:.0f}/100")
+        if exp > 0.15:
+            lines.append("  → Strong positive edge on this specific stock — historically reliable here")
+        elif exp > 0:
+            lines.append("  → Marginal positive edge — proceed normally")
+        elif exp > -0.05:
+            lines.append("  → Near breakeven on this stock — individual setup quality is the deciding factor")
+        else:
+            lines.append("  → NEGATIVE edge on this stock — pattern struggles here despite aggregate stats; reduce size")
+    elif this:
+        lines.append(f"{pattern_name} on {symbol}: {this.get('total_signals', 0)} signals (insufficient sample)")
+    else:
+        lines.append(f"{pattern_name} has not fired on {symbol} in the backtest period.")
+
+    # Top 3 best patterns on this stock
+    sorted_pats = sorted(
+        [(n, s) for n, s in patterns.items() if s.get("total_signals", 0) >= 3],
+        key=lambda x: x[1].get("edge_score", 0), reverse=True
+    )[:3]
+    if sorted_pats:
+        lines.append(f"\nTop patterns on {symbol} historically:")
+        for rank, (pname, s) in enumerate(sorted_pats, 1):
+            marker = " ★" if pname == pattern_name else ""
+            lines.append(
+                f"  #{rank} {pname}{marker}: {s['total_signals']} signals, "
+                f"WR {s['win_rate']:.0f}%, Exp {s.get('expectancy', 0):+.3f}R, "
+                f"Edge {s.get('edge_score', 0):.0f}/100"
+            )
+
+    return "\n".join(lines) + "\n"
+
+
+# ==============================================================================
+# 9. PRICE ACTION NARRATIVE
+# ==============================================================================
+
+def get_price_action_narrative(symbol: str, timeframe: str, bars) -> str:
+    """
+    Describe recent price action in concrete narrative terms.
+    Window size is calibrated to the setup's timeframe:
+      5min → 24 bars (2 hours)  |  15min → 16 bars (4 hours)
+      1h   → 16 bars (2 days)   |  1d    → 20 bars (1 month)
+    """
+    n_bars = _PA_WINDOW.get(timeframe, 20)
+    if bars is None or len(bars.bars) < n_bars + 3:
+        return f"[PRICE ACTION — {symbol}]\nInsufficient bar data.\n"
+
+    b = bars.bars[-n_bars:]
+    closes  = np.array([x.close  for x in b], dtype=np.float64)
+    highs   = np.array([x.high   for x in b], dtype=np.float64)
+    lows    = np.array([x.low    for x in b], dtype=np.float64)
+    opens   = np.array([x.open   for x in b], dtype=np.float64)
+    volumes = np.array([x.volume for x in b], dtype=np.float64)
+
+    lines = [f"[PRICE ACTION — {symbol}, last {n_bars} {timeframe} bars]"]
+
+    # Overall movement
+    total_change = (closes[-1] - closes[0]) / closes[0] * 100
+    lines.append(f"Period move: {total_change:+.1f}%  (${closes[0]:.2f} → ${closes[-1]:.2f})")
+
+    # Trend structure — count HH/HL vs LH/LL in last 5 candles
+    look = min(5, n_bars - 1)
+    hh = sum(1 for i in range(1, look + 1) if highs[-i] > highs[-i - 1])
+    lh = sum(1 for i in range(1, look + 1) if highs[-i] < highs[-i - 1])
+    hl = sum(1 for i in range(1, look + 1) if lows[-i]  > lows[-i - 1])
+    ll = sum(1 for i in range(1, look + 1) if lows[-i]  < lows[-i - 1])
+
+    if hh >= 3 and hl >= 2:
+        structure = "Higher highs + higher lows → uptrend structure"
+    elif lh >= 3 and ll >= 2:
+        structure = "Lower highs + lower lows → downtrend structure"
+    elif hh >= 2 and ll >= 2:
+        structure = "Mixed swings → consolidation or reversal in progress"
+    else:
+        structure = "Indeterminate structure"
+    lines.append(f"Structure: {structure}")
+
+    # Last 3 candles
+    lines.append("Last 3 candles:")
+    for i in [-3, -2, -1]:
+        bar = bars.bars[i]
+        body    = float(closes[i] - opens[i])
+        body_pct = abs(body / opens[i] * 100) if opens[i] > 0 else 0
+        rng     = float(highs[i] - lows[i])
+        close_pos = (closes[i] - lows[i]) / rng if rng > 0 else 0.5
+        direction = "bullish" if body > 0 else "bearish" if body < 0 else "doji"
+        position  = "upper" if close_pos > 0.67 else ("lower" if close_pos < 0.33 else "middle")
+        upper_wick = float(highs[i] - max(opens[i], closes[i]))
+        lower_wick = float(min(opens[i], closes[i]) - lows[i])
+        wick_note = ""
+        if rng > 0:
+            if upper_wick / rng > 0.40:
+                wick_note = " (long upper wick — rejection of highs)"
+            elif lower_wick / rng > 0.40:
+                wick_note = " (long lower wick — rejection of lows / hammer)"
+        ts = bar.timestamp.strftime("%m/%d %H:%M") if hasattr(bar.timestamp, "strftime") else str(bar.timestamp)
+        lines.append(
+            f"  {ts}: {direction} {body_pct:.1f}% body, "
+            f"closed {position} third{wick_note}"
+        )
+
+    # Volume trend
+    avg_vol = float(np.mean(volumes))
+    recent_vol = float(np.mean(volumes[-3:]))
+    vol_ratio = recent_vol / avg_vol if avg_vol > 0 else 1.0
+    if vol_ratio > 1.3:
+        lines.append(f"Volume: expanding (+{(vol_ratio - 1) * 100:.0f}% vs period avg) — momentum confirmation")
+    elif vol_ratio < 0.7:
+        lines.append(f"Volume: contracting ({(1 - vol_ratio) * 100:.0f}% below avg) — possible squeeze / fading interest")
+    else:
+        lines.append(f"Volume: stable (RVOL {vol_ratio:.1f}x vs period avg)")
+
+    # Gap detection for daily
+    if timeframe == "1d" and len(bars.bars) >= 2:
+        prev_close = float(bars.bars[-2].close)
+        today_open = float(bars.bars[-1].open)
+        gap_pct = (today_open - prev_close) / prev_close * 100
+        if abs(gap_pct) > 0.5:
+            gap_dir = "up" if gap_pct > 0 else "down"
+            lines.append(f"Gap {gap_dir}: {gap_pct:+.2f}% at open vs prior close")
+
+    return "\n".join(lines) + "\n"
+
+
+# ==============================================================================
+# 10. STRATEGY HOT / COLD STATUS
+# ==============================================================================
+
+def get_strategy_hot_context(pattern_name: str) -> str:
+    """
+    Show rolling live performance of this pattern from the StrategyEvaluator.
+    This reflects actual live outcomes tracked post-backtest, not historical data.
+    Tells the AI whether the pattern is 'hot' (overperforming) or 'cold' (underperforming).
+    """
+    lines = [f"[STRATEGY HOT/COLD — {pattern_name}]"]
+    try:
+        from backend.strategies.evaluator import StrategyEvaluator
+        ev = StrategyEvaluator()
+        ev.load()
+
+        summary = ev.get_pattern_summary(pattern_name)
+        if not summary.get("has_data", False):
+            lines.append("No live tracking data yet — pattern not yet evaluated in live conditions.")
+            return "\n".join(lines) + "\n"
+
+        total    = summary.get("total_signals", 0)
+        wr       = summary.get("win_rate", 0)
+        hot      = summary.get("hot_score", 40)
+        pf       = summary.get("profit_factor", 0)
+        exp      = summary.get("expectancy", 0)
+        trend    = summary.get("trend", "stable")
+
+        lines.append(f"Live signals tracked: {total}")
+        lines.append(f"Win rate: {wr:.1%} | Profit factor: {pf:.2f} | Expectancy: {exp:+.3f}R")
+        lines.append(f"Hot score: {hot:.0f}/100 | Trend: {trend}")
+
+        if hot >= 70:
+            lines.append("Status: CURRENTLY HOT — outperforming historical expectation")
+        elif hot >= 50:
+            lines.append("Status: Normal — performing in line with expectation")
+        elif hot >= 30:
+            lines.append("Status: Cold — running below historical expectation recently")
+        else:
+            lines.append("Status: VERY COLD — significant recent underperformance; reduce size")
+
+        # Currently hot types for context
+        hot_types = ev.get_hot_strategy_types(3)
+        if hot_types:
+            lines.append(f"Currently hot strategy types: {', '.join(hot_types)}")
+
+    except Exception:
+        lines.append("Live tracking data unavailable.")
+
+    return "\n".join(lines) + "\n"
+
+
+# ==============================================================================
 # FULL CONTEXT BUILDER
 # ==============================================================================
 
@@ -504,13 +721,15 @@ def build_full_context(
     regime_str: str = "unknown",
     structures=None,
     bars=None,
+    timeframe: str = "1d",
     max_headlines: int = 8,
 ) -> str:
     """
-    Assemble the complete AI briefing from all context sections.
+    Assemble the complete AI briefing from all 10 context sections.
     Each section degrades gracefully on failure — never raises.
     """
     sections = []
+    pattern_name = setup_dict.get("pattern_name", "")
 
     def _safe(fn, *args, **kwargs) -> str:
         try:
@@ -518,15 +737,29 @@ def build_full_context(
         except Exception as e:
             return f"[{fn.__name__} failed: {e}]\n"
 
+    # 1. Mathematical setup
     sections.append(_safe(get_setup_math_context, setup_dict))
-    sections.append(_safe(get_pattern_history_context, setup_dict.get("pattern_name", "")))
+    # 2. Aggregate pattern history
+    sections.append(_safe(get_pattern_history_context, pattern_name))
+    # 3. Symbol-specific performance for this pattern
+    sections.append(_safe(get_symbol_pattern_context, symbol, pattern_name))
+    # 4. Price action narrative
+    if bars is not None:
+        sections.append(_safe(get_price_action_narrative, symbol, timeframe, bars))
+    # 5. Technical structure
     if structures is not None:
         sections.append(_safe(get_technical_context, structures))
     elif bars is not None:
         sections.append(_safe(_technical_from_bars, symbol, bars))
+    # 6. Scoring breakdown
     sections.append(_safe(get_scoring_context, setup_dict))
+    # 7. Rolling live hot/cold status
+    sections.append(_safe(get_strategy_hot_context, pattern_name))
+    # 8. Market regime + macro
     sections.append(_safe(get_market_context, regime_str))
+    # 9. News + sentiment
     sections.append(_safe(get_headline_context, symbol, max_headlines))
+    # 10. Risk flags
     sections.append(_safe(get_risk_assessment_context, setup_dict, structures))
 
     return "\n".join(sections)

@@ -3,7 +3,7 @@ main.py — Juicer API Server v1.0
 
 Start: uvicorn backend.main:app --reload --port 8000
 """
-import json, time
+import json, os, time
 from collections import defaultdict
 from contextlib import asynccontextmanager
 from datetime import datetime, time as dt_time
@@ -22,52 +22,18 @@ from backend.features.correlation import compute_correlation_live
 from backend.analytics.symbol_stats import get_symbol_analytics
 import numpy as np
 
-# ═══ SCHEDULER ═══
 
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.cron import CronTrigger
+# ═══ LIVE FEED ═══
 
-_scheduler = BackgroundScheduler(timezone="America/New_York")
-_last_scan: dict = {"ran_at": None, "added": 0}
-_last_refresh: dict = {"ran_at": None}
+from backend.jobs.live_feed import LiveFeed
 
-def _job_refresh():
-    """Refresh live prices every 30 min on market days 9:30–16:00 ET."""
-    try:
-        from backend.tracker.routes import get_tracker
-        get_tracker().refresh_prices()
-        _last_refresh["ran_at"] = datetime.now().isoformat()
-        print(f"  [Scheduler] Prices refreshed at {datetime.now().strftime('%H:%M ET')}")
-    except Exception as e:
-        print(f"  [Scheduler] Refresh error: {e}")
-
-def _job_scan():
-    """Daily setup scan at 4:30 PM ET after market close."""
-    try:
-        from backend.tracker.routes import get_tracker
-        added = get_tracker().scan_and_add(top_n=50)
-        _last_scan["ran_at"] = datetime.now().isoformat()
-        _last_scan["added"] = added
-        print(f"  [Scheduler] Daily scan complete — {added} new setups added")
-    except Exception as e:
-        print(f"  [Scheduler] Scan error: {e}")
-
-# Refresh every 30 min, Mon–Fri, 9:30 AM – 4:00 PM ET
-_scheduler.add_job(_job_refresh, CronTrigger(
-    day_of_week="mon-fri", hour="9-15", minute="*/5", timezone="America/New_York"
-), id="refresh", name="Price Refresh")
-# Daily scan 30 min after close
-_scheduler.add_job(_job_scan, CronTrigger(
-    day_of_week="mon-fri", hour=16, minute=30, timezone="America/New_York"
-), id="daily_scan", name="Daily Scan")
+_feed = LiveFeed()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    _scheduler.start()
-    print("  [Scheduler] Started — daily scan 4:30 PM ET | refresh every 5 min market hours")
+    _feed.start()
     yield
-    _scheduler.shutdown(wait=False)
-    print("  [Scheduler] Stopped")
+    _feed.stop()
 
 app = FastAPI(title="Juicer API", version="1.0.0", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173","http://localhost:3000","http://127.0.0.1:5173"], allow_methods=["*"], allow_headers=["*"])
@@ -78,7 +44,11 @@ _evaluator = StrategyEvaluator()
 _evaluator.load()
 BT = Path("cache/backtest_results.json")
 
+_WEEKEND_TEST = os.getenv("JUICER_WEEKEND_TEST", "0") == "1"
+
 def _mkt_open() -> bool:
+    if _WEEKEND_TEST:
+        return True
     try:
         from zoneinfo import ZoneInfo; et = ZoneInfo("America/New_York")
     except ImportError:
@@ -339,20 +309,21 @@ async def symbol_analytics(symbol: str, pattern: str = Query("")):
     return get_symbol_analytics(symbol.upper(), pattern)
 
 
-# ═══ SCHEDULER STATUS ═══
-@app.get("/api/tracker/schedule")
-async def tracker_schedule():
-    jobs = []
-    for job in _scheduler.get_jobs():
-        jobs.append({
-            "id": job.id,
-            "name": job.name,
-            "next_run": job.next_run_time.isoformat() if job.next_run_time else None,
-        })
-    return {
-        "running": _scheduler.running,
-        "jobs": jobs,
-        "last_scan": _last_scan,
-        "last_refresh": _last_refresh,
-    }
+# ═══ FEED ═══
+
+@app.get("/api/feed/status")
+async def feed_status():
+    """Live feed health — job timestamps, staleness, regime, counts."""
+    return _feed.get_status()
+
+@app.get("/api/feed/opportunities")
+async def feed_opportunities():
+    """Cached opportunities from the last scan cycle."""
+    return {"opportunities": _feed.get_opportunities()}
+
+@app.get("/api/feed/refresh")
+async def feed_refresh():
+    """Manually trigger an immediate feed cycle."""
+    msg = _feed.trigger_now()
+    return {"status": msg}
  

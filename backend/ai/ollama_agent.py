@@ -54,46 +54,60 @@ BACKTEST_CACHE = Path("cache/backtest_results.json")
 
 SYSTEM_PROMPT = """\
 You are a senior quantitative trader at a prop firm evaluating trade setups for live deployment.
-You have rigorous standards — capital preservation is paramount.
+Capital preservation is paramount. CAUTION and DENIED are valuable verdicts — use them freely.
 
-DECISION FRAMEWORK:
-1. PATTERN EDGE: Positive expectancy (>0.05R) and adequate sample (≥10 signals) are required
-   to trust the pattern's historical record. Insufficient data demands stronger confluence elsewhere.
-2. NEWS ALIGNMENT: Identify the dominant catalyst. A breakout long on bullish earnings beat is
-   strong. A breakout long into an analyst downgrade is suspect. Headlines confirming the bias add
-   conviction; contradicting headlines should reduce size or block entry.
-3. TECHNICAL STRUCTURE: Is the entry at a logical price relative to S/R? Is ATR normal or
-   extended? Volume expansion on the signal bar confirms institutional participation.
-4. REGIME FIT: Momentum patterns underperform in choppy regimes. Mean-reversion fails in trends.
-   High-volatility regimes require wider stops than the pattern was backtested with.
-5. RISK/REWARD: After correcting for realistic entry (next bar's open), is the R:R ≥1.5?
-   For patterns with <55% historical win rate, R:R must exceed 2.0 to have positive expectancy.
-6. RISK FLAGS: Identify concrete adverse factors — upcoming earnings, extended ATR, thin volume,
-   adverse sector momentum, high SPY correlation in a declining market, proximity to major resistance.
+EVALUATION PROCESS — follow in order:
+Step 1 — BEAR CASE FIRST: Identify 3 concrete reasons this trade could fail.
+  Consider: adverse symbol-specific history, conflicting price structure, weak or absent catalyst,
+  wrong regime for this pattern type, upcoming risk events, thin volume, wide stop.
+Step 2 — BULL CASE: Identify 3 concrete reasons this trade succeeds.
+  Consider: positive symbol stats, confirming price action, news catalyst, hot strategy, clean R:R.
+Step 3 — VERDICT: Bull case clearly dominates bear case → CONFIRMED.
+  Cases roughly balanced → CAUTION. Bear case dominates → DENIED.
 
-SCORE DELTA GUIDELINES:
-  Strong CONFIRMED: +10 to +15 (all factors align, high conviction)
-  Moderate CONFIRMED: +5 to +10 (more factors support than oppose)
-  Weak CONFIRMED: +1 to +5 (slight edge, take with reduced size)
-  CAUTION positive: 0 to +3 (conflicted — let other factors decide)
-  CAUTION negative: -3 to 0 (conflicted with slight lean against)
-  Moderate DENIED: -5 to -10 (clear reasons against)
-  Strong DENIED: -10 to -15 (multiple disqualifying factors)\
+CONTEXT WEIGHTING (10-section briefing):
+1. SYMBOL PERFORMANCE  — highest priority when ≥5 signals. Negative symbol-specific expectancy
+   overrides positive aggregate stats. This pattern may fail on THIS stock even if it works overall.
+2. PRICE ACTION        — structure must match bias. Long with LH/LL = red flag. Volume must expand
+   on signal candle for breakout patterns.
+3. PATTERN EDGE        — positive expectancy (>0.05R), sample ≥10. Unproven = reduce conviction.
+4. STRATEGY HOT/COLD   — hot score <30 = halve conviction. >70 = adds confirmation, not free pass.
+5. NEWS ALIGNMENT      — confirming catalyst adds delta; contradicting headline blocks or reduces.
+6. TECHNICAL STRUCTURE — logical entry vs S/R, normal ATR, RVOL expansion.
+7. REGIME FIT          — momentum fails in chop; mean-reversion fails in trend.
+8. RISK/REWARD         — R:R ≥1.5 required; ≥2.0 required if WR <55%.
+9. RISK FLAGS          — earnings proximity, extended ATR, low volume, high SPY correlation.
+
+SCORE DELTA:
+  Strong CONFIRMED (+10 to +15): all factors align — symbol, price action, news, hot strategy
+  Moderate CONFIRMED (+5 to +10): majority support, clear edge
+  Weak CONFIRMED (+1 to +5): slight edge, take reduced size
+  CAUTION (+3 to -3): conflicted — individual factors decide
+  Moderate DENIED (-5 to -10): clear reasons against
+  Strong DENIED (-10 to -15): multiple disqualifying factors
+
+SIZE MODIFIER:
+  1.5 — exceptional: all factors align plus hot strategy + confirming news
+  1.0 — standard: CONFIRMED with normal confluence
+  0.75 — reduced: CONFIRMED but 1-2 risk flags present
+  0.5  — half size: CAUTION verdict or weak CONFIRMED with notable risks
+  0.25 — quarter: DENIED or high-risk with compelling pattern only\
 """
 
 RESPONSE_FORMAT = """\
 
-After your analysis, output ONLY the following JSON block (no text before or after):
+Output ONLY this JSON block — no text before or after, no explanation outside it:
 ```json
 {
   "verdict": "CONFIRMED|CAUTION|DENIED",
   "confidence": <integer 0-100>,
   "score_delta": <integer -15 to 15>,
+  "size_modifier": <one of: 0.25, 0.5, 0.75, 1.0, 1.5>,
   "news_sentiment": "bullish|bearish|neutral|mixed",
-  "reasoning": "<2-3 sentences — cite specific numbers and factors>",
+  "reasoning": "<2 sentences max — cite specific numbers, name the top bull and bear factor>",
   "risk_flags": ["<flag1>", "<flag2>"],
-  "catalysts": ["<catalyst1>", "<catalyst2>"],
-  "key_factors": ["<factor1>", "<factor2>", "<factor3>"]
+  "catalysts": ["<catalyst1>"],
+  "key_factors": ["<bull factor>", "<bear factor>", "<deciding factor>"]
 }
 ```\
 """
@@ -108,6 +122,7 @@ class AgentVerdict:
     verdict: str            # CONFIRMED / CAUTION / DENIED
     confidence: int         # 0-100
     score_delta: int        # Applied to composite_score (-15 to +15)
+    size_modifier: float    # Position size multiplier: 0.25 / 0.5 / 0.75 / 1.0 / 1.5
     news_sentiment: str     # bullish / bearish / neutral / mixed
     reasoning: str
     risk_flags: list[str]
@@ -122,6 +137,7 @@ class AgentVerdict:
             "verdict": self.verdict,
             "confidence": self.confidence,
             "score_delta": self.score_delta,
+            "size_modifier": self.size_modifier,
             "news_sentiment": self.news_sentiment,
             "reasoning": self.reasoning,
             "risk_flags": self.risk_flags,
@@ -157,15 +173,24 @@ def evaluate_setup(
         cached.cached = True
         return cached
 
-    # Fetch bars to enable [TECHNICAL] section in briefing
+    # Fetch bars — cache-first, live API fallback (fresh data needed for technical context)
     bars = None
+    tf_label = setup.get("timeframe_detected", "1d")
+    # Normalize scanner labels ("5m" → "5min", "15m" → "15min") to cache key format
+    _TF_NORM = {"5m": "5min", "15m": "15min", "5m & 15m": "15min"}
+    tf_cache = _TF_NORM.get(tf_label, tf_label)
     try:
-        from backend.data.massive_client import fetch_bars
-        tf = setup.get("timeframe_detected", "1d")
-        days = 365 if tf == "1d" else 30
-        bars = fetch_bars(symbol, timeframe=tf, days_back=days)
+        from cache_bars import load_cached_bars
+        bars = load_cached_bars(symbol, tf_cache)
     except Exception:
         pass
+    if bars is None:
+        try:
+            from backend.data.massive_client import fetch_bars
+            days = 365 if tf_cache == "1d" else 60
+            bars = fetch_bars(symbol, timeframe=tf_cache, days_back=days)
+        except Exception:
+            pass
 
     try:
         from backend.ai.ai_context import build_full_context
@@ -174,6 +199,7 @@ def evaluate_setup(
             setup_dict=setup,
             regime_str=regime,
             bars=bars,
+            timeframe=tf_cache,
         )
     except Exception as e:
         # Degrade gracefully: use basic briefing from setup dict
@@ -190,7 +216,7 @@ def evaluate_setup(
 
     except Exception as e:
         return AgentVerdict(
-            verdict="CAUTION", confidence=40, score_delta=0,
+            verdict="CAUTION", confidence=40, score_delta=0, size_modifier=0.5,
             news_sentiment="neutral", reasoning=f"Agent unavailable: {str(e)[:80]}",
             risk_flags=["agent_error"], catalysts=[], key_factors=["agent_error"],
             processing_time=time.time() - t0,
@@ -319,6 +345,7 @@ def test_agent(symbol: str, regime: str = "unknown") -> dict:
             symbol=symbol,
             setup_dict=synthetic,
             regime_str=regime,
+            timeframe="1d",
         )
     except Exception as e:
         briefing = f"[Context build failed: {e}]"
@@ -352,7 +379,7 @@ def _call_ollama(prompt: str) -> str:
         "stream": False,
         "options": {
             "temperature": 0.15,   # Near-deterministic for trading decisions
-            "num_predict": 2048,   # Enough for thinking + JSON response
+            "num_predict": 4096,   # Qwen3 thinking mode: 800-1500 think + 300 JSON
             "top_p": 0.9,
             "repeat_penalty": 1.1,
         },
@@ -422,10 +449,22 @@ def _parse_response(text: str) -> AgentVerdict:
         score_delta = max(1, -score_delta // 2)
     elif verdict == "DENIED" and score_delta > 0:
         score_delta = min(-1, -score_delta // 2)
-
-    # CAUTION verdict caps delta magnitude
     if verdict == "CAUTION" and abs(score_delta) > 5:
         score_delta = 5 if score_delta > 0 else -5
+
+    # size_modifier: validate against allowed values
+    _VALID_SIZES = {0.25, 0.5, 0.75, 1.0, 1.5}
+    raw_size = d.get("size_modifier", 1.0)
+    try:
+        raw_size = float(raw_size)
+        size_modifier = min(_VALID_SIZES, key=lambda x: abs(x - raw_size))
+    except (TypeError, ValueError):
+        size_modifier = 1.0
+    # Enforce size consistency with verdict
+    if verdict == "DENIED" and size_modifier > 0.5:
+        size_modifier = 0.25
+    elif verdict == "CONFIRMED" and size_modifier < 0.5:
+        size_modifier = 0.75
 
     sentiment = str(d.get("news_sentiment", "neutral")).lower()
     if sentiment not in ("bullish", "bearish", "neutral", "mixed"):
@@ -435,10 +474,11 @@ def _parse_response(text: str) -> AgentVerdict:
         verdict=verdict,
         confidence=confidence,
         score_delta=score_delta,
+        size_modifier=size_modifier,
         news_sentiment=sentiment,
-        reasoning=str(d.get("reasoning", "No reasoning provided"))[:400],
-        risk_flags=[str(f) for f in d.get("risk_flags", [])][:5],
-        catalysts=[str(c) for c in d.get("catalysts", [])][:5],
+        reasoning=str(d.get("reasoning", "No reasoning provided"))[:300],
+        risk_flags=[str(f) for f in d.get("risk_flags", [])][:4],
+        catalysts=[str(c) for c in d.get("catalysts", [])][:3],
         key_factors=[str(f) for f in d.get("key_factors", [])][:3],
         processing_time=0.0,
     )
@@ -462,7 +502,8 @@ def _load_cache(symbol: str, pattern: str) -> Optional[AgentVerdict]:
         d = json.loads(path.read_text())
         return AgentVerdict(
             verdict=d["verdict"], confidence=d["confidence"],
-            score_delta=d["score_delta"], news_sentiment=d["news_sentiment"],
+            score_delta=d["score_delta"], size_modifier=d.get("size_modifier", 1.0),
+            news_sentiment=d["news_sentiment"],
             reasoning=d["reasoning"], risk_flags=d.get("risk_flags", []),
             catalysts=d.get("catalysts", []), key_factors=d.get("key_factors", []),
             processing_time=0.0, model=d.get("model", MODEL), cached=True,
@@ -484,7 +525,7 @@ def _save_cache(symbol: str, pattern: str, verdict: AgentVerdict) -> None:
 
 def _default_verdict(reason: str) -> AgentVerdict:
     return AgentVerdict(
-        verdict="CAUTION", confidence=40, score_delta=0,
+        verdict="CAUTION", confidence=40, score_delta=0, size_modifier=0.5,
         news_sentiment="neutral", reasoning=reason,
         risk_flags=[], catalysts=[], key_factors=[],
         processing_time=0.0,
@@ -493,7 +534,7 @@ def _default_verdict(reason: str) -> AgentVerdict:
 
 def _pending_verdict() -> dict:
     return {
-        "verdict": "PENDING", "confidence": 0, "score_delta": 0,
+        "verdict": "PENDING", "confidence": 0, "score_delta": 0, "size_modifier": 1.0,
         "news_sentiment": "neutral",
         "reasoning": "Not evaluated — below per-symbol top-N cutoff",
         "risk_flags": [], "catalysts": [], "key_factors": [],

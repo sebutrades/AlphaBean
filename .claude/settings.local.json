@@ -8,7 +8,8 @@
       "Bash(rm -f cache/backtest_results_old.json cache/meta_model.pkl cache/test_briefing.txt cache/test_briefing_full.txt cache/trade_writeups.txt cache/ai_test_results.json cache/optimization_checkpoint.json cache/backtest_checkpoint.json)",
       "Bash(python -m py_compile run_backtest.py)",
       "Bash(python -m py_compile run_weekend_optimization.py)",
-      "Bash(python -m py_compile backend/optimization/param_optimizer.py)"
+      "Bash(python -m py_compile backend/optimization/param_optimizer.py)",
+      "Bash(python -c \"from backend.main import app; print\\(''main OK''\\)\")"
     ]
   }
 }

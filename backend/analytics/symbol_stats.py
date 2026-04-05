@@ -110,11 +110,11 @@ def _extract_from_backtest(symbol: str) -> dict | None:
 
 def _compute_on_demand(symbol: str) -> dict | None:
     """
-    Run a quick backtest for just this one symbol.
+    Run a quick backtest for just this one symbol using cached bar data.
     Uses the same walk-forward logic as run_backtest.py.
     """
     try:
-        from backend.data.massive_client import fetch_bars
+        from cache_bars import load_cached_bars
         from backend.patterns.classifier import classify_all
 
         print(f"  [Analytics] Computing on-demand for {symbol}...")
@@ -126,7 +126,9 @@ def _compute_on_demand(symbol: str) -> dict | None:
 
         for tf in ["5min", "15min"]:
             try:
-                bars = fetch_bars(symbol, tf, days_back=90)
+                bars = load_cached_bars(symbol, tf)
+                if bars is None:
+                    continue
             except Exception:
                 continue
 
