@@ -141,9 +141,9 @@ def load_cached_bars(symbol: str, timeframe: str) -> Optional[list[dict]]:
 def bars_from_cache(symbol: str, timeframe: str):
     """
     Load cached bars and convert to BarSeries for pattern detection.
-    Returns BarSeries or None.
+    Returns BarSeries (backend.data.schemas) or None.
     """
-    from backend.patterns.edgefinder_patterns import Bar, BarSeries
+    from backend.data.schemas import Bar, BarSeries
 
     raw = load_cached_bars(symbol, timeframe)
     if raw is None:

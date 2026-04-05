@@ -14,10 +14,10 @@ Usage:
   python run_weekend_optimization.py --quick            # 20 trials per (fast test)
 
 Expected runtime (50 symbols, 90 days):
-  Tier 1 (16 strategies × 80 trials):  ~10 hours
-  Tier 2 (20 strategies × 50 trials):  ~8 hours
-  Tier 3 (17 strategies × 30 trials):  ~4 hours
-  TOTAL:                                ~22 hours
+  Tier 1 (14 strategies × 80 trials):  ~9 hours
+  Tier 2 (12 strategies × 50 trials):  ~5 hours
+  Tier 3 (28 strategies × 30 trials):  ~7 hours
+  TOTAL:                                ~21 hours
 """
 import json
 import time
@@ -43,69 +43,61 @@ TIER_1 = [
     "Tidal Wave",
     "Mean Reversion",
     "VP Divergence Long",
-    "VP Divergence Short",
     "Streak Reversal Long",
     "VWAP Reversion",
     "Gap Reversal Long",
-    "Gap Reversal Short",
 ]
 
 # Tier 2: Near breakeven — optimization might flip them positive
 TIER_2 = [
     "ATR Expansion Long",
-    "ATR Expansion Short",
     "Donchian Breakout",
     "Volume Breakout",
     "Multi-TF Trend Long",
-    "Multi-TF Trend Short",
     "Opening Drive Long",
-    "Opening Drive Short",
     "Midday Reversal Long",
-    "Midday Reversal Short",
     "ST Reversal Long",
-    "ST Reversal Short",
     "Keltner Breakout Long",
-    "Keltner Breakout Short",
     "MACD Turn Long",
-    "MACD Turn Short",
     "RSI Divergence Long",
-    "RSI Divergence Short",
     "Second Chance Scalp",
     "Fashionably Late",
 ]
 
-# Tier 3: Previously negative — last chance with optimization
+# Tier 3: Unproven or previously negative — needs data to decide
 TIER_3 = [
-    "Juicer Short",
-    "Turtle Breakout Short",
-    "Streak Reversal Short",
-    "Distribution Short",
+    # Intraday quant (no prior results)
+    "Trend Pullback",
+    "Gap Fade",
     "Power Hour Long",
-    "Power Hour Short",
     "Volume Climax Long",
-    "Volume Climax Short",
     "VWAP Trend Long",
-    "VWAP Trend Short",
+    # SMB scalps (untested)
+    "RubberBand Scalp",
+    "ORB 15min",
+    "ORB 30min",
+    "Gap Give & Go",
+    # Classical structural
     "Head & Shoulders",
     "Inverse H&S",
     "Double Top",
     "Double Bottom",
-    "Rising Wedge",
-    "Falling Wedge",
-    "Bull Flag",
-    "Bear Flag",
-    "Cup & Handle",
-    "Range Expansion",
-    "Vol Compression Breakout",
     "Triple Top",
     "Triple Bottom",
     "Ascending Triangle",
     "Descending Triangle",
     "Symmetrical Triangle",
+    "Bull Flag",
+    "Bear Flag",
+    "Cup & Handle",
     "Rectangle",
+    "Rising Wedge",
+    "Falling Wedge",
+    # Daily quant
+    "Range Expansion",
+    "Vol Compression Breakout",
     "52W High Momentum",
     "Low Vol Long",
-    "RubberBand Scalp",
 ]
 
 TIER_TRIALS = {1: 80, 2: 50, 3: 30}

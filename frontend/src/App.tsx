@@ -566,11 +566,437 @@ function InPlayCard({ stock, onClick, t }: { stock: any; onClick: () => void; t:
 }
 
 // ═══════════════════════════════════════════════
+// TRADE TRACKER VIEW
+// ═══════════════════════════════════════════════
+
+const TSTAT: Record<string, { label: string; icon: string }> = {
+  PENDING: { label: "Pending", icon: "⏳" },
+  ACTIVE: { label: "Active", icon: "⚡" },
+  AT_T1: { label: "T1 Hit", icon: "🎯" },
+  AT_T2: { label: "T2 Hit", icon: "🎯🎯" },
+  TRAILING: { label: "Trailing", icon: "🚀" },
+  STOPPED: { label: "Stopped", icon: "🛑" },
+  CLOSED: { label: "Closed", icon: "✓" },
+  EXPIRED: { label: "Expired", icon: "⌛" },
+};
+
+function tStatColor(status: string, t: T): string {
+  switch (status) {
+    case "PENDING": return t.gold;
+    case "ACTIVE": return t.accent;
+    case "AT_T1": case "AT_T2": case "TRAILING": return t.long;
+    case "STOPPED": return t.short;
+    default: return t.textDim;
+  }
+}
+
+function RBar({ trade, t }: { trade: any; t: T }) {
+  const { entry_price: entry = 0, stop_loss: stop = 0, target_1: t1 = 0, target_2: t2raw = 0, unrealized_r: curR = 0, bias } = trade;
+  const t2 = t2raw && t2raw !== t1 ? t2raw : 0;
+  const risk = Math.abs(entry - stop);
+  if (risk <= 0 || !entry) return null;
+  const isL = bias === "long";
+  const t1R = t1 ? (isL ? (t1 - entry) / risk : (entry - t1) / risk) : 1;
+  const t2R = t2 ? (isL ? (t2 - entry) / risk : (entry - t2) / risk) : t1R * 1.8;
+  const maxR = Math.max(t2R + 0.3, (curR || 0) + 0.3, 2.3);
+  const range = maxR + 1.2;
+  const toX = (r: number) => Math.max(0, Math.min(98, ((r + 1.2) / range) * 100));
+  const entryX = toX(0); const stopX = toX(-1); const t1X = toX(t1R); const t2X = toX(t2R); const curX = toX(curR || 0);
+  const fill = (curR || 0) >= 0 ? t.long : t.short;
+  return (
+    <div style={{ position: "relative", height: 20, marginTop: 6 }}>
+      <div style={{ position: "absolute", top: 8, left: 0, right: 0, height: 3, background: t.border, borderRadius: 2 }} />
+      <div style={{ position: "absolute", top: 8, left: `${Math.min(entryX, curX)}%`, width: `${Math.abs(curX - entryX)}%`, height: 3, background: fill, borderRadius: 2, opacity: 0.85 }} />
+      {[{ x: stopX, c: t.short, tip: "Stop" }, { x: entryX, c: t.accent, tip: "Entry" }, { x: t1X, c: t.long, tip: "T1" }, { x: t2X, c: t.long + "88", tip: "T2" }].map(({ x, c, tip }) => (
+        <div key={tip} title={tip} style={{ position: "absolute", top: 4, left: `${x}%`, width: 2, height: 12, background: c, transform: "translateX(-50%)" }} />
+      ))}
+      <div title={`${(curR || 0) >= 0 ? "+" : ""}${(curR || 0).toFixed(2)}R`} style={{ position: "absolute", top: 5, left: `${Math.max(1, Math.min(97, curX))}%`, width: 10, height: 10, borderRadius: "50%", background: fill, transform: "translateX(-50%)", boxShadow: `0 0 6px ${fill}80`, zIndex: 1 }} />
+    </div>
+  );
+}
+
+function TrackerChart({ tradeId, t, onClose }: { tradeId: string; t: T; onClose: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [ld, setLd] = useState(true);
+  const [err, setErr] = useState("");
+  useEffect(() => {
+    if (!ref.current) return; let ch: any = null;
+    (async () => {
+      try {
+        const lc = await import("lightweight-charts");
+        const d = await (await fetch(`${API}/api/tracker/trades/${tradeId}/chart?bars=100`)).json();
+        if (d.error) throw new Error(d.error);
+        if (!d.bars?.length) throw new Error("No data");
+        if (ref.current) ref.current.innerHTML = "";
+        ch = lc.createChart(ref.current!, { width: ref.current!.clientWidth, height: 340, layout: { background: { color: t.chartBg } as any, textColor: t.chartText, fontFamily: "JetBrains Mono,monospace" }, grid: { vertLines: { color: t.chartGrid }, horzLines: { color: t.chartGrid } }, crosshair: { mode: lc.CrosshairMode.Normal }, rightPriceScale: { borderColor: t.border }, timeScale: { borderColor: t.border, timeVisible: true } });
+        let s: any;
+        if ((lc as any).CandlestickSeries) s = ch.addSeries((lc as any).CandlestickSeries, { upColor: t.long, downColor: t.short, borderUpColor: t.long, borderDownColor: t.short, wickUpColor: t.long, wickDownColor: t.short });
+        else s = ch.addCandlestickSeries({ upColor: t.long, downColor: t.short, borderUpColor: t.long, borderDownColor: t.short, wickUpColor: t.long, wickDownColor: t.short });
+        const bars = d.bars.map((b: any) => ({ time: Math.floor(new Date(b.t).getTime() / 1000), open: b.o, high: b.h, low: b.l, close: b.c })).filter((b: any) => !isNaN(b.time));
+        s.setData(bars);
+
+        // Signal marker — snap to nearest bar so LWC always renders it
+        const trade = d.trade || {};
+        const sigRaw = trade.detected_at || trade.entered_at;
+        if (sigRaw && bars.length) {
+          const sigTs = Math.floor(new Date(sigRaw).getTime() / 1000);
+          const nearest = bars.reduce((a: any, b: any) => Math.abs(b.time - sigTs) < Math.abs(a.time - sigTs) ? b : a);
+          const isLong = trade.bias === "long";
+          const marker = { time: nearest.time, position: isLong ? "belowBar" : "aboveBar", color: isLong ? t.long : t.short, shape: isLong ? "arrowUp" : "arrowDown", text: "Signal", size: 2 };
+          try { if (typeof (lc as any).createSeriesMarkers === "function") (lc as any).createSeriesMarkers(s, [marker]); else s.setMarkers([marker]); } catch {}
+        }
+
+        const al = (price: number, color: string, title: string) => { if (price) try { s.createPriceLine({ price, color, lineWidth: 1.5, lineStyle: 2, axisLabelVisible: true, title }); } catch {} };
+        const lv = d.levels || {};
+        al(lv.entry, t.accent, `ENTRY $${lv.entry?.toFixed(2)}`);
+        al(lv.stop, t.short, `STOP $${lv.stop?.toFixed(2)}`);
+        al(lv.target_1, t.long, `T1 $${lv.target_1?.toFixed(2)}`);
+        if (lv.target_2 && lv.target_2 !== lv.target_1) al(lv.target_2, t.long, `T2 $${lv.target_2?.toFixed(2)}`);
+        if (lv.trailing_stop > 0) al(lv.trailing_stop, t.gold, `TRAIL $${lv.trailing_stop?.toFixed(2)}`);
+        ch.timeScale().fitContent(); setLd(false);
+        const ro = new ResizeObserver(() => { if (ref.current && ch) ch.applyOptions({ width: ref.current.clientWidth }) }); ro.observe(ref.current!);
+      } catch (e: any) { setErr(e.message); setLd(false); }
+    })();
+    return () => { if (ch) ch.remove(); };
+  }, [tradeId, t]);
+  return (
+    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+      style={{ background: t.bg, border: `1px solid ${t.border}`, borderRadius: 14, padding: 14, marginTop: 6, overflow: "hidden" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+        <span style={{ fontWeight: 700, color: t.accent, fontSize: 13 }}>Chart — Entry / Stop / T1 / T2</span>
+        <motion.button whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }} onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: t.textDim, fontSize: 16 }}>✕</motion.button>
+      </div>
+      {ld && <div style={{ textAlign: "center", padding: 20, color: t.textDim }}>Loading chart...</div>}
+      {err && <div style={{ color: t.short, fontSize: 12, padding: 10 }}>{err}</div>}
+      <div ref={ref} style={{ width: "100%", minHeight: ld ? 0 : 340 }} />
+    </motion.div>
+  );
+}
+
+function AddTradeModal({ open, onClose, onAdd, t }: { open: boolean; onClose: () => void; onAdd: () => void; t: T }) {
+  const empty = { symbol: "", pattern_name: "Manual", bias: "long", timeframe: "1d", entry_price: "", stop_loss: "", target_1: "", target_2: "", notes: "" };
+  const [form, setForm] = useState(empty);
+  const [saving, setSaving] = useState(false);
+  const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));
+  const canSubmit = !saving && form.symbol && form.entry_price && form.stop_loss && form.target_1;
+  const handleSubmit = async () => {
+    if (!canSubmit) return; setSaving(true);
+    try {
+      await fetch(`${API}/api/tracker/trades`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, entry_price: parseFloat(form.entry_price), stop_loss: parseFloat(form.stop_loss), target_1: parseFloat(form.target_1), target_2: form.target_2 ? parseFloat(form.target_2) : 0 }) });
+      onAdd(); onClose(); setForm(empty);
+    } finally { setSaving(false); }
+  };
+  const inp = (extra?: object) => ({ fontSize: 13, padding: "7px 10px", borderRadius: 8, border: `1.5px solid ${t.border}`, background: t.bgCard, color: t.text, fontFamily: "'Outfit',sans-serif", width: "100%" as const, ...extra });
+  const lbl = { fontSize: 10, fontWeight: 700 as const, color: t.textMuted, display: "block" as const, marginBottom: 3, letterSpacing: 0.4 };
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div variants={modalBg} initial="hidden" animate="visible" exit="exit"
+          style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
+          onClick={onClose}>
+          <motion.div variants={modalContent} initial="hidden" animate="visible" exit="exit"
+            onClick={e => e.stopPropagation()}
+            style={{ background: t.bgModal, border: `1px solid ${t.border}`, borderRadius: 20, width: "90vw", maxWidth: 480, padding: 24, boxShadow: `0 30px 80px rgba(0,0,0,0.5), 0 0 40px ${t.glow}` }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 18 }}>
+              <span style={{ fontSize: 18, fontWeight: 800, color: t.text }}>Add Trade</span>
+              <motion.button whileHover={{ scale: 1.2 }} onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: t.textDim, fontSize: 20 }}>✕</motion.button>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <div><label style={lbl}>SYMBOL</label><input style={inp()} value={form.symbol} onChange={e => set("symbol", e.target.value.toUpperCase())} placeholder="AAPL" /></div>
+              <div><label style={lbl}>PATTERN</label><input style={inp()} value={form.pattern_name} onChange={e => set("pattern_name", e.target.value)} /></div>
+              <div><label style={lbl}>BIAS</label>
+                <div style={{ display: "flex", gap: 4 }}>
+                  {["long", "short"].map(b => (
+                    <button key={b} onClick={() => set("bias", b)} style={{ flex: 1, padding: "7px 0", borderRadius: 8, border: `1.5px solid ${form.bias === b ? (b === "long" ? t.long : t.short) : t.border}`, background: form.bias === b ? (b === "long" ? t.longBg : t.shortBg) : "transparent", color: form.bias === b ? (b === "long" ? t.long : t.short) : t.textDim, fontWeight: 700, cursor: "pointer", fontSize: 12 }}>{b.toUpperCase()}</button>
+                  ))}
+                </div>
+              </div>
+              <div><label style={lbl}>TIMEFRAME</label>
+                <select style={inp()} value={form.timeframe} onChange={e => set("timeframe", e.target.value)}>
+                  {["5min", "15min", "1h", "1d"].map(tf => <option key={tf} value={tf}>{tf}</option>)}
+                </select>
+              </div>
+              <div><label style={lbl}>ENTRY</label><input type="number" style={inp()} value={form.entry_price} onChange={e => set("entry_price", e.target.value)} placeholder="150.00" /></div>
+              <div><label style={lbl}>STOP</label><input type="number" style={inp()} value={form.stop_loss} onChange={e => set("stop_loss", e.target.value)} placeholder="145.00" /></div>
+              <div><label style={lbl}>TARGET 1</label><input type="number" style={inp()} value={form.target_1} onChange={e => set("target_1", e.target.value)} placeholder="160.00" /></div>
+              <div><label style={lbl}>TARGET 2 (opt)</label><input type="number" style={inp()} value={form.target_2} onChange={e => set("target_2", e.target.value)} placeholder="170.00" /></div>
+            </div>
+            <div style={{ marginTop: 10 }}><label style={lbl}>NOTES</label><input style={inp()} value={form.notes} onChange={e => set("notes", e.target.value)} placeholder="Optional notes..." /></div>
+            <motion.button whileHover={{ scale: canSubmit ? 1.02 : 1 }} whileTap={{ scale: canSubmit ? 0.98 : 1 }} onClick={handleSubmit}
+              style={{ marginTop: 18, width: "100%", padding: "11px", borderRadius: 12, border: "none", background: canSubmit ? `linear-gradient(135deg, ${t.accent}, ${t.accentLight})` : t.border, color: "#fff", fontWeight: 800, fontSize: 15, cursor: canSubmit ? "pointer" : "not-allowed", opacity: canSubmit ? 1 : 0.5 }}>
+              {saving ? "Adding..." : "Add Trade"}
+            </motion.button>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function TrackerRow({ trade, onClose, onRemove, t }: { trade: any; onClose: () => void; onRemove: () => void; t: T }) {
+  const [showChart, setShowChart] = useState(false);
+  const sc = tStatColor(trade.status, t);
+  const stat = TSTAT[trade.status] || { label: trade.status, icon: "" };
+  const isL = trade.bias === "long";
+  const r = trade.unrealized_r || 0;
+  const rColor = r > 0.05 ? t.long : r < -0.05 ? t.short : t.textDim;
+  return (
+    <motion.div variants={fadeUp}>
+      <div style={{ padding: "12px 16px", borderBottom: `1px solid ${t.border}` }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <div style={{ minWidth: 80 }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: t.text }}>{trade.symbol}</div>
+            <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5, background: isL ? t.longBg : t.shortBg, color: isL ? t.long : t.short }}>{isL ? "LONG" : "SHORT"}</span>
+          </div>
+          <div style={{ flex: 1, minWidth: 160 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: t.text }}>{trade.pattern_name}
+              {trade.timeframe && <span style={{ fontSize: 10, color: t.textMuted, marginLeft: 6 }}>{trade.timeframe}</span>}
+            </div>
+            <div style={{ display: "flex", gap: 6, marginTop: 3, flexWrap: "wrap", alignItems: "center" }}>
+              <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 5, background: sc + "20", color: sc }}>{stat.icon} {stat.label}</span>
+              {trade.t1_hit && <span style={{ fontSize: 10, color: t.long, fontWeight: 700 }}>✓T1</span>}
+              {trade.t2_hit && <span style={{ fontSize: 10, color: t.long, fontWeight: 700 }}>✓T2</span>}
+              {trade.source === "manual" && <span style={{ fontSize: 10, color: t.textMuted }}>manual</span>}
+              {trade.confidence > 0 && <span style={{ fontSize: 10, color: t.textMuted }}>{(trade.confidence * 100).toFixed(0)}% conf</span>}
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 16, fontFamily: "'JetBrains Mono',monospace", fontSize: 12 }}>
+            {[{ l: "ENTRY", v: trade.entry_price, c: t.accent }, { l: "STOP", v: trade.stop_loss, c: t.short }, { l: "T1", v: trade.target_1, c: t.long }, { l: "NOW", v: trade.current_price, c: t.text }].map(({ l, v, c }) => (
+              <div key={l} style={{ textAlign: "right" }}>
+                <div style={{ fontSize: 9, color: t.textMuted, fontWeight: 700 }}>{l}</div>
+                <div style={{ fontWeight: 700, color: c }}>{v ? `$${v.toFixed(2)}` : "—"}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ textAlign: "center", minWidth: 72 }}>
+            <div style={{ fontSize: 9, color: t.textMuted, fontWeight: 700, marginBottom: 1 }}>UNREAL R</div>
+            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 20, fontWeight: 800, color: rColor }}>{r >= 0 ? "+" : ""}{r.toFixed(2)}R</div>
+          </div>
+          <div style={{ textAlign: "center", minWidth: 52 }}>
+            <div style={{ fontSize: 9, color: t.textMuted, fontWeight: 700, marginBottom: 1 }}>PEAK</div>
+            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, fontWeight: 700, color: t.long }}>+{(trade.peak_r || 0).toFixed(2)}R</div>
+          </div>
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setShowChart(!showChart)}
+              style={{ fontSize: 12, padding: "5px 10px", borderRadius: 8, border: `1px solid ${showChart ? t.accent + "50" : t.border}`, background: showChart ? t.accent + "15" : t.bgCard, color: showChart ? t.accent : t.textDim, cursor: "pointer", fontWeight: 700 }}>📈</motion.button>
+            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={onClose}
+              style={{ fontSize: 11, fontWeight: 700, padding: "5px 10px", borderRadius: 8, border: `1px solid ${t.short}30`, background: t.short + "10", color: t.short, cursor: "pointer" }}>Close</motion.button>
+            <motion.button whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }} onClick={onRemove}
+              style={{ background: "none", border: "none", cursor: "pointer", color: t.textMuted, fontSize: 15 }}>✕</motion.button>
+          </div>
+        </div>
+        <RBar trade={trade} t={t} />
+      </div>
+      <AnimatePresence>
+        {showChart && <div style={{ padding: "0 16px 12px" }}><TrackerChart tradeId={trade.id} t={t} onClose={() => setShowChart(false)} /></div>}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+function TradeTrackerView({ t }: { t: T }) {
+  const [trades, setTrades] = useState<any[]>([]);
+  const [closedTrades, setClosedTrades] = useState<any[]>([]);
+  const [summary, setSummary] = useState<any>(null);
+  const [schedule, setSchedule] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [showClosed, setShowClosed] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [archiving, setArchiving] = useState(false);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const [ar, sr] = await Promise.all([fetch(`${API}/api/tracker/trades`), fetch(`${API}/api/tracker/summary`)]);
+      const [ad, sd] = await Promise.all([ar.json(), sr.json()]);
+      setTrades(ad.trades || []); setSummary(sd);
+    } catch {}
+  }, []);
+
+  const fetchClosed = useCallback(async () => {
+    try { const d = await (await fetch(`${API}/api/tracker/trades/closed`)).json(); setClosedTrades(d.trades || []); } catch {}
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      await fetchData();
+      setLoading(false);
+    })();
+    fetch(`${API}/api/tracker/schedule`).then(r => r.json()).then(setSchedule).catch(() => {});
+  }, []);
+  useEffect(() => { if (showClosed) fetchClosed(); }, [showClosed]);
+
+  const handleScan = async () => { setScanning(true); try { await fetch(`${API}/api/tracker/scan`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ top_n: 50 }) }); await fetchData(); } finally { setScanning(false); } };
+  const handleRefresh = async () => { setRefreshing(true); try { await fetch(`${API}/api/tracker/refresh`, { method: "POST" }); await fetchData(); } finally { setRefreshing(false); } };
+  const handleClose = async (id: string) => { await fetch(`${API}/api/tracker/trades/${id}/close`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reason: "manual" }) }); fetchData(); };
+  const handleRemove = async (id: string) => { await fetch(`${API}/api/tracker/trades/${id}`, { method: "DELETE" }); fetchData(); };
+  const handleArchive = async () => { setArchiving(true); try { await fetch(`${API}/api/tracker/archive`, { method: "POST" }); await fetchData(); if (showClosed) fetchClosed(); } finally { setArchiving(false); } };
+
+  const activeOnly = trades.filter(tr => !["STOPPED", "CLOSED", "EXPIRED"].includes(tr.status));
+  const recentClosed = trades.filter(tr => ["STOPPED", "CLOSED", "EXPIRED"].includes(tr.status));
+
+  const statCards = summary ? [
+    { l: "Active", v: String(summary.active_count), c: t.accent },
+    { l: "Long / Short", v: `${summary.active_long}L  ${summary.active_short}S`, c: t.text },
+    { l: "Unrealized", v: `${(summary.total_unrealized_r || 0) >= 0 ? "+" : ""}${(summary.total_unrealized_r || 0).toFixed(2)}R`, c: (summary.total_unrealized_r || 0) >= 0 ? t.long : t.short },
+    { l: "Realized", v: `${(summary.total_realized_r || 0) >= 0 ? "+" : ""}${(summary.total_realized_r || 0).toFixed(2)}R`, c: (summary.total_realized_r || 0) >= 0 ? t.long : t.short },
+    { l: "Win Rate", v: `${(summary.win_rate || 0).toFixed(0)}%`, c: (summary.win_rate || 0) >= 55 ? t.long : (summary.win_rate || 0) >= 45 ? t.gold : t.textDim },
+    { l: "Closed", v: String(summary.closed_count || 0), c: t.textDim },
+  ] : [];
+
+  return (
+    <motion.div initial="hidden" animate="visible" variants={fadeUp}>
+      {/* Summary stat cards */}
+      {summary && (
+        <motion.div variants={fadeUp} style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 8, marginBottom: 14 }}>
+          {statCards.map(({ l, v, c }) => (
+            <div key={l} style={{ background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: 12, padding: "12px 14px", textAlign: "center" }}>
+              <div style={{ fontSize: 10, color: t.textMuted, fontWeight: 700, marginBottom: 4, letterSpacing: 0.4 }}>{l.toUpperCase()}</div>
+              <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 17, fontWeight: 800, color: c }}>{v}</div>
+            </div>
+          ))}
+        </motion.div>
+      )}
+
+      {/* Action bar */}
+      <motion.div variants={fadeUp} style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap", alignItems: "center" }}>
+        <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} onClick={handleScan} disabled={scanning}
+          style={{ fontSize: 13, fontWeight: 700, padding: "8px 18px", borderRadius: 10, border: "none", background: scanning ? t.border : `linear-gradient(135deg, ${t.accent}, ${t.accentLight})`, color: "#fff", cursor: scanning ? "wait" : "pointer" }}>
+          {scanning ? "Scanning..." : "🔍 Scan Setups"}
+        </motion.button>
+        <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} onClick={handleRefresh} disabled={refreshing}
+          style={{ fontSize: 13, fontWeight: 700, padding: "8px 18px", borderRadius: 10, border: `1px solid ${t.border}`, background: t.bgCard, color: t.textDim, cursor: refreshing ? "wait" : "pointer" }}>
+          {refreshing ? "Refreshing..." : "🔄 Refresh Prices"}
+        </motion.button>
+        <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} onClick={() => setAddOpen(true)}
+          style={{ fontSize: 13, fontWeight: 700, padding: "8px 18px", borderRadius: 10, border: `1px solid ${t.accent}40`, background: t.accent + "10", color: t.accent, cursor: "pointer" }}>
+          + Add Trade
+        </motion.button>
+        <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} onClick={() => setShowClosed(!showClosed)}
+          style={{ fontSize: 13, fontWeight: 700, padding: "8px 18px", borderRadius: 10, border: `1px solid ${t.border}`, background: showClosed ? t.bgHover : t.bgCard, color: t.textDim, cursor: "pointer" }}>
+          📋 History {showClosed ? "▲" : "▼"}
+        </motion.button>
+        {recentClosed.length > 0 && (
+          <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} onClick={handleArchive} disabled={archiving}
+            style={{ fontSize: 13, fontWeight: 700, padding: "8px 18px", borderRadius: 10, border: `1px solid ${t.border}`, background: t.bgCard, color: t.textMuted, cursor: archiving ? "wait" : "pointer" }}>
+            {archiving ? "Archiving..." : `📦 Archive ${recentClosed.length}`}
+          </motion.button>
+        )}
+        <div style={{ marginLeft: "auto", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2 }}>
+          {summary?.last_updated && <span style={{ fontSize: 11, color: t.textMuted }}>Updated: {new Date(summary.last_updated).toLocaleTimeString()}</span>}
+          {schedule?.jobs && (() => {
+            const scan = schedule.jobs.find((j: any) => j.id === "daily_scan");
+            const ref = schedule.jobs.find((j: any) => j.id === "refresh");
+            const fmt = (iso: string | null) => iso ? new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—";
+            return (
+              <span style={{ fontSize: 10, color: t.textMuted }}>
+                ⏰ Next scan {fmt(scan?.next_run)} · refresh {fmt(ref?.next_run)}
+                {schedule.last_scan?.ran_at && <span style={{ marginLeft: 6 }}>· last scan {new Date(schedule.last_scan.ran_at).toLocaleDateString()} (+{schedule.last_scan.added})</span>}
+              </span>
+            );
+          })()}
+        </div>
+      </motion.div>
+
+      {/* Active trades */}
+      <motion.div variants={fadeUp} style={{ background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: 14, overflow: "hidden", marginBottom: 12 }}>
+        <div style={{ padding: "10px 16px", borderBottom: `1px solid ${t.border}`, display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 14, fontWeight: 800, color: t.text }}>Active Trades</span>
+          <span style={{ fontSize: 12, color: t.textMuted }}>({activeOnly.length})</span>
+          {activeOnly.length > 0 && <span style={{ fontSize: 11, color: t.textDim, marginLeft: 4 }}>— click 📈 for chart, Close to lock in R, ✕ to remove</span>}
+        </div>
+        {loading ? <JuicerLoader t={t} msg="Loading tracker..." /> : activeOnly.length === 0 ? (
+          <div style={{ padding: "36px 24px", textAlign: "center", color: t.textDim }}>
+            <div style={{ fontSize: 32, marginBottom: 12 }}>📭</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: t.text }}>No active trades</div>
+            <div style={{ fontSize: 13, color: t.textMuted, marginTop: 6 }}>Click <strong style={{ color: t.accent }}>Scan Setups</strong> to auto-detect high-confidence setups, or <strong style={{ color: t.accent }}>+ Add Trade</strong> to track one manually.</div>
+          </div>
+        ) : (
+          <motion.div initial="hidden" animate="visible" variants={stagger}>
+            <AnimatePresence>
+              {activeOnly.map(tr => <TrackerRow key={tr.id} trade={tr} t={t} onClose={() => handleClose(tr.id)} onRemove={() => handleRemove(tr.id)} />)}
+            </AnimatePresence>
+          </motion.div>
+        )}
+      </motion.div>
+
+      {/* Recently closed (not yet archived) */}
+      {recentClosed.length > 0 && (
+        <motion.div variants={fadeUp} style={{ background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: 14, overflow: "hidden", marginBottom: 12 }}>
+          <div style={{ padding: "10px 16px", borderBottom: `1px solid ${t.border}`, display: "flex", gap: 8, alignItems: "center" }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: t.textDim }}>Recently Closed ({recentClosed.length})</span>
+            <span style={{ fontSize: 11, color: t.textMuted }}>— archive to move to history</span>
+          </div>
+          {recentClosed.map(tr => {
+            const sc = tStatColor(tr.status, t); const rz = tr.realized_r || 0;
+            const risk = Math.abs((tr.entry_price || 0) - (tr.stop_loss || 0));
+            const dps = risk > 0 ? rz * risk : 0;
+            const pct = tr.entry_price > 0 && risk > 0 ? (dps / tr.entry_price * 100) : 0;
+            const col = rz > 0 ? t.long : rz < 0 ? t.short : t.textDim;
+            return (
+              <div key={tr.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 16px", borderBottom: `1px solid ${t.border}`, fontSize: 13 }}>
+                <span style={{ fontWeight: 800, color: t.text, minWidth: 60 }}>{tr.symbol}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 5, background: sc + "15", color: sc }}>{TSTAT[tr.status]?.icon} {tr.status}</span>
+                <span style={{ color: t.textDim, flex: 1 }}>{tr.pattern_name}</span>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontFamily: "'JetBrains Mono',monospace", fontWeight: 800, color: col, fontSize: 15 }}>{rz >= 0 ? "+" : ""}{rz.toFixed(2)}R</div>
+                  {dps !== 0 && <div style={{ fontSize: 10, color: col }}>{dps >= 0 ? "+" : ""}${Math.abs(dps).toFixed(2)}/sh · {pct >= 0 ? "+" : ""}{pct.toFixed(1)}%</div>}
+                </div>
+                {tr.closed_at && <span style={{ fontSize: 11, color: t.textMuted }}>{new Date(tr.closed_at).toLocaleDateString()}</span>}
+                <motion.button whileHover={{ scale: 1.1 }} onClick={() => handleRemove(tr.id)} style={{ background: "none", border: "none", cursor: "pointer", color: t.textMuted, fontSize: 14 }}>✕</motion.button>
+              </div>
+            );
+          })}
+        </motion.div>
+      )}
+
+      {/* Archived history accordion */}
+      <AnimatePresence>
+        {showClosed && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+            style={{ background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: 14, overflow: "hidden", marginBottom: 12 }}>
+            <div style={{ padding: "10px 16px", borderBottom: `1px solid ${t.border}` }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: t.textDim }}>Archived History ({closedTrades.length})</span>
+            </div>
+            {closedTrades.length === 0
+              ? <div style={{ padding: 24, textAlign: "center", color: t.textMuted, fontSize: 13 }}>No archived trades yet. Archive closed trades above to build history.</div>
+              : closedTrades.slice(0, 100).map(tr => {
+                  const rz = tr.realized_r || 0;
+                  const col = rz > 0 ? t.long : rz < 0 ? t.short : t.textDim;
+                  const risk = Math.abs((tr.entry_price || 0) - (tr.stop_loss || 0));
+                  const dps = risk > 0 ? rz * risk : 0;
+                  const pct = tr.entry_price > 0 && risk > 0 ? (dps / tr.entry_price * 100) : 0;
+                  return (
+                    <div key={tr.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 16px", borderBottom: `1px solid ${t.border}`, fontSize: 12 }}>
+                      <span style={{ fontWeight: 800, color: t.text, minWidth: 55 }}>{tr.symbol}</span>
+                      <span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 4, background: t.border, color: t.textDim }}>{tr.status}</span>
+                      <span style={{ color: t.textDim, flex: 1 }}>{tr.pattern_name}</span>
+                      <div style={{ textAlign: "right" }}>
+                        <div style={{ fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, color: col }}>{rz >= 0 ? "+" : ""}{rz.toFixed(2)}R</div>
+                        {dps !== 0 && <div style={{ fontSize: 10, color: col }}>{dps >= 0 ? "+" : ""}${Math.abs(dps).toFixed(2)}/sh · {pct >= 0 ? "+" : ""}{pct.toFixed(1)}%</div>}
+                      </div>
+                      {tr.closed_at && <span style={{ color: t.textMuted, fontSize: 11 }}>{new Date(tr.closed_at).toLocaleDateString()}</span>}
+                    </div>
+                  );
+                })
+            }
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AddTradeModal open={addOpen} onClose={() => setAddOpen(false)} onAdd={fetchData} t={t} />
+    </motion.div>
+  );
+}
+
+// ═══════════════════════════════════════════════
 // MAIN APP
 // ═══════════════════════════════════════════════
 export default function App() {
   const [dark, setDark] = useState(true); const t = dark ? DARK : LIGHT;
-  const [view, setView] = useState<"opp" | "scan">("opp");
+  const [view, setView] = useState<"opp" | "scan" | "tracker">("opp");
   const [symbol, setSymbol] = useState("AAPL"); const [scanSetups, setScanSetups] = useState<any[]>([]);
   const [topSetups, setTopSetups] = useState<any[]>([]); const [inPlay, setInPlay] = useState<any[]>([]);
   const [mktSummary, setMktSummary] = useState("");
@@ -612,8 +1038,11 @@ export default function App() {
     }, 50)
   };
 
-  const addTrack = (s: any) => { if (!tracked.find((x: any) => x.symbol === s.symbol && x.pattern_name === s.pattern_name)) setTracked(p => [...p, s]) };
-  const active = view === "opp" ? topSetups : scanSetups;
+  const addTrack = (s: any) => {
+    if (!tracked.find((x: any) => x.symbol === s.symbol && x.pattern_name === s.pattern_name)) setTracked(p => [...p, s]);
+    fetch(`${API}/api/tracker/trades`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ symbol: s.symbol, pattern_name: s.pattern_name, bias: s.bias || "long", timeframe: (s.timeframe_detected || "5min").split("&")[0].trim() || "5min", entry_price: s.entry_price, stop_loss: s.stop_loss, target_1: s.target_price, target_2: s.target_2 || 0, confidence: (s.composite_score || 50) / 100, description: s.description || "" }) }).catch(() => {});
+  };
+  const active = view === "opp" ? topSetups : view === "scan" ? scanSetups : [];
   const filtered = useMemo(() => { let r = active; r = r.filter((s: any) => (s.composite_score || 0) >= 45); if (fBias !== "ALL") r = r.filter((s: any) => s.bias === fBias.toLowerCase()); if (fCat !== "ALL") r = r.filter((s: any) => s.category === fCat); return [...r].sort((a: any, b: any) => sortBy === "rr" ? b.risk_reward_ratio - a.risk_reward_ratio : (b.composite_score || 0) - (a.composite_score || 0)) }, [active, fBias, fCat, sortBy]);
 
   return (
@@ -630,6 +1059,7 @@ export default function App() {
           <div style={{ display: "flex", gap: 2, marginLeft: 14, background: t.border, borderRadius: 8, padding: 3 }}>
             <Pill active={view === "opp"} onClick={() => setView("opp")} t={t}>Opportunities</Pill>
             <Pill active={view === "scan"} onClick={() => setView("scan")} t={t}>Scan</Pill>
+            <Pill active={view === "tracker"} onClick={() => setView("tracker")} t={t}>Tracker</Pill>
           </div>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
@@ -675,6 +1105,15 @@ export default function App() {
           )}
         </AnimatePresence>
 
+        {/* TRACKER */}
+        <AnimatePresence mode="wait">
+          {view === "tracker" && (
+            <motion.div key="tracker" initial="hidden" animate="visible" exit="exit" variants={fadeUp}>
+              <TradeTrackerView t={t} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* SCAN */}
         <AnimatePresence mode="wait">
           {view === "scan" && (
@@ -702,7 +1141,7 @@ export default function App() {
         {loading && view === "scan" && <JuicerLoader t={t} msg={`Squeezing ${symbol}...`} />}
 
         {/* RESULTS */}
-        {!loading && active.length > 0 && !(view === "opp" && topLoading) && (
+        {!loading && active.length > 0 && !(view === "opp" && topLoading) && view !== "tracker" && (
           <motion.div initial="hidden" animate="visible" variants={stagger}>
             <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap", alignItems: "center" }}>
               <div style={{ display: "flex", gap: 2, background: t.border, borderRadius: 8, padding: 3 }}>{["ALL", "LONG", "SHORT"].map(b => <Pill key={b} active={fBias === b} onClick={() => setFBias(b)} t={t} s>{b}</Pill>)}</div>

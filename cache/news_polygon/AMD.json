@@ -1,304 +1,324 @@
 {
-  "cached_at": 1774635881.0744822,
+  "cached_at": 1775346893.7910314,
   "items": [
     {
-      "title": "8 Stocks I'd Buy if I Were Starting a Tech Portfolio From Scratch Today",
-      "description": "The article recommends eight AI-focused technology stocks for building a foundational tech portfolio: Nvidia, AMD, Broadcom, Micron, TSMC, Alphabet, Meta Platforms, and ServiceNow. These companies are positioned to benefit from AI infrastructure buildout, custom chip development, advanced manufacturing, and AI integration into core business operations.",
-      "published_utc": "2026-03-27T12:15:00Z",
+      "title": "TSMC vs. Nvidia: Which AI Supercycle Growth Stock Is the Better Long-Term Buy?",
+      "description": "The article compares Nvidia and TSMC as AI infrastructure leaders. While Nvidia dominates GPU manufacturing with 90% market share and strong forward-thinking strategy, the author argues TSMC is better positioned for long-term outperformance. As customers develop custom AI chips and diversify suppliers, Nvidia's market share will naturally erode, while TSMC benefits from being the essential manufacturing partner for all advanced chip designers. TSMC is also positioned to capitalize on data center CPU and autonomous driving trends.",
+      "published_utc": "2026-04-04T20:30:00Z",
       "source": "The Motley Fool",
-      "article_url": "https://www.fool.com/investing/2026/03/27/stocks-buy-if-starting-tech-portfolio-today/?source=iedfolrf0000001",
+      "article_url": "https://www.fool.com/investing/2026/04/04/tsmc-nvidia-which-ai-supercycle-growth-stock-buy/?source=iedfolrf0000001",
       "tickers": [
         "NVDA",
-        "AMD",
-        "AVGO",
-        "MU",
         "TSM",
-        "GOOG",
-        "GOOGL",
-        "META",
-        "NOW"
+        "AMD"
       ],
       "keywords": [
         "AI infrastructure",
-        "GPU market",
-        "custom AI chips",
+        "GPU market share",
         "semiconductor manufacturing",
-        "data center",
-        "agentic AI",
-        "tech portfolio"
+        "custom AI ASICs",
+        "data center chips",
+        "autonomous driving",
+        "market consolidation"
       ],
       "author": "Geoffrey Seiler",
       "insights": [
         {
           "ticker": "NVDA",
           "sentiment": "positive",
-          "reasoning": "Described as the most dominant player in AI infrastructure with strong positioning in inference and agentic AI markets; acquisition of Groq and introduction of NemoClaw strengthen competitive moat."
-        },
-        {
-          "ticker": "AMD",
-          "sentiment": "positive",
-          "reasoning": "No. 2 GPU player with leading position in data center CPU market; positioned to benefit from agentic AI demand and recent deals with Meta and OpenAI."
-        },
-        {
-          "ticker": "AVGO",
-          "sentiment": "positive",
-          "reasoning": "Leader in ASIC technology with strong growth catalysts from custom AI chips and data center networking; helped develop Alphabet's TPUs."
-        },
-        {
-          "ticker": "MU",
-          "sentiment": "positive",
-          "reasoning": "One of three major HBM manufacturers with historically cheap valuation; positioned for strong secular growth from AI with long-term contracts providing visibility."
+          "reasoning": "Recognized as dominant AI leader with 90% GPU market share, strong forward-thinking strategy, successful acquisitions (Groq, SchedMD), and continued ability to evolve. However, sentiment is tempered by acknowledgment of inevitable market share erosion as competitors emerge."
         },
         {
           "ticker": "TSM",
           "sentiment": "positive",
-          "reasoning": "Virtual monopoly on advanced chip manufacturing essential for AI infrastructure; expanding capacity with strong pricing power and high yields."
+          "reasoning": "Positioned as the essential 'arms dealer' in AI chip manufacturing with near-monopoly status, technological expertise, and scale advantages. Benefits from market fragmentation as customers design custom chips. Poised to gain from data center CPU demand and autonomous driving trends, with better long-term growth potential than Nvidia."
         },
         {
-          "ticker": "GOOG",
-          "sentiment": "positive",
-          "reasoning": "Internet search leader with large cloud business and proprietary TPUs providing cost advantages; using AI to enhance search and drive revenue growth."
-        },
-        {
-          "ticker": "GOOGL",
-          "sentiment": "positive",
-          "reasoning": "Internet search leader with large cloud business and proprietary TPUs providing cost advantages; using AI to enhance search and drive revenue growth."
-        },
-        {
-          "ticker": "META",
-          "sentiment": "positive",
-          "reasoning": "Effectively applying AI to core business to increase user engagement and ad effectiveness; improved recommendation engine and ad tools driving revenue growth."
-        },
-        {
-          "ticker": "NOW",
-          "sentiment": "positive",
-          "reasoning": "Despite SaaS sell-off, company maintains strong 20%+ growth with rapidly growing NowAssist AI suite and future opportunity with agentic AI orchestration platform."
+          "ticker": "AMD",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as an alternative GPU supplier that customers are turning to as they seek cheaper alternatives to Nvidia, but not analyzed in depth as a primary investment option in this comparison."
         }
       ]
     },
     {
-      "title": "Arm\u2019s New Gambit: Building Chips to Challenge the AI Titans",
-      "description": "Arm Holdings announced its first in-house silicon product, the AGI CPU, marking a strategic shift from IP licensing to direct chip manufacturing for AI data centers. The 136-core processor, built on TSMC's 3nm process, targets energy efficiency in AI workloads. Meta is the lead partner and co-developer, with support from OpenAI, Cloudflare, and SAP. Arm's stock surged 15% on the announcement, with analyst upgrades citing potential $15 billion annual revenue by 2031, positioning the company as a disruptive competitor to Intel and AMD in the AI infrastructure market.",
-      "published_utc": "2026-03-27T11:53:00Z",
-      "source": "Investing.com",
-      "article_url": "https://www.investing.com/analysis/arms-new-gambit-building-chips-to-challenge-the-ai-titans-200677389",
+      "title": "2 AI Stocks That Survived the March Sell-Off -- and Look Stronger Because of It",
+      "description": "Arm Holdings and Advanced Micro Devices both saw their stocks rise in March despite the tech sell-off. As agentic AI emerges as the next major evolution in technology, demand for high-performance CPUs is expected to surge, positioning both companies to benefit from a projected $100 billion data center CPU market by 2031. Arm is entering the physical chip market with its new CPU designs, while AMD is leveraging its established leadership in data center CPUs with its new Venice architecture.",
+      "published_utc": "2026-04-04T15:30:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/04/04/2-ai-stocks-that-survived-the-march-sell-off-and/?source=iedfolrf0000001",
       "tickers": [
         "ARM",
-        "META",
-        "INTC",
         "AMD",
-        "TSM",
-        "NET",
-        "SAP"
+        "INTC",
+        "NVDA"
       ],
       "keywords": [
-        "AI data centers",
-        "chip manufacturing",
-        "energy efficiency",
-        "AGI CPU",
-        "strategic pivot",
-        "business model transformation",
-        "server processors"
+        "agentic AI",
+        "data center CPUs",
+        "AI infrastructure",
+        "semiconductor",
+        "Venice architecture",
+        "CPU market growth"
       ],
-      "author": "Jeffrey Neal Johnson",
+      "author": "Geoffrey Seiler",
       "insights": [
         {
           "ticker": "ARM",
           "sentiment": "positive",
-          "reasoning": "Company announced transformative strategic shift into AI chip manufacturing with major partnership validation from Meta, analyst upgrades, and 15% stock surge. Positioned for significant revenue growth with $15B potential by 2031."
-        },
-        {
-          "ticker": "META",
-          "sentiment": "positive",
-          "reasoning": "Serves as lead partner and co-developer of Arm's AGI CPU, providing technological validation and guaranteed large-scale orders. Demonstrates Meta's commitment to optimizing AI infrastructure and reducing energy costs."
-        },
-        {
-          "ticker": "INTC",
-          "sentiment": "negative",
-          "reasoning": "Faces direct competition from Arm's new energy-efficient AGI CPU in the historically Intel-dominated data center market. Arm's focused approach on AI workloads and lower total cost of ownership threatens Intel's core value proposition."
+          "reasoning": "Arm is entering the physical chip market with proven CPU technology designed for agentic AI. The company targets $15 billion in revenue from new CPU chips and sees significant opportunity in the projected $100 billion data center CPU market by 2031. Its power efficiency and high core counts align well with agentic AI requirements."
         },
         {
           "ticker": "AMD",
-          "sentiment": "negative",
-          "reasoning": "Competes with Arm in the x86 server processor market. Arm's specialized, energy-efficient AGI CPU directly challenges AMD's position in AI data center infrastructure."
-        },
-        {
-          "ticker": "TSM",
           "sentiment": "positive",
-          "reasoning": "Provides cutting-edge 3-nanometer manufacturing process for Arm's AGI CPU, positioning TSMC as a critical partner in the growing AI chip production market."
+          "reasoning": "AMD is the established leader in data center CPUs with $16.6 billion in data center revenue. Its new Venice architecture with improved chiplet design positions it well for agentic AI growth. The company also has two large GPU partnerships worth over $100 billion each, providing multiple growth avenues in the expanding AI infrastructure market."
         },
-        {
-          "ticker": "NET",
-          "sentiment": "positive",
-          "reasoning": "Partnership commitment with Arm signals support for energy-efficient AI infrastructure, aligning with industry trends toward optimized data center operations."
-        },
-        {
-          "ticker": "SAP",
-          "sentiment": "positive",
-          "reasoning": "Commitment to Arm's AGI CPU ecosystem demonstrates enterprise software vendor support, expanding the platform's appeal and creating broader adoption incentives."
-        }
-      ]
-    },
-    {
-      "title": "The Scrappy $949 GPU Taking Aim at Nvidia's Grip on Local AI",
-      "description": "Intel announced the Arc Pro B70, a $949 workstation GPU designed for running AI workloads locally. Priced significantly lower than Nvidia's RTX Pro 4000 ($1,800) and AMD's Radeon AI Pro R9700 ($1,299), the Arc Pro B70 features 32GB of GDDR6 RAM and claims superior performance metrics. The GPU positions Intel to benefit from a potential shift of AI computing away from mega data centers toward on-premises and local workstations.",
-      "published_utc": "2026-03-27T10:30:00Z",
-      "source": "The Motley Fool",
-      "article_url": "https://www.fool.com/investing/2026/03/27/the-scrappy-949-gpu-taking-aim-at-nvidias-grip-on/?source=iedfolrf0000001",
-      "tickers": [
-        "INTC",
-        "NVDA",
-        "AMD"
-      ],
-      "keywords": [
-        "GPU",
-        "local AI",
-        "workstation",
-        "Arc Pro B70",
-        "AI inference",
-        "pricing",
-        "memory",
-        "data center alternatives"
-      ],
-      "author": "Timothy Green",
-      "insights": [
         {
           "ticker": "INTC",
-          "sentiment": "positive",
-          "reasoning": "Intel is launching a competitively priced GPU with strong performance claims and positioning itself well for the emerging local AI market. The company is advancing AI capabilities across its product line and appears well-positioned for a potential shift away from centralized data centers."
+          "sentiment": "neutral",
+          "reasoning": "Intel is mentioned as a rival to AMD in the data center CPU market where AMD has consistently gained share. No specific commentary is provided about Intel's positioning for agentic AI or future prospects."
         },
         {
           "ticker": "NVDA",
           "sentiment": "neutral",
-          "reasoning": "While Nvidia faces competition from Intel's lower-priced alternative, the article acknowledges Nvidia's continued advantage through its proprietary CUDA platform and dominant market position. The threat is positioned as emerging rather than immediate."
-        },
-        {
-          "ticker": "AMD",
-          "sentiment": "neutral",
-          "reasoning": "AMD is mentioned as a competitor with the Radeon AI Pro R9700, but receives minimal analysis. Intel's Arc Pro B70 is positioned as superior in value and performance, but AMD's competitive position is not substantially threatened in the article's narrative."
+          "reasoning": "Nvidia is mentioned as the current dominant GPU provider for AI training and inference. While the article suggests CPUs will become increasingly important for agentic AI, it does not directly criticize or praise Nvidia's future prospects."
         }
       ]
     },
     {
-      "title": "Move Over, Nvidia GPUs. The AI CPU Era Is Here",
-      "description": "The AI market is shifting from GPU-focused training to CPU-dependent inference, creating a new growth opportunity. Arm launched its first in-house AI CPU, while Intel and AMD announced plans to raise CPU prices by up to 15% due to expected shortages. Nvidia is also entering the CPU market, and all major chip makers are positioned to benefit from surging CPU demand driven by agentic AI deployment.",
-      "published_utc": "2026-03-27T00:30:00Z",
+      "title": "AMD vs. Nvidia: The AI Supercycle Is Big Enough for Both. Here's the Better Buy.",
+      "description": "While both Nvidia and AMD are positioned to benefit from the AI infrastructure boom, the article argues AMD is the better buy despite Nvidia's current dominance. Nvidia leads in AI model training with 90% GPU market share and a $4.3T market cap, but AMD offers greater upside potential through its leadership in data center CPUs, strategic deals with OpenAI and Meta for GPU inference, and positioning in the emerging agentic AI market where CPU demand is expected to surge.",
+      "published_utc": "2026-04-03T22:25:00Z",
       "source": "The Motley Fool",
-      "article_url": "https://www.fool.com/investing/2026/03/26/move-over-nvidia-gpus-the-ai-cpu-era-is-here/?source=iedfolrf0000001",
+      "article_url": "https://www.fool.com/investing/2026/04/03/amd-vs-nvidia-the-ai-supercycle-is-big-enough-for/?source=iedfolrf0000001",
       "tickers": [
-        "ARM",
-        "INTC",
-        "AMD",
         "NVDA",
-        "MU",
+        "AMD",
         "META"
       ],
       "keywords": [
         "AI infrastructure",
-        "CPU demand",
+        "GPU market",
+        "data center CPUs",
         "inference",
         "agentic AI",
-        "chip shortage",
-        "price increases",
-        "data centers"
+        "LLM training",
+        "market share",
+        "AI supercycle"
       ],
-      "author": "Jeremy Bowman",
+      "author": "Geoffrey Seiler",
       "insights": [
         {
-          "ticker": "ARM",
+          "ticker": "NVDA",
           "sentiment": "positive",
-          "reasoning": "Launched first in-house AI CPU with Meta as flagship partner, royalties from data center chips more than doubled, power-efficient architecture provides competitive advantage, expected AGI CPU launch in H2 2026"
-        },
-        {
-          "ticker": "INTC",
-          "sentiment": "positive",
-          "reasoning": "Planning to raise CPU prices by up to 15% starting this month, positioned to benefit from CPU shortage and increased demand for inference workloads"
+          "reasoning": "Recognized as the dominant leader in AI infrastructure with 90% GPU market share, $4.3T market cap, and strong positioning for next-phase AI evolution through LPU technology. However, valuation already reflects this dominance."
         },
         {
           "ticker": "AMD",
           "sentiment": "positive",
-          "reasoning": "Planning to raise CPU prices by up to 15% starting this month, positioned to benefit from CPU shortage and increased demand for inference workloads"
-        },
-        {
-          "ticker": "NVDA",
-          "sentiment": "neutral",
-          "reasoning": "Stock has traded sideways for 6+ months with investor attention shifting away; however, entering CPU market presents new growth opportunity in inference segment"
-        },
-        {
-          "ticker": "MU",
-          "sentiment": "positive",
-          "reasoning": "Memory stocks have soared due to shortage of high-bandwidth memory chips crucial for AI applications"
+          "reasoning": "Positioned as the better buy with significant upside potential. Leads in data center CPUs, secured major GPU deals with OpenAI and Meta, and is well-positioned for the emerging agentic AI market where CPU demand is expected to explode."
         },
         {
           "ticker": "META",
           "sentiment": "neutral",
-          "reasoning": "Signed as flagship launch partner for Arm's AGI CPU, indicating strategic involvement in CPU ecosystem but no direct operational impact mentioned"
+          "reasoning": "Mentioned as one of the largest AI infrastructure spenders with a major GPU deal with AMD, indicating significant AI investment but no direct investment thesis presented."
         }
       ]
     },
     {
-      "title": "Nvidia Just Reported a $1 Trillion Order Pipeline. Why Is the Stock Barely Moving? Here's What Investors Are Missing.",
-      "description": "Despite Nvidia's announcement of a $1 trillion order pipeline for its Blackwell and Vera Rubin chips through 2027, the stock has barely moved. The muted reaction reflects already-high expectations baked into analyst models, elevated valuation with no room for error, and investor concerns about competition and China trade restrictions. However, the article argues investors are missing the real catalyst: the shift from AI training to AI inference, which represents a much larger opportunity across automotive, robotics, and enterprise software.",
-      "published_utc": "2026-03-26T14:10:00Z",
+      "title": "Why This Stock Could Outperform Nvidia Over the Next 5 Years",
+      "description": "Motley Fool contributor Jason Hall argues that Oracle could outperform Nvidia over the next five years as AI infrastructure competition intensifies. Hall suggests that companies like Broadcom and AMD may capture increasing market share in the AI chip sector, creating multiple winners in the space rather than Nvidia maintaining dominance.",
+      "published_utc": "2026-04-03T16:04:00Z",
       "source": "The Motley Fool",
-      "article_url": "https://www.fool.com/investing/2026/03/26/nvidia-just-reported-a-1-trillion-order-pipeline-w/?source=iedfolrf0000001",
+      "article_url": "https://www.fool.com/investing/2026/04/03/why-this-stock-could-outperform-nvidia-over-the-ne/?source=iedfolrf0000001",
       "tickers": [
+        "ORCL",
+        "ORCLpD",
         "NVDA",
-        "AMZN",
-        "MSFT",
-        "GOOG",
-        "GOOGL",
-        "AMD",
-        "AVGO"
+        "AVGO",
+        "AMD"
       ],
       "keywords": [
-        "Nvidia",
         "AI infrastructure",
-        "GPU chips",
-        "order pipeline",
-        "AI training",
-        "AI inference",
-        "valuation",
-        "competition",
-        "China trade",
-        "hyperscalers"
+        "chip market share",
+        "artificial intelligence",
+        "semiconductor competition",
+        "long-term investment"
       ],
-      "author": "Adam Spatacco",
+      "author": "Jason Hall",
       "insights": [
+        {
+          "ticker": "ORCL",
+          "sentiment": "positive",
+          "reasoning": "Positioned as a potential outperformer relative to Nvidia over the next 5 years due to AI infrastructure opportunities and competitive dynamics in the market."
+        },
+        {
+          "ticker": "ORCLpD",
+          "sentiment": "positive",
+          "reasoning": "Positioned as a potential outperformer relative to Nvidia over the next 5 years due to AI infrastructure opportunities and competitive dynamics in the market."
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "neutral",
+          "reasoning": "While currently dominant in AI chips, the article suggests market share erosion is likely as competitors gain ground, implying slower future growth relative to alternatives."
+        },
+        {
+          "ticker": "AVGO",
+          "sentiment": "positive",
+          "reasoning": "Expected to capture increasing market share in AI chip infrastructure, positioning it as a beneficiary of the expanding AI capex boom."
+        },
+        {
+          "ticker": "AMD",
+          "sentiment": "positive",
+          "reasoning": "Mentioned as a competitor gaining market share in the AI chip sector, suggesting growth opportunities in the expanding artificial intelligence infrastructure market."
+        }
+      ]
+    },
+    {
+      "title": "Stock Market Today, April 2: Intel Rises on $14.2 Billion Fab 34 Stake Repurchase",
+      "description": "Intel stock rose 4.85% after agreeing to repurchase Apollo's 49% stake in its Fab 34 facility for $14.2 billion, restoring full ownership of the Ireland-based manufacturing plant. The move strengthens Intel's control over a key asset tied to its foundry strategy and AI/data center demand. Investors are watching upcoming quarterly results for evidence of improved profitability and margins.",
+      "published_utc": "2026-04-02T22:06:09Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/coverage/stock-market-today/2026/04/02/stock-market-today-april-2-intel-rises-on-usd14-2-billion-fab-34-stake-repurchase/?source=iedfolrf0000001",
+      "tickers": [
+        "INTC",
+        "AMD",
+        "NVDA"
+      ],
+      "keywords": [
+        "Intel",
+        "Fab 34",
+        "stake repurchase",
+        "foundry strategy",
+        "semiconductor manufacturing",
+        "AI demand",
+        "data center",
+        "margins",
+        "capital investment"
+      ],
+      "author": "Eric Trie",
+      "insights": [
+        {
+          "ticker": "INTC",
+          "sentiment": "positive",
+          "reasoning": "Stock rose 4.85% on the $14.2B Fab 34 repurchase, which restores full ownership and strengthens control over manufacturing capacity for AI/data center demand. Analysts reiterated support for the turnaround strategy, though execution risk remains around margins and capital returns."
+        },
+        {
+          "ticker": "AMD",
+          "sentiment": "positive",
+          "reasoning": "AMD closed up 3.36% alongside Intel's gains, reflecting continued enthusiasm around chip demand in the semiconductor sector."
+        },
         {
           "ticker": "NVDA",
           "sentiment": "positive",
-          "reasoning": "Despite near-term stock stagnation, the article presents a bullish long-term thesis. The $1 trillion order pipeline validates strong demand, CUDA's structural moat provides durable competitive advantage, and the shift to AI inference represents a generational opportunity across multiple industries. The author frames current stagnation as a pause before the next growth leg."
+          "reasoning": "Nvidia ended up 0.87%, benefiting from continued industry enthusiasm around AI and data center chip demand."
+        }
+      ]
+    },
+    {
+      "title": "2 Artificial Intelligence (AI) Stocks I'd Buy With $1,000 Before They Rebound From the Tech Sell-Off",
+      "description": "The article recommends buying AMD and Apple during the current tech sell-off, despite AI stocks being under pressure from geopolitical and macroeconomic challenges. AMD is positioned for strong earnings growth driven by its data center business and AI chip adoption, while Apple has significant monetization opportunities through AI-enabled software features leveraging its massive 2.5 billion device installed base.",
+      "published_utc": "2026-04-02T21:05:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/04/02/2-artificial-intelligence-ai-stocks-id-buy-with-10/?source=iedfolrf0000001",
+      "tickers": [
+        "AMD",
+        "AAPL",
+        "MSFT",
+        "GOOG",
+        "GOOGL",
+        "AMZN"
+      ],
+      "keywords": [
+        "artificial intelligence",
+        "AI stocks",
+        "tech sell-off",
+        "semiconductor",
+        "data center",
+        "AI chips",
+        "investment opportunity"
+      ],
+      "author": "Harsh Chauhan",
+      "insights": [
+        {
+          "ticker": "AMD",
+          "sentiment": "positive",
+          "reasoning": "Strong 34% revenue growth in 2025, robust data center business growth of 32%, widespread adoption of Instinct processors among top AI companies, and management guidance suggesting $20+ EPS potential over 3-5 years make it an attractive buy despite current 6% YTD decline."
         },
         {
-          "ticker": "AMZN",
-          "sentiment": "neutral",
-          "reasoning": "Mentioned as a hyperscaler developing custom AI accelerators to reduce dependency on third-party chips, representing competitive pressure on Nvidia. No specific performance or outlook provided."
+          "ticker": "AAPL",
+          "sentiment": "positive",
+          "reasoning": "Despite being behind competitors in generative AI, Apple maintains strong smartphone market leadership with 24.2% market share and 247.8M annual iPhone shipments. Significant untapped AI monetization opportunity through software subscriptions leveraging its 2.5 billion active device base presents long-term growth potential."
         },
         {
           "ticker": "MSFT",
           "sentiment": "neutral",
-          "reasoning": "Mentioned as a hyperscaler developing custom AI accelerators to reduce dependency on third-party chips, representing competitive pressure on Nvidia. No specific performance or outlook provided."
+          "reasoning": "Mentioned as a company charging for advanced AI features, used as a comparison point for Apple's potential monetization strategy, but not recommended as a buy in this article."
         },
         {
           "ticker": "GOOG",
           "sentiment": "neutral",
-          "reasoning": "Mentioned as a hyperscaler developing custom AI accelerators to reduce dependency on third-party chips, representing competitive pressure on Nvidia. No specific performance or outlook provided."
+          "reasoning": "Referenced as a hyperscaler using AMD's Epyc processors and as a competitor to Apple in generative AI smartphones, but not the focus of investment recommendation."
         },
         {
           "ticker": "GOOGL",
           "sentiment": "neutral",
-          "reasoning": "Mentioned as a hyperscaler developing custom AI accelerators to reduce dependency on third-party chips, representing competitive pressure on Nvidia. No specific performance or outlook provided."
+          "reasoning": "Referenced as a hyperscaler using AMD's Epyc processors and as a competitor to Apple in generative AI smartphones, but not the focus of investment recommendation."
+        },
+        {
+          "ticker": "AMZN",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as a hyperscaler launching cloud instances with AMD's Epyc CPUs, but not recommended as an investment in this article."
+        }
+      ]
+    },
+    {
+      "title": "Oracle Stock Hasn't Been This Cheap in 3 Years -- But Is It a Buy Right Now?",
+      "description": "Oracle's stock has plummeted 57% since September despite building powerful AI data centers with record $553 billion in order backlog. However, investors worry about the company's $124 billion debt load and heavy reliance on OpenAI, which has questionable ability to fulfill its $300 billion commitment. While Oracle's P/E ratio of 25.1 is the cheapest in 3 years, the analyst recommends waiting for market stabilization before buying.",
+      "published_utc": "2026-04-02T19:27:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/04/02/oracle-stock-hasnt-been-cheap-3-years-but-buy-now/?source=iedfolrf0000001",
+      "tickers": [
+        "ORCL",
+        "ORCLpD",
+        "META",
+        "NVDA",
+        "AMD"
+      ],
+      "keywords": [
+        "AI data centers",
+        "cloud infrastructure",
+        "order backlog",
+        "debt concerns",
+        "customer concentration risk",
+        "valuation",
+        "market volatility"
+      ],
+      "author": "Anthony Di Pizio",
+      "insights": [
+        {
+          "ticker": "ORCL",
+          "sentiment": "negative",
+          "reasoning": "Despite strong AI infrastructure fundamentals and attractive valuation (P/E 25.1), the stock faces significant headwinds from $124 billion debt burden, heavy dependence on OpenAI's ability to pay ($300B of $553B backlog), and broader market uncertainty. The 57% stock decline and analyst recommendation to wait on sidelines outweigh positive factors."
+        },
+        {
+          "ticker": "ORCLpD",
+          "sentiment": "negative",
+          "reasoning": "Despite strong AI infrastructure fundamentals and attractive valuation (P/E 25.1), the stock faces significant headwinds from $124 billion debt burden, heavy dependence on OpenAI's ability to pay ($300B of $553B backlog), and broader market uncertainty. The 57% stock decline and analyst recommendation to wait on sidelines outweigh positive factors."
+        },
+        {
+          "ticker": "META",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as one of several AI companies using Oracle's data centers, but no specific analysis provided regarding its relationship or impact."
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as a GPU supplier to Oracle's data centers, but no sentiment analysis provided regarding its business impact."
         },
         {
           "ticker": "AMD",
           "sentiment": "neutral",
-          "reasoning": "Identified as a competitor seeking to gain market share in select AI data center chip segments, but no specific performance metrics or outlook discussed."
-        },
-        {
-          "ticker": "AVGO",
-          "sentiment": "neutral",
-          "reasoning": "Mentioned as a competitor in the AI chip space seeking market share, but no specific details or performance outlook provided."
+          "reasoning": "Mentioned as a GPU supplier to Oracle's data centers, but no sentiment analysis provided regarding its business impact."
         }
       ]
     }

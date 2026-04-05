@@ -128,6 +128,28 @@ def refresh_prices():
 @router.post("/trades")
 def add_manual_trade(req: ManualTradeRequest):
     tracker = get_tracker()
+    is_long = req.bias.lower() == "long"
+    risk = abs(req.entry_price - req.stop_loss)
+
+    # Validate entry vs stop
+    if is_long and req.entry_price <= req.stop_loss:
+        raise HTTPException(400, f"Long entry (${req.entry_price}) must be above stop (${req.stop_loss})")
+    if not is_long and req.entry_price >= req.stop_loss:
+        raise HTTPException(400, f"Short entry (${req.entry_price}) must be below stop (${req.stop_loss})")
+
+    # Validate target vs entry
+    if req.target_1 > 0:
+        if is_long and req.target_1 <= req.entry_price:
+            raise HTTPException(400, f"Long target_1 (${req.target_1}) must be above entry (${req.entry_price})")
+        if not is_long and req.target_1 >= req.entry_price:
+            raise HTTPException(400, f"Short target_1 (${req.target_1}) must be below entry (${req.entry_price})")
+
+    # Minimum R:R check
+    if req.target_1 > 0 and risk > 0:
+        rr = abs(req.target_1 - req.entry_price) / risk
+        if rr < 1.0:
+            raise HTTPException(400, f"R:R too low ({rr:.2f}) — target_1 must be at least 1R from entry")
+
     trade = tracker.add_manual(req.dict())
     return trade.to_dict()
 

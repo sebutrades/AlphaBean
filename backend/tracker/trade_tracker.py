@@ -34,9 +34,39 @@ import numpy as np
 TRADES_FILE = Path("cache/active_trades.json")
 ARCHIVE_FILE = Path("cache/archived_trades.json")
 SYMBOLS_CACHE = Path("cache/top_symbols.json")
+BACKTEST_CACHE = Path("cache/backtest_results.json")
 
 # How many days back to look for setups on initial scan
 LOOKBACK_DAYS = 30
+
+
+def _load_edge_patterns(min_edge: float = 40.0, min_signals: int = 5) -> set[str]:
+    """
+    Load pattern names with a measured positive edge from the backtest cache.
+    Returns only daily patterns (the tracker operates on daily bars).
+    Returns an empty set if the cache doesn't exist or no patterns qualify.
+    """
+    if not BACKTEST_CACHE.exists():
+        return set()
+    try:
+        data = json.loads(BACKTEST_CACHE.read_text())
+        patterns = data.get("patterns", {})
+        result = set()
+        for name, stats in patterns.items():
+            if not isinstance(stats, dict):
+                continue
+            # Flat format: {"edge_score": 72, "total_signals": 30, ...}
+            if "edge_score" in stats and "total_signals" in stats:
+                if stats["edge_score"] >= min_edge and stats["total_signals"] >= min_signals:
+                    result.add(name)
+            # Nested TF format: {"1d": {"edge_score": ..., "total_signals": ...}}
+            elif "1d" in stats and isinstance(stats["1d"], dict):
+                tf = stats["1d"]
+                if tf.get("edge_score", 0) >= min_edge and tf.get("total_signals", 0) >= min_signals:
+                    result.add(name)
+        return result
+    except Exception:
+        return set()
 
 # Max active trades (auto-added — manual has no limit)
 MAX_AUTO_TRADES = 50
@@ -294,15 +324,19 @@ class TradeTracker:
         5. Walk price forward to today to compute current status
         """
         from backend.data.massive_client import fetch_bars
-        from backend.patterns.classifier import classify_all, extract_structures
-        from copy import deepcopy
+        from backend.patterns.classifier import classify_all
         import numpy as np
 
-        POSITIVE_EDGE = {
+        # Build an allowed-pattern set from backtest results rather than hardcoding.
+        # Only track daily patterns with a measured edge (edge_score >= 40) and
+        # at least 5 historical signals. Falls back to a safe curated set when
+        # the backtest cache doesn't exist or has no qualifying patterns.
+        FALLBACK_EDGE = {
             "Juicer Long", "RS Persistence Long", "Momentum Breakout",
             "Turtle Breakout Long", "BB Squeeze Long", "TS Momentum Long",
             "BAB Long", "Accumulation Long",
         }
+        POSITIVE_EDGE = _load_edge_patterns(min_edge=40.0, min_signals=5) or FALLBACK_EDGE
 
         if symbols is None:
             if SYMBOLS_CACHE.exists():
@@ -377,6 +411,8 @@ class TradeTracker:
             # Convert seen_patterns to setup entries
             for pattern_name, info in seen_patterns.items():
                 setup = info["setup"]
+                # Include bars from detection bar forward so we can walk the
+                # actual price path when computing status (not just today's close)
                 all_setups.append({
                     "symbol": symbol,
                     "setup": setup,
@@ -384,6 +420,7 @@ class TradeTracker:
                     "detected_date": info["detected_date"],
                     "today_close": info["today_close"],
                     "today_atr": info["today_atr"],
+                    "forward_bars": full_bars_list[info["detected_bar_idx"]:],
                 })
 
         # Sort by confidence, take top N
@@ -395,14 +432,46 @@ class TradeTracker:
             det_date = item["detected_date"]
             det_str = det_date.isoformat() if hasattr(det_date, 'isoformat') else str(det_date)
 
+            forward_bars = item.get("forward_bars", [])
+            atr = item["today_atr"]
+            is_long_bias = (setup.bias.value if hasattr(setup.bias, 'value') else str(setup.bias)) == "long"
+
+            # Use the next bar's open as the realistic entry price.
+            # In live trading you can't fill at the detection bar's close —
+            # the signal is only known once that bar closes.
+            if len(forward_bars) > 1:
+                actual_entry = round(forward_bars[1].open, 2)
+            else:
+                actual_entry = round(setup.entry_price, 2)
+
+            # Validate that the structural stop is still meaningful after
+            # the gap to next-open. If the open skipped past the stop the
+            # trade has no valid risk definition — skip it.
+            orig_stop = setup.stop_loss
+            if is_long_bias and actual_entry <= orig_stop:
+                continue
+            if not is_long_bias and actual_entry >= orig_stop:
+                continue
+
+            # Enforce minimum R:R from the actual fill price.
+            # After a gap-up entry, risk increases while reward stays the same —
+            # discard the trade if adjusted R:R falls below 1.5:1.
+            actual_t1 = getattr(setup, 'target_1', 0) or getattr(setup, 'target_price', 0)
+            actual_risk = abs(actual_entry - orig_stop)
+            actual_reward = abs(actual_t1 - actual_entry) if actual_t1 else 0
+            if actual_risk > 0 and actual_reward / actual_risk < 1.5:
+                continue
+
+            # Targets stay at their original absolute levels — the measured
+            # move is anchored to market structure, not to our fill price.
             trade_data = {
                 "id": self._generate_id(setup.symbol, setup.pattern_name),
                 "symbol": setup.symbol,
                 "pattern_name": setup.pattern_name,
                 "bias": setup.bias.value if hasattr(setup.bias, 'value') else str(setup.bias),
                 "timeframe": item["timeframe"],
-                "entry_price": setup.entry_price,
-                "stop_loss": setup.stop_loss,
+                "entry_price": actual_entry,
+                "stop_loss": orig_stop,
                 "target_1": getattr(setup, 'target_1', setup.target_price),
                 "target_2": getattr(setup, 'target_2', setup.target_price),
                 "trail_type": getattr(setup, 'trail_type', 'atr'),
@@ -416,12 +485,29 @@ class TradeTracker:
                 "status": "ACTIVE",
                 "entered_at": det_str,
                 "current_price": item["today_close"],
-                "current_atr": item["today_atr"],
+                "current_atr": atr,
             }
 
             trade = TrackedTrade(trade_data)
-            # Walk forward to compute current status
-            trade.update_with_price(item["today_close"], item["today_atr"])
+            # Walk forward bar-by-bar so stop hits and target hits are
+            # detected in the correct order — not just from today's snapshot.
+            # forward_bars[0] = signal bar, forward_bars[1] = entry bar (we entered at its open)
+            if len(forward_bars) > 1:
+                for fbar in forward_bars[1:]:   # includes entry bar; check its full range
+                    if trade.is_closed:
+                        break
+                    # Use bar's worst-case extreme for stop detection so we
+                    # catch intraday breaches (low for longs, high for shorts)
+                    worst = fbar.low if trade.is_long else fbar.high
+                    if trade.status in ("ACTIVE", "AT_T1") and (
+                        (trade.is_long and worst <= trade.stop_loss) or
+                        (not trade.is_long and worst >= trade.stop_loss)
+                    ):
+                        trade.update_with_price(trade.stop_loss, atr)
+                    else:
+                        trade.update_with_price(fbar.close, atr)
+            else:
+                trade.update_with_price(item["today_close"], atr)
 
             self.trades.append(trade)
             existing.add((setup.symbol, setup.pattern_name))
@@ -459,25 +545,34 @@ class TradeTracker:
         symbols = set(t.symbol for t in active)
         print(f"  Refreshing prices for {len(active)} trades across {len(symbols)} symbols...")
 
-        price_cache = {}
+        bar_cache: dict[str, object] = {}
         atr_cache = {}
 
         for symbol in symbols:
             try:
                 bars = fetch_bars(symbol, "1d", 30)
                 if bars.bars:
-                    price_cache[symbol] = bars.bars[-1].close
+                    bar_cache[symbol] = bars.bars[-1]
                     if len(bars.bars) >= 14:
                         atr_cache[symbol] = float(np.mean([b.high - b.low for b in bars.bars[-14:]]))
             except Exception:
                 continue
 
-        # Update each trade
+        # Update each trade — use intrabar low/high for stop detection so a
+        # bar that wicks through the stop then closes back above doesn't slip through.
         for trade in active:
-            price = price_cache.get(trade.symbol)
+            bar = bar_cache.get(trade.symbol)
+            if not bar:
+                continue
             atr = atr_cache.get(trade.symbol, 0.0)
-            if price:
-                trade.update_with_price(price, atr)
+            worst = bar.low if trade.is_long else bar.high
+            if trade.status in ("ACTIVE", "AT_T1") and (
+                (trade.is_long and worst <= trade.stop_loss) or
+                (not trade.is_long and worst >= trade.stop_loss)
+            ):
+                trade.update_with_price(trade.stop_loss, atr)
+            else:
+                trade.update_with_price(bar.close, atr)
 
         # Archive closed trades
         newly_closed = [t for t in self.trades if t.is_closed and t.closed_at == t.last_updated]

@@ -1,483 +1,350 @@
 {
-  "cached_at": 1774733419.7662146,
+  "cached_at": 1775344255.0161192,
   "items": [
     {
-      "title": "Did Investors Get Too Far Ahead of the Artificial Intelligence (AI) Revolution? The Market Is Starting to Say Yes.",
-      "description": "The article argues that AI stocks may be experiencing a bubble similar to the dot-com crash, with investors getting ahead of the technology's actual value. While AI is a powerful and transformative technology, historical patterns show that powerful technologies often lead to investment excess. Recent signs include Nvidia and AI-focused stocks declining significantly, with some AI darlings like SoundHound down 75% from 2025 highs. Combined with recession concerns driven by geopolitical conflicts and rising energy prices, the author suggests investors should consider taking profits given the increased risk.",
-      "published_utc": "2026-03-28T17:15:00Z",
+      "title": "Investing in an S&P 500 Index Fund? Beware of This Sneaky Risk Right Now.",
+      "description": "S&P 500 index funds carry more volatility risk today than a decade ago due to heavy concentration in tech stocks, particularly the 'Magnificent Seven' which now represent one-third of the index. The article suggests equal-weight S&P 500 funds as a potentially safer alternative for risk-averse investors, though they have underperformed in bull markets.",
+      "published_utc": "2026-04-04T22:30:00Z",
       "source": "The Motley Fool",
-      "article_url": "https://www.fool.com/investing/2026/03/28/did-investors-get-too-far-ahead-of-the-artificial/?source=iedfolrf0000001",
+      "article_url": "https://www.fool.com/investing/2026/04/04/investing-in-an-sp-500-index-fund-or-etf-beware-of/?source=iedfolrf0000001",
       "tickers": [
         "NVDA",
-        "MAGS",
-        "SOUN",
-        "SOUNW"
-      ],
-      "keywords": [
-        "AI bubble",
-        "dot-com crash",
-        "investment excess",
-        "recession risk",
-        "technology stocks",
-        "market correction",
-        "geopolitical conflict",
-        "energy prices"
-      ],
-      "author": "Reuben Gregg Brewer",
-      "insights": [
-        {
-          "ticker": "NVDA",
-          "sentiment": "negative",
-          "reasoning": "Stock down 17% from 2025 highs and identified as the poster child for AI revolution that may be overvalued; represents broader concerns about AI bubble and correction territory"
-        },
-        {
-          "ticker": "MAGS",
-          "sentiment": "negative",
-          "reasoning": "Down roughly 17% from highs, mirroring Nvidia's decline; represents collection of high-profile AI-driven stocks that may be overvalued relative to fundamentals"
-        },
-        {
-          "ticker": "SOUN",
-          "sentiment": "negative",
-          "reasoning": "Down approximately 75% from 2025 highs; identified as an early AI market darling now deeply out of favor, representing the highest-risk stocks that break first when bubbles burst"
-        },
-        {
-          "ticker": "SOUNW",
-          "sentiment": "negative",
-          "reasoning": "Down approximately 75% from 2025 highs; identified as an early AI market darling now deeply out of favor, representing the highest-risk stocks that break first when bubbles burst"
-        }
-      ]
-    },
-    {
-      "title": "3 Artificial Intelligence (AI) Stocks to Buy at a Discount",
-      "description": "The article recommends three AI-related stocks trading at discounts: Micron Technology, which has surged 300% in a year but trades at only 6.8x forward earnings due to market skepticism about sustained memory chip demand; Nvidia, growing at ~77% with a valuation of 21.1x forward earnings compared to historical 30-40x multiples for similar growth rates; and Microsoft, which shows strong fundamentals with 17% revenue growth and 60% EPS growth, trading at historically low valuation levels.",
-      "published_utc": "2026-03-28T12:15:00Z",
-      "source": "The Motley Fool",
-      "article_url": "https://www.fool.com/investing/2026/03/28/3-ai-stocks-to-buy-at-a-discount/?source=iedfolrf0000001",
-      "tickers": [
-        "MU",
-        "NVDA",
-        "MSFT"
-      ],
-      "keywords": [
-        "AI stocks",
-        "discount valuations",
-        "memory chips",
-        "semiconductor demand",
-        "GPU demand",
-        "investment opportunity"
-      ],
-      "author": "Keithen Drury",
-      "insights": [
-        {
-          "ticker": "MU",
-          "sentiment": "positive",
-          "reasoning": "Stock is trading at a significant discount (6.8x forward earnings) despite 300% year-over-year gains and explosive revenue growth (from $8B to $23.9B quarterly). Supply constraints and high demand for memory chips present a strong buying opportunity if the shortage persists."
-        },
-        {
-          "ticker": "NVDA",
-          "sentiment": "positive",
-          "reasoning": "Exceptional growth of 73-77% year-over-year with valuation of 21.1x forward earnings, only slightly above S&P 500 average despite growth rates historically commanding 30-40x multiples. Strong AI hardware demand expected through 2030 makes it a compelling value."
-        },
-        {
-          "ticker": "MSFT",
-          "sentiment": "positive",
-          "reasoning": "Solid fundamentals with 17% revenue growth and 60% EPS growth, trading at historically low valuation levels since the start of the decade. Strong position in AI arms race with OpenAI investment provides long-term growth potential."
-        }
-      ]
-    },
-    {
-      "title": "This AI Giant Aims to Reach $9 Trillion in Market Cap. Is the Stock a Buy?",
-      "description": "Meta Platforms has offered executives stock options tied to reaching a $9 trillion market valuation by 2031, signaling ambitious AI growth plans. While the $9 trillion goal appears mathematically unlikely based on current revenue projections and valuation multiples, the author recommends buying Meta stock due to its cheap valuation at 19x forward earnings, strong profitability from its social media advertising business, and potential upside from AI investments.",
-      "published_utc": "2026-03-28T10:15:00Z",
-      "source": "The Motley Fool",
-      "article_url": "https://www.fool.com/investing/2026/03/28/this-ai-giant-aims-to-reach-9-trillion-in-market-c/?source=iedfolrf0000001",
-      "tickers": [
-        "META",
-        "MSFT",
         "AAPL",
-        "NVDA"
-      ],
-      "keywords": [
-        "Meta Platforms",
-        "AI growth",
-        "market valuation",
-        "stock options",
-        "executive compensation",
-        "artificial intelligence",
-        "valuation multiples",
-        "Magnificent Seven"
-      ],
-      "author": "Adria Cimino",
-      "insights": [
-        {
-          "ticker": "META",
-          "sentiment": "positive",
-          "reasoning": "Despite skepticism about the $9 trillion goal being unrealistic, the author recommends buying the stock, citing attractive valuation at 19x forward earnings, strong profitability from advertising, and significant upside potential from AI initiatives. The company's commitment to AI development and talent retention is viewed favorably."
-        },
-        {
-          "ticker": "MSFT",
-          "sentiment": "neutral",
-          "reasoning": "Mentioned as a peer company that previously held the position of world's largest company by market value. No specific analysis or recommendation provided."
-        },
-        {
-          "ticker": "AAPL",
-          "sentiment": "neutral",
-          "reasoning": "Mentioned as a peer company that previously held the position of world's largest company by market value. No specific analysis or recommendation provided."
-        },
-        {
-          "ticker": "NVDA",
-          "sentiment": "neutral",
-          "reasoning": "Mentioned as the current world's largest company by market value and first to reach $4 trillion market cap. Serves as context for Meta's ambitions but receives no specific analysis."
-        }
-      ]
-    },
-    {
-      "title": "10 AI Stocks I'm Buying Right Now",
-      "description": "The article presents 10 AI stocks recommended for investment, divided into three categories: AI chip manufacturers (Nvidia, Broadcom, Taiwan Semiconductor), AI hyperscalers (Microsoft, Amazon, Alphabet, Meta), and emerging AI plays (IonQ, Nebius, SoundHound AI). The author highlights strong growth prospects across the sector, noting that several large-cap stocks are down from all-time highs, presenting buying opportunities.",
-      "published_utc": "2026-03-28T09:15:00Z",
-      "source": "The Motley Fool",
-      "article_url": "https://www.fool.com/investing/2026/03/28/10-ai-stocks-im-buying-right-now/?source=iedfolrf0000001",
-      "tickers": [
-        "NVDA",
-        "AVGO",
-        "TSM",
         "MSFT",
         "AMZN",
         "GOOG",
         "GOOGL",
         "META",
-        "IONQ",
-        "IONQ.WS",
-        "NBIS",
-        "SOUN",
-        "SOUNW"
+        "TSLA",
+        "RSP"
+      ],
+      "keywords": [
+        "S&P 500",
+        "index funds",
+        "tech concentration",
+        "volatility risk",
+        "equal-weight ETF",
+        "Magnificent Seven",
+        "market-cap weighted",
+        "portfolio diversification"
+      ],
+      "author": "Katie Brockman",
+      "insights": [
+        {
+          "ticker": "NVDA",
+          "sentiment": "negative",
+          "reasoning": "Identified as part of the 'Magnificent Seven' contributing to excessive tech concentration in S&P 500, increasing volatility risk for index fund investors."
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "negative",
+          "reasoning": "Part of the 'Magnificent Seven' tech giants that now comprise one-third of S&P 500, creating concentration risk and increased volatility."
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "negative",
+          "reasoning": "Member of the 'Magnificent Seven' contributing to tech-heavy weighting in S&P 500 index funds, increasing portfolio volatility."
+        },
+        {
+          "ticker": "AMZN",
+          "sentiment": "negative",
+          "reasoning": "Part of the 'Magnificent Seven' tech concentration issue in S&P 500, creating higher volatility exposure for index fund investors."
+        },
+        {
+          "ticker": "GOOG",
+          "sentiment": "negative",
+          "reasoning": "Member of the 'Magnificent Seven' contributing to excessive tech stock concentration in S&P 500 index funds."
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "negative",
+          "reasoning": "Member of the 'Magnificent Seven' contributing to excessive tech stock concentration in S&P 500 index funds."
+        },
+        {
+          "ticker": "META",
+          "sentiment": "negative",
+          "reasoning": "Part of the 'Magnificent Seven' tech giants driving increased volatility in S&P 500 index funds."
+        },
+        {
+          "ticker": "TSLA",
+          "sentiment": "negative",
+          "reasoning": "Member of the 'Magnificent Seven' contributing to tech concentration and volatility risk in S&P 500 index funds."
+        },
+        {
+          "ticker": "RSP",
+          "sentiment": "positive",
+          "reasoning": "Presented as a safer alternative to traditional S&P 500 funds, offering reduced tech concentration and smaller drawdowns during market volatility, though with lower long-term returns."
+        }
+      ]
+    },
+    {
+      "title": "TSMC vs. Nvidia: Which AI Supercycle Growth Stock Is the Better Long-Term Buy?",
+      "description": "The article compares Nvidia and TSMC as AI infrastructure leaders. While Nvidia dominates GPU manufacturing with 90% market share and strong forward-thinking strategy, the author argues TSMC is better positioned for long-term outperformance. As customers develop custom AI chips and diversify suppliers, Nvidia's market share will naturally erode, while TSMC benefits from being the essential manufacturing partner for all advanced chip designers. TSMC is also positioned to capitalize on data center CPU and autonomous driving trends.",
+      "published_utc": "2026-04-04T20:30:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/04/04/tsmc-nvidia-which-ai-supercycle-growth-stock-buy/?source=iedfolrf0000001",
+      "tickers": [
+        "NVDA",
+        "TSM",
+        "AMD"
+      ],
+      "keywords": [
+        "AI infrastructure",
+        "GPU market share",
+        "semiconductor manufacturing",
+        "custom AI ASICs",
+        "data center chips",
+        "autonomous driving",
+        "market consolidation"
+      ],
+      "author": "Geoffrey Seiler",
+      "insights": [
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "reasoning": "Recognized as dominant AI leader with 90% GPU market share, strong forward-thinking strategy, successful acquisitions (Groq, SchedMD), and continued ability to evolve. However, sentiment is tempered by acknowledgment of inevitable market share erosion as competitors emerge."
+        },
+        {
+          "ticker": "TSM",
+          "sentiment": "positive",
+          "reasoning": "Positioned as the essential 'arms dealer' in AI chip manufacturing with near-monopoly status, technological expertise, and scale advantages. Benefits from market fragmentation as customers design custom chips. Poised to gain from data center CPU demand and autonomous driving trends, with better long-term growth potential than Nvidia."
+        },
+        {
+          "ticker": "AMD",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as an alternative GPU supplier that customers are turning to as they seek cheaper alternatives to Nvidia, but not analyzed in depth as a primary investment option in this comparison."
+        }
+      ]
+    },
+    {
+      "title": "1 Vanguard ETF I Trust to Outperform the Market Long Term",
+      "description": "The Vanguard Growth ETF (VUG) has outperformed the S&P 500 in 17 of its 22 years, delivering 792% returns versus the index's 469% since 2004. Despite underperforming in early 2026 due to tech sector weakness, the article argues VUG is positioned for long-term outperformance given its heavy tech exposure and the growth potential of emerging technologies like AI, cloud computing, and cybersecurity. However, the ETF's concentration risk is noted, with the Magnificent Seven stocks comprising over 56% of holdings.",
+      "published_utc": "2026-04-04T20:15:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/04/04/1-vanguard-etf-i-trust-to-outperform-the-market/?source=iedfolrf0000001",
+      "tickers": [
+        "VUG",
+        "AAPL",
+        "NVDA"
+      ],
+      "keywords": [
+        "Vanguard Growth ETF",
+        "growth investing",
+        "tech sector",
+        "S&P 500",
+        "long-term performance",
+        "concentration risk",
+        "Magnificent Seven"
+      ],
+      "author": "Stefon Walters",
+      "insights": [
+        {
+          "ticker": "VUG",
+          "sentiment": "positive",
+          "reasoning": "Strong historical outperformance (792% vs 469% since 2004), consistent beating of S&P 500 in 17 of 22 years, and positioned well for future growth in emerging tech sectors despite current concentration risks."
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "neutral",
+          "reasoning": "Mentioned as a major holding in VUG (over 12.5% with Nvidia), contributing to concentration risk, but also positioned for long-term growth as part of the tech sector."
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "neutral",
+          "reasoning": "Identified as a significant VUG holding (over 12.5% with Apple), benefiting from AI boom and growth trajectory, but also contributing to concentration risk concerns."
+        }
+      ]
+    },
+    {
+      "title": "Why Marvell Technology Rallied in March",
+      "description": "Marvell Technology surged 21.3% in March following strong fourth-quarter earnings that beat expectations and a landmark $2 billion investment and product collaboration announcement from Nvidia. The company expects data center revenue to grow 40% in fiscal 2027, driven by AI infrastructure demand and networking expertise. The partnership positions Marvell to benefit from heterogeneous AI infrastructure and silicon photonics development.",
+      "published_utc": "2026-04-04T17:21:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/04/04/why-marvell-technology-rallied-in-march/?source=iedfolrf0000001",
+      "tickers": [
+        "MRVL",
+        "NVDA",
+        "MSFT",
+        "AMZN"
+      ],
+      "keywords": [
+        "AI infrastructure",
+        "semiconductor",
+        "data center",
+        "networking",
+        "custom chips",
+        "silicon photonics",
+        "earnings beat",
+        "strategic partnership"
+      ],
+      "author": "Billy Duberstein",
+      "insights": [
+        {
+          "ticker": "MRVL",
+          "sentiment": "positive",
+          "reasoning": "Strong earnings beat with 22.1% revenue growth, raised guidance, Nvidia's $2B investment validates business model, expected 40% data center revenue growth, diversified customer base including Microsoft, positioned well for AI networking infrastructure growth"
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "reasoning": "Strategic $2B investment in Marvell demonstrates confidence in heterogeneous AI infrastructure strategy, collaboration on silicon photonics and networking solutions strengthens competitive positioning in next-generation data centers"
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "positive",
+          "reasoning": "Added to Marvell's customer roster with custom Maia2 XPU chip, benefits from Marvell's networking expertise for AI infrastructure development"
+        },
+        {
+          "ticker": "AMZN",
+          "sentiment": "neutral",
+          "reasoning": "Previous concerns about lost market share with custom Trainium chips appear mitigated by Marvell's strong forward guidance and diversified customer base, though remains a key customer"
+        }
+      ]
+    },
+    {
+      "title": "2 AI Stocks That Survived the March Sell-Off -- and Look Stronger Because of It",
+      "description": "Arm Holdings and Advanced Micro Devices both saw their stocks rise in March despite the tech sell-off. As agentic AI emerges as the next major evolution in technology, demand for high-performance CPUs is expected to surge, positioning both companies to benefit from a projected $100 billion data center CPU market by 2031. Arm is entering the physical chip market with its new CPU designs, while AMD is leveraging its established leadership in data center CPUs with its new Venice architecture.",
+      "published_utc": "2026-04-04T15:30:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/04/04/2-ai-stocks-that-survived-the-march-sell-off-and/?source=iedfolrf0000001",
+      "tickers": [
+        "ARM",
+        "AMD",
+        "INTC",
+        "NVDA"
+      ],
+      "keywords": [
+        "agentic AI",
+        "data center CPUs",
+        "AI infrastructure",
+        "semiconductor",
+        "Venice architecture",
+        "CPU market growth"
+      ],
+      "author": "Geoffrey Seiler",
+      "insights": [
+        {
+          "ticker": "ARM",
+          "sentiment": "positive",
+          "reasoning": "Arm is entering the physical chip market with proven CPU technology designed for agentic AI. The company targets $15 billion in revenue from new CPU chips and sees significant opportunity in the projected $100 billion data center CPU market by 2031. Its power efficiency and high core counts align well with agentic AI requirements."
+        },
+        {
+          "ticker": "AMD",
+          "sentiment": "positive",
+          "reasoning": "AMD is the established leader in data center CPUs with $16.6 billion in data center revenue. Its new Venice architecture with improved chiplet design positions it well for agentic AI growth. The company also has two large GPU partnerships worth over $100 billion each, providing multiple growth avenues in the expanding AI infrastructure market."
+        },
+        {
+          "ticker": "INTC",
+          "sentiment": "neutral",
+          "reasoning": "Intel is mentioned as a rival to AMD in the data center CPU market where AMD has consistently gained share. No specific commentary is provided about Intel's positioning for agentic AI or future prospects."
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "neutral",
+          "reasoning": "Nvidia is mentioned as the current dominant GPU provider for AI training and inference. While the article suggests CPUs will become increasingly important for agentic AI, it does not directly criticize or praise Nvidia's future prospects."
+        }
+      ]
+    },
+    {
+      "title": "5 Incredible AI Stocks to Buy in April",
+      "description": "The article recommends five AI stocks as buying opportunities during a market sell-off. Despite current uncertainty around AI spending returns and geopolitical concerns, the author believes AI technology will require continued investment through 2030. The recommended stocks are Nvidia and Broadcom (chip manufacturers), Alphabet and Microsoft (cloud computing hyperscalers), and Nebius (AI-focused cloud provider), all trading 20-35% below their all-time highs.",
+      "published_utc": "2026-04-04T14:30:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/04/04/5-incredible-ai-stocks-to-buy-in-april/?source=iedfolrf0000001",
+      "tickers": [
+        "NVDA",
+        "AVGO",
+        "GOOG",
+        "GOOGL",
+        "MSFT",
+        "NBIS"
       ],
       "keywords": [
         "AI stocks",
-        "artificial intelligence investing",
         "GPU computing",
         "cloud computing",
-        "quantum computing",
-        "AI hyperscalers",
-        "semiconductor manufacturing"
+        "market sell-off",
+        "AI spending",
+        "chip manufacturers",
+        "hyperscalers"
       ],
       "author": "Keithen Drury",
       "insights": [
         {
           "ticker": "NVDA",
           "sentiment": "positive",
-          "reasoning": "Strong revenue growth (73% YoY in Q4, 77% expected in Q1), dominant position in GPU market for AI training/inference, though stock recently lackluster presenting buying opportunity"
+          "reasoning": "Industry standard GPU provider with flexible, best-in-class products. Management projects Blackwell and Rubin chip lifetime sales of $1 trillion through 2027. Stock down 20% from all-time high, presenting a buying opportunity."
         },
         {
           "ticker": "AVGO",
           "sentiment": "positive",
-          "reasoning": "New player gaining significant traction with custom AI chips for hyperscalers, projected sales growth to $100B+ by end of 2027 from current $8.4B quarterly run rate"
-        },
-        {
-          "ticker": "TSM",
-          "sentiment": "positive",
-          "reasoning": "Neutral party benefiting from increased AI spending across the industry, produces chips for major AI players, described as 'in a league of its own'"
-        },
-        {
-          "ticker": "MSFT",
-          "sentiment": "positive",
-          "reasoning": "Primary AI hyperscaler with rapidly growing cloud computing business (39% YoY revenue growth), stock down 35% from all-time high creating buying opportunity"
-        },
-        {
-          "ticker": "AMZN",
-          "sentiment": "positive",
-          "reasoning": "Strong cloud computing division posting best quarter in 3+ years, thriving e-commerce business, stock down 22% from all-time high"
+          "reasoning": "Partnering with AI hyperscalers to design custom chips for specific workloads. Expected to generate over $100 billion in annual revenue by end of 2027. Stock down at least 20% from all-time high."
         },
         {
           "ticker": "GOOG",
           "sentiment": "positive",
-          "reasoning": "Moved from last place to leadership position in AI arms race, best-in-class generative AI tools, thriving cloud computing division"
+          "reasoning": "AI hyperscaler with strong cloud computing division (Google Cloud). Revenue grew 48% year-over-year in most recent quarter. Stock down over 20% from all-time high despite unchanged investment thesis."
         },
         {
           "ticker": "GOOGL",
           "sentiment": "positive",
-          "reasoning": "Moved from last place to leadership position in AI arms race, best-in-class generative AI tools, thriving cloud computing division"
+          "reasoning": "AI hyperscaler with strong cloud computing division (Google Cloud). Revenue grew 48% year-over-year in most recent quarter. Stock down over 20% from all-time high despite unchanged investment thesis."
         },
         {
-          "ticker": "META",
+          "ticker": "MSFT",
           "sentiment": "positive",
-          "reasoning": "Strong revenue growth (24% in latest quarter), significant AI spending with potential for major upside, stock down 34% from all-time high providing high floor and ceiling"
-        },
-        {
-          "ticker": "IONQ",
-          "sentiment": "positive",
-          "reasoning": "Pure-play quantum computing company with potential to become major part of AI investing thesis, described as 'long-shot' with 'enormous upside'"
-        },
-        {
-          "ticker": "IONQ.WS",
-          "sentiment": "positive",
-          "reasoning": "Pure-play quantum computing company with potential to become major part of AI investing thesis, described as 'long-shot' with 'enormous upside'"
+          "reasoning": "AI hyperscaler with Azure cloud division growing 39% year-over-year. Leader in AI transformation. Stock down 35% from all-time high, presenting significant discount despite unchanged fundamentals."
         },
         {
           "ticker": "NBIS",
           "sentiment": "positive",
-          "reasoning": "Cloud computing company focused on AI solutions, partnership with Nvidia for cutting-edge products, Nvidia's shareholder stake indicates strong vote of confidence"
-        },
-        {
-          "ticker": "SOUN",
-          "sentiment": "positive",
-          "reasoning": "AI software company with audio recognition technology, dominates restaurant industry, winning contracts in banking, insurance, and healthcare with potential for major growth"
-        },
-        {
-          "ticker": "SOUNW",
-          "sentiment": "positive",
-          "reasoning": "AI software company with audio recognition technology, dominates restaurant industry, winning contracts in banking, insurance, and healthcare with potential for major growth"
+          "reasoning": "AI-focused cloud computing company with exclusive early access to Nvidia's newest technology. Expecting annual run rate of $7-9 billion by end of 2026, up from $1.25 billion in 2025. Stock down 30% from all-time high."
         }
       ]
     },
     {
-      "title": "Nvidia May be Back in Business in China. Here's What That Means for Revenue.",
-      "description": "Nvidia has received U.S. approval to resume chip sales to China after a year-long absence due to export controls. The company plans to ship H200 chips within weeks and aims to gain approval for more powerful Blackwell chips by next year. China represented 13% of Nvidia's revenue in fiscal 2025 (approximately $28 billion annually), with potential to grow significantly as the company restarts production and exports.",
-      "published_utc": "2026-03-28T09:10:00Z",
+      "title": "After Losing $700 Billion in Market Cap, Is Alphabet Stock a Buy?",
+      "description": "Alphabet's stock has declined $700 billion in market cap to $3.5 trillion, primarily due to investor concerns about its massive $175-185 billion capital expenditure plans for 2026 focused on AI data centers. However, the company has successfully positioned itself as an AI leader with strong Google Search integration, competitive Gemini AI platform, and Google Cloud growing at 48% YoY. The author views the stock as a solid buy at current valuations of 25x forward earnings, though acknowledges better deals exist elsewhere in the market.",
+      "published_utc": "2026-04-04T13:10:00Z",
       "source": "The Motley Fool",
-      "article_url": "https://www.fool.com/investing/2026/03/28/nvidia-may-be-back-in-business-in-china-heres-what/?source=iedfolrf0000001",
+      "article_url": "https://www.fool.com/investing/2026/04/04/losing-700b-market-cap-alphabet-stock/?source=iedfolrf0000001",
       "tickers": [
+        "GOOG",
+        "GOOGL",
+        "MSFT",
         "NVDA"
       ],
       "keywords": [
-        "AI chips",
-        "export controls",
-        "China market",
-        "GPU",
-        "H200 chip",
-        "Blackwell",
-        "revenue growth",
-        "trade policy"
-      ],
-      "author": "Adria Cimino",
-      "insights": [
-        {
-          "ticker": "NVDA",
-          "sentiment": "positive",
-          "reasoning": "Nvidia received regulatory approval to resume lucrative China sales after a year-long ban, with plans to ship H200 chips within weeks. China represents a significant revenue opportunity (~$28 billion annually based on historical 13% share), and the company's CEO expressed optimism about market potential reaching hundreds of billions by decade's end. However, sentiment is tempered by production ramp-up challenges and increased local competition during Nvidia's absence."
-        }
-      ]
-    },
-    {
-      "title": "Here's Why The Vanguard S&P 500 Growth ETF Could Be Your Ticket to Beating the Market Over the Long Term",
-      "description": "The Vanguard S&P 500 Growth ETF (VOOG) has outperformed the S&P 500 for 16 years by focusing on 139 high-performing growth stocks, particularly in technology. With a 47% allocation to information technology and heavy weightings in companies like Nvidia and Microsoft, the ETF delivered 16.3% annual returns versus 14% for the S&P 500. Though it's down 7.1% in 2026 amid market volatility, the article suggests it remains a good long-term buy for investors with a 5+ year horizon.",
-      "published_utc": "2026-03-28T09:06:00Z",
-      "source": "The Motley Fool",
-      "article_url": "https://www.fool.com/investing/2026/03/28/why-vanguard-sp-500-growth-etf-beat-market-long/?source=iedfolrf0000001",
-      "tickers": [
-        "VOOG",
-        "NVDA",
-        "MSFT",
-        "AAPL",
-        "AVGO"
-      ],
-      "keywords": [
-        "growth stocks",
-        "S&P 500",
-        "ETF",
-        "technology sector",
         "artificial intelligence",
-        "long-term investing",
-        "market volatility"
+        "market cap decline",
+        "capital expenditure",
+        "Google Cloud",
+        "data centers",
+        "AI leadership",
+        "stock valuation",
+        "generative AI"
       ],
-      "author": "Anthony Di Pizio",
+      "author": "Keithen Drury",
       "insights": [
-        {
-          "ticker": "VOOG",
-          "sentiment": "positive",
-          "reasoning": "The ETF has consistently outperformed the S&P 500 for 16 years with a 16.3% compound annual return versus 14% for the broader index. Despite current 2026 weakness, the article recommends it as a strong long-term buy for investors with 5+ year horizons."
-        },
-        {
-          "ticker": "NVDA",
-          "sentiment": "positive",
-          "reasoning": "Highlighted as a top holding in VOOG with a median return of 1,400% over the last decade, representing a major driver of the ETF's outperformance."
-        },
-        {
-          "ticker": "MSFT",
-          "sentiment": "positive",
-          "reasoning": "Listed as a top holding with exceptional 1,400% median returns over the last decade, contributing significantly to VOOG's outperformance."
-        },
-        {
-          "ticker": "AAPL",
-          "sentiment": "positive",
-          "reasoning": "Identified as a top holding with 1,400% median returns over the last decade, supporting VOOG's strong performance."
-        },
-        {
-          "ticker": "AVGO",
-          "sentiment": "positive",
-          "reasoning": "Mentioned as a top holding in VOOG with strong historical returns contributing to the ETF's market-beating performance."
-        }
-      ]
-    },
-    {
-      "title": "There Are 10 Trillion-Dollar Stocks On the Market. This Is the Only One That's Up This Year",
-      "description": "While tech stocks have tumbled 12% this year amid AI disruption concerns and geopolitical tensions from the Iran war, Taiwan Semiconductor Manufacturing (TSMC) stands out as the only trillion-dollar stock with gains, up 7.5% year-to-date. TSMC's strong competitive moat, with over 90% of advanced third-party chip production, positions it well to benefit from the $700 billion in hyperscaler capital expenditures planned for AI infrastructure.",
-      "published_utc": "2026-03-28T06:30:00Z",
-      "source": "The Motley Fool",
-      "article_url": "https://www.fool.com/investing/2026/03/28/there-are-10-trillion-dollar-companies-this-is-the/?source=iedfolrf0000001",
-      "tickers": [
-        "TSM",
-        "NVDA",
-        "AMD",
-        "AVGO",
-        "INTC"
-      ],
-      "keywords": [
-        "trillion-dollar stocks",
-        "tech sector decline",
-        "AI trade fatigue",
-        "semiconductor manufacturing",
-        "TSMC competitive advantage",
-        "Iran war impact",
-        "chip stocks",
-        "AI infrastructure spending"
-      ],
-      "author": "Jeremy Bowman",
-      "insights": [
-        {
-          "ticker": "TSM",
-          "sentiment": "positive",
-          "reasoning": "TSMC is the only trillion-dollar stock up this year (+7.5%), demonstrating resilience amid tech sector decline. Strong competitive moat with 90% of advanced third-party chip production, 26% revenue growth, 54% operating margin, and reasonable P/E of 31.5 support continued growth prospects in AI infrastructure spending."
-        },
-        {
-          "ticker": "NVDA",
-          "sentiment": "negative",
-          "reasoning": "Mentioned as facing AI disruption concerns and overspending on capital expenditures. Part of the broader tech sector decline, though still a major customer of TSMC with expected $1 trillion revenue over two years."
-        },
-        {
-          "ticker": "AMD",
-          "sentiment": "negative",
-          "reasoning": "Listed among fabless chip companies exposed to AI sector risks. Part of the tech sector decline amid concerns about AI bubble and software disruption."
-        },
-        {
-          "ticker": "AVGO",
-          "sentiment": "negative",
-          "reasoning": "Mentioned as a fabless chip company with AI exposure facing sector headwinds and concerns about potential demand pullback."
-        },
-        {
-          "ticker": "INTC",
-          "sentiment": "negative",
-          "reasoning": "Explicitly noted as having fallen further behind TSMC in semiconductor production capabilities, indicating competitive disadvantage in the advanced chip market."
-        }
-      ]
-    },
-    {
-      "title": "Every Magnificent Seven Stock Is Down This Year. This One Is a Screaming Buy",
-      "description": "All Magnificent Seven stocks have underperformed the S&P 500 in 2026 amid concerns about AI spending and disruption. However, valuations have become attractive, with most trading at par with the broader market. Nvidia stands out as the best opportunity, trading at a forward P/E of less than 21 while maintaining the fastest growth in the group and strong revenue acceleration.",
-      "published_utc": "2026-03-28T02:30:00Z",
-      "source": "The Motley Fool",
-      "article_url": "https://www.fool.com/investing/2026/03/27/every-magnificent-seven-stock-is-down-this-year-th/?source=iedfolrf0000001",
-      "tickers": [
-        "NVDA",
-        "AAPL",
-        "GOOG",
-        "GOOGL",
-        "MSFT",
-        "META",
-        "AMZN",
-        "TSLA",
-        "PSCT"
-      ],
-      "keywords": [
-        "Magnificent Seven",
-        "tech stocks",
-        "AI spending",
-        "valuations",
-        "small-cap rotation",
-        "forward earnings",
-        "revenue growth"
-      ],
-      "author": "Jeremy Bowman",
-      "insights": [
-        {
-          "ticker": "NVDA",
-          "sentiment": "positive",
-          "reasoning": "Despite current underperformance, Nvidia is highlighted as a 'screaming buy' with attractive forward P/E of less than 21, fastest growth in the Mag Seven, accelerating revenue growth, and CEO guidance of $1 trillion revenue over two years, suggesting strong long-term potential."
-        },
-        {
-          "ticker": "AAPL",
-          "sentiment": "neutral",
-          "reasoning": "Part of the Magnificent Seven that has underperformed the S&P 500 this year with valuations now at par with the market, but continues to deliver double-digit revenue growth."
-        },
         {
           "ticker": "GOOG",
-          "sentiment": "neutral",
-          "reasoning": "One of the top four hyperscalers facing investor skepticism over massive AI capital expenditures (~$700 billion combined), but maintains sector leadership and double-digit revenue growth."
+          "sentiment": "positive",
+          "reasoning": "Despite recent stock decline, the company has strong AI fundamentals with successful Gemini platform, dominant Google Search integration with AI, and Google Cloud's exceptional 48% YoY growth. The author recommends buying at current valuations, viewing heavy capex as a necessary strategic investment in AI infrastructure that will pay off long-term."
         },
         {
           "ticker": "GOOGL",
-          "sentiment": "neutral",
-          "reasoning": "One of the top four hyperscalers facing investor skepticism over massive AI capital expenditures (~$700 billion combined), but maintains sector leadership and double-digit revenue growth."
+          "sentiment": "positive",
+          "reasoning": "Despite recent stock decline, the company has strong AI fundamentals with successful Gemini platform, dominant Google Search integration with AI, and Google Cloud's exceptional 48% YoY growth. The author recommends buying at current valuations, viewing heavy capex as a necessary strategic investment in AI infrastructure that will pay off long-term."
         },
         {
           "ticker": "MSFT",
-          "sentiment": "negative",
-          "reasoning": "Identified as the biggest loser in the Magnificent Seven this year due to concerns about AI disruption affecting software stocks and heavy AI infrastructure spending."
-        },
-        {
-          "ticker": "META",
           "sentiment": "neutral",
-          "reasoning": "One of the top four hyperscalers with concerns about AI spending payoff, but maintains double-digit revenue growth and attractive valuations relative to the S&P 500."
+          "reasoning": "Mentioned only in a comparative article headline about growth stocks during market rotation; no substantive analysis provided in the main article content."
         },
-        {
-          "ticker": "AMZN",
-          "sentiment": "neutral",
-          "reasoning": "One of the top four hyperscalers facing investor skepticism over massive AI capital expenditures, but continues to deliver strong revenue growth."
-        },
-        {
-          "ticker": "TSLA",
-          "sentiment": "neutral",
-          "reasoning": "Part of the underperforming Magnificent Seven this year, excluded from valuation analysis due to extremely high P/E ratio above 300."
-        },
-        {
-          "ticker": "PSCT",
-          "sentiment": "positive",
-          "reasoning": "Up 6% this year, bucking the broader tech sector decline and reflecting investor rotation away from large-cap tech toward small-cap opportunities."
-        }
-      ]
-    },
-    {
-      "title": "Wall Street Insider Who Predicted 2008 Crash Issues Urgent Warning: \"The AI Bubble Will Pop by April 29th\"",
-      "description": "Economist Jim Rickards, who predicted the 2008 financial crisis and COVID market crash, warns that an AI bubble is heading for catastrophic collapse by April 29th, 2026. He claims a major AI company with $1.4 trillion in financial entanglements could trigger an 80% market crash similar to 2008. Elite investors including Peter Thiel, SoftBank, Ray Dalio, and Warren Buffett are reportedly reducing their tech holdings, signaling preparation for an AI sector meltdown.",
-      "published_utc": "2026-03-27T23:05:00Z",
-      "source": "GlobeNewswire Inc.",
-      "article_url": "https://www.globenewswire.com/news-release/2026/03/27/3264148/0/en/Wall-Street-Insider-Who-Predicted-2008-Crash-Issues-Urgent-Warning-The-AI-Bubble-Will-Pop-by-April-29th.html",
-      "tickers": [
-        "NVDA",
-        "GOOG",
-        "GOOGL",
-        "META"
-      ],
-      "keywords": [
-        "AI bubble",
-        "market crash",
-        "financial crisis",
-        "systemic risk",
-        "tech stocks",
-        "April 29th 2026",
-        "circular financing"
-      ],
-      "author": "Jim Rickards",
-      "insights": [
         {
           "ticker": "NVDA",
-          "sentiment": "negative",
-          "reasoning": "Major investors including Peter Thiel, SoftBank, and Ray Dalio are significantly reducing or exiting their Nvidia positions, cited as evidence of smart money preparing for an AI sector collapse."
-        },
-        {
-          "ticker": "GOOG",
-          "sentiment": "negative",
-          "reasoning": "Ray Dalio's hedge fund cut its Google position by 52%, and the presentation suggests Google's technology will guarantee failure of a major AI competitor, indicating negative outlook."
-        },
-        {
-          "ticker": "GOOGL",
-          "sentiment": "negative",
-          "reasoning": "Ray Dalio's hedge fund cut its Google position by 52%, and the presentation suggests Google's technology will guarantee failure of a major AI competitor, indicating negative outlook."
-        },
-        {
-          "ticker": "META",
-          "sentiment": "negative",
-          "reasoning": "Ray Dalio's hedge fund reduced its Meta position by 48%, signaling reduced confidence in the company amid broader AI sector concerns."
+          "sentiment": "neutral",
+          "reasoning": "Referenced only in a comparative article headline about AI era potential; no detailed analysis or sentiment indicators in the main article."
         }
       ]
     }

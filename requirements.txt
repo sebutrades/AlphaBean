@@ -13,6 +13,7 @@ anthropic
 groq
  
 # Utilities
+apscheduler
 pytz
 tqdm
 orjson

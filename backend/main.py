@@ -5,6 +5,7 @@ Start: uvicorn backend.main:app --reload --port 8000
 """
 import json, time
 from collections import defaultdict
+from contextlib import asynccontextmanager
 from datetime import datetime, time as dt_time
 from pathlib import Path
 from fastapi import FastAPI, Query
@@ -15,13 +16,64 @@ from backend.data.massive_client import fetch_chart_bars, fetch_bars
 from backend.regime.detector import detect_regime
 from backend.strategies.evaluator import StrategyEvaluator
 from backend.news.pipeline import fetch_news, fetch_market_news, format_headlines_for_llm, fetch_news_batch
-from backend.ai.ollama_agent import evaluate_setups_batch, check_ollama_status
+from backend.ai.ollama_agent import evaluate_setups_batch, check_ollama_status, test_agent
 from backend.ai.inplay_detector import get_in_play, refresh_in_play
 from backend.features.correlation import compute_correlation_live
 from backend.analytics.symbol_stats import get_symbol_analytics
 import numpy as np
 
-app = FastAPI(title="Juicer API", version="1.0.0")
+# ═══ SCHEDULER ═══
+
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
+
+_scheduler = BackgroundScheduler(timezone="America/New_York")
+_last_scan: dict = {"ran_at": None, "added": 0}
+_last_refresh: dict = {"ran_at": None}
+
+def _job_refresh():
+    """Refresh live prices every 30 min on market days 9:30–16:00 ET."""
+    try:
+        from backend.tracker.routes import get_tracker
+        get_tracker().refresh_prices()
+        _last_refresh["ran_at"] = datetime.now().isoformat()
+        print(f"  [Scheduler] Prices refreshed at {datetime.now().strftime('%H:%M ET')}")
+    except Exception as e:
+        print(f"  [Scheduler] Refresh error: {e}")
+
+def _job_scan():
+    """Daily setup scan at 4:30 PM ET after market close."""
+    try:
+        from backend.tracker.routes import get_tracker
+        added = get_tracker().scan_and_add(top_n=50)
+        _last_scan["ran_at"] = datetime.now().isoformat()
+        _last_scan["added"] = added
+        print(f"  [Scheduler] Daily scan complete — {added} new setups added")
+    except Exception as e:
+        print(f"  [Scheduler] Scan error: {e}")
+
+# Refresh every 30 min, Mon–Fri, 9:30 AM – 4:00 PM ET
+_scheduler.add_job(_job_refresh, CronTrigger(
+    day_of_week="mon-fri", hour="9-15", minute="0,30", timezone="America/New_York"
+), id="refresh", name="Price Refresh")
+# Also catch the 9:30 open exactly
+_scheduler.add_job(_job_refresh, CronTrigger(
+    day_of_week="mon-fri", hour=9, minute=30, timezone="America/New_York"
+), id="refresh_open", name="Market Open Refresh")
+# Daily scan 30 min after close
+_scheduler.add_job(_job_scan, CronTrigger(
+    day_of_week="mon-fri", hour=16, minute=30, timezone="America/New_York"
+), id="daily_scan", name="Daily Scan")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    _scheduler.start()
+    print("  [Scheduler] Started — daily scan 4:30 PM ET | refresh every 30 min market hours")
+    yield
+    _scheduler.shutdown(wait=False)
+    print("  [Scheduler] Stopped")
+
+app = FastAPI(title="Juicer API", version="1.0.0", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173","http://localhost:3000","http://127.0.0.1:5173"], allow_methods=["*"], allow_headers=["*"])
 from backend.tracker.routes import router as tracker_router
 app.include_router(tracker_router, prefix="/api/tracker")
@@ -39,11 +91,23 @@ def _mkt_open() -> bool:
     if now.weekday() >= 5: return False
     return dt_time(9,30) <= now.time() <= dt_time(16,0)
 
+_regime_cache: dict = {"value": "unknown", "ts": 0.0}
+
 def _regime_str() -> str:
+    """Cached SPY regime — recomputes at most once every 5 minutes."""
+    if time.time() - _regime_cache["ts"] < 300:
+        return _regime_cache["value"]
     try:
-        d = fetch_bars("SPY","1d",60); c=np.array([b.close for b in d.bars]); h=np.array([b.high for b in d.bars]); l=np.array([b.low for b in d.bars])
-        return detect_regime(c,h,l,True).regime.value
-    except: return "unknown"
+        d = fetch_bars("SPY","1d",60)
+        c = np.array([b.close for b in d.bars])
+        h = np.array([b.high  for b in d.bars])
+        l = np.array([b.low   for b in d.bars])
+        val = detect_regime(c, h, l, True).regime.value
+        _regime_cache["value"] = val
+        _regime_cache["ts"]    = time.time()
+        return val
+    except:
+        return _regime_cache["value"]
 
 def _mkt_hours_filter(setups):
     out = []
@@ -241,7 +305,11 @@ async def chart_data(symbol:str,timeframe:str=Query("5min"),days_back:int=Query(
 async def get_regime():
     try:
         d=fetch_bars("SPY","1d",250); c=np.array([b.close for b in d.bars]); h=np.array([b.high for b in d.bars]); l=np.array([b.low for b in d.bars])
-        return detect_regime(c,h,l,True).to_dict()
+        result = detect_regime(c,h,l,True).to_dict()
+        # Update the shared regime cache so _regime_str() stays in sync
+        _regime_cache["value"] = result.get("regime", "unknown")
+        _regime_cache["ts"] = time.time()
+        return result
     except Exception as e: return {"error":str(e),"regime":"unknown"}
 
 @app.get("/api/hot-strategies")
@@ -254,6 +322,12 @@ async def strategy_detail(pattern_name:str): return _evaluator.get_pattern_summa
 @app.get("/api/ollama/status")
 async def ollama_status(): return check_ollama_status()
 
+@app.get("/api/ai/test/{symbol}")
+async def ai_test(symbol: str):
+    """Run the full AI pipeline on a synthetic setup for a symbol — verifies model quality."""
+    regime = _regime_str()
+    return test_agent(symbol.upper(), regime)
+
 @app.post("/api/reload-evaluator")
 async def reload_evaluator(): _evaluator.load(); return {"status":"reloaded",**_evaluator.stats_summary()}
 
@@ -262,4 +336,22 @@ async def reload_evaluator(): _evaluator.load(); return {"status":"reloaded",**_
 async def symbol_analytics(symbol: str, pattern: str = Query("")):
     """Per-symbol pattern analytics. Shows how patterns perform on this specific stock."""
     return get_symbol_analytics(symbol.upper(), pattern)
+
+
+# ═══ SCHEDULER STATUS ═══
+@app.get("/api/tracker/schedule")
+async def tracker_schedule():
+    jobs = []
+    for job in _scheduler.get_jobs():
+        jobs.append({
+            "id": job.id,
+            "name": job.name,
+            "next_run": job.next_run_time.isoformat() if job.next_run_time else None,
+        })
+    return {
+        "running": _scheduler.running,
+        "jobs": jobs,
+        "last_scan": _last_scan,
+        "last_refresh": _last_refresh,
+    }
  

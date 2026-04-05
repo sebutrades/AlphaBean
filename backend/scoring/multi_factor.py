@@ -89,7 +89,7 @@ def score_setup(
     features: FeatureResult,
     regime: RegimeResult,
     evaluator: Optional[StrategyEvaluator] = None,
-    backtest_score: float = 50.0,
+    backtest_score: float = 30.0,
 ) -> ScoredSetup:
     """
     Score a single TradeSetup using all 6 factors.
@@ -99,7 +99,8 @@ def score_setup(
         features: Pre-computed features for this symbol
         regime: Current market regime
         evaluator: Strategy evaluator with rolling performance data
-        backtest_score: Historical backtest edge (0-100), default 50 (neutral)
+        backtest_score: Historical backtest edge (0-100). Default 30 (below-neutral)
+            — requires evidence before a pattern earns a high composite score.
 
     Returns:
         ScoredSetup with composite score and full breakdown.
@@ -180,7 +181,8 @@ def score_setups_batch(
 
     scored = []
     for setup in setups:
-        bt = backtest_scores.get(setup.pattern_name, 50.0)
+        # Default 30: no-evidence patterns are below-neutral until backtest validates
+        bt = backtest_scores.get(setup.pattern_name, 30.0)
         s = score_setup(setup, features, regime, evaluator, bt)
         scored.append(s)
 

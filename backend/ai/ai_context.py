@@ -1,30 +1,17 @@
 """
 backend/ai/ai_context.py — AI Context Assembly Pipeline
 
-Collects information from multiple sources and concatenates them into
-a single rich context string for the AI trade evaluator.
+Builds a structured briefing string sent to the Qwen3 trade analysis agent.
+Each section is independently computed and gracefully degrades on failure.
 
-Each function returns a plain string. They get concatenated together
-to form the full briefing that gets sent to the LLM.
-
-CONTEXT SECTIONS:
-  1. get_headline_context()      — Recent news headlines + sentiment
-  2. get_technical_context()     — Price structure, ATR, SMAs, VWAP
-  3. get_pattern_history_context() — How this pattern performs historically
-  4. get_market_context()        — SPY regime, correlation, market news
-  5. get_setup_context()         — The specific trade setup details
-  6. get_scoring_context()       — Multi-factor score breakdown
-
-Usage:
-    from backend.ai.ai_context import build_full_context
-
-    context = build_full_context(
-        symbol="AAPL",
-        setup=scored_setup,
-        regime=regime_result,
-        bars=bar_series,
-    )
-    # context is a single string ready to send to the LLM
+SECTIONS (in order):
+  1. [SETUP MATH]      Entry, stop, targets in $ and ATR multiples
+  2. [PATTERN HISTORY] Historical backtest stats for this specific pattern
+  3. [TECHNICAL]       Price structure, volatility, S/R levels, momentum
+  4. [SCORING]         Multi-factor score breakdown with weights
+  5. [MARKET]          SPY regime interpretation + recent macro headlines
+  6. [NEWS]            Per-ticker headlines with Polygon AI sentiment
+  7. [RISK ASSESSMENT] Flagged risks (earnings, IV, correlation, volume, ATR)
 """
 import json
 import numpy as np
@@ -32,199 +19,265 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from backend.data.news_client import (
-    fetch_polygon_news, format_news_context, aggregate_sentiment,
-)
-from backend.patterns.registry import PATTERN_META
-
-
 BACKTEST_CACHE = Path("cache/backtest_results.json")
 
 
 # ==============================================================================
-# 1. HEADLINE CONTEXT
+# 1. MATHEMATICAL SETUP CONTEXT
 # ==============================================================================
 
-def get_headline_context(symbol: str, max_headlines: int = 10) -> str:
-    """Fetch and format recent headlines for a symbol.
-
-    Returns a string with headlines, sources, ages, and per-ticker sentiment.
+def get_setup_math_context(setup: dict) -> str:
     """
-    items = fetch_polygon_news(symbol, limit=max_headlines)
-
-    if not items:
-        return f"[HEADLINES]\nNo recent news found for {symbol}.\n"
-
-    formatted = format_news_context(items, symbol=symbol, max_items=max_headlines)
-    sentiment = aggregate_sentiment(items, symbol)
-
-    header = f"[HEADLINES — {symbol}] ({sentiment['total']} articles, "
-    header += f"net sentiment: {sentiment['net']:+.2f}, "
-    header += f"{sentiment['positive']}+ / {sentiment['negative']}- / {sentiment['neutral']}=)"
-
-    return f"{header}\n{formatted}\n"
-
-
-# ==============================================================================
-# 2. TECHNICAL CONTEXT
-# ==============================================================================
-
-def get_technical_context(s) -> str:
-    """Build technical structure summary from extracted structures.
-
-    Args:
-        s: The extracted structures object from extract_structures(bars)
-           Has: closes, highs, lows, volumes, current_atr, timestamps,
-                zz_highs, zz_lows, support_levels, resistance_levels, etc.
-
-    Returns string describing price structure.
+    Express the trade setup in precise mathematical terms.
+    Tells the AI exactly what it's risking and what it stands to gain,
+    in both dollar amounts and ATR multiples.
     """
-    if s.n < 10:
-        return "[TECHNICAL]\nInsufficient data for technical analysis.\n"
+    lines = ["[SETUP MATH]"]
 
-    lines = [f"[TECHNICAL — {s.symbol}, {s.timeframe}]"]
+    sym    = setup.get("symbol", "?")
+    bias   = setup.get("bias", "long").upper()
+    entry  = float(setup.get("entry_price", 0) or 0)
+    stop   = float(setup.get("stop_loss", 0) or 0)
+    t1     = float(setup.get("target_1", 0) or setup.get("target_price", 0) or 0)
+    t2     = float(setup.get("target_2", 0) or t1)
+    atr    = float(setup.get("current_atr", 0) or 0)
+    desc   = setup.get("description", "")
 
-    cur = s.closes[-1]
-    atr = s.current_atr
+    if entry <= 0:
+        return "[SETUP MATH]\nInsufficient price data.\n"
 
-    # Price and ATR
-    lines.append(f"Current price: ${cur:.2f}")
-    lines.append(f"ATR(14): ${atr:.2f} ({atr/cur*100:.1f}% of price)")
+    lines.append(f"Symbol: {sym} | Direction: {bias}")
+    lines.append(f"Entry:  ${entry:.2f}")
+    lines.append(f"Stop:   ${stop:.2f}  ({abs(entry - stop):.2f} below entry, "
+                 f"{abs(entry - stop)/entry*100:.1f}% risk)")
 
-    # Moving averages
-    if s.n >= 20:
-        sma20 = float(np.mean(s.closes[-20:]))
-        pct_from_20 = (cur - sma20) / sma20 * 100
-        lines.append(f"20 SMA: ${sma20:.2f} (price is {pct_from_20:+.1f}% from it)")
+    risk_dollar = abs(entry - stop)
 
-    if s.n >= 50:
-        sma50 = float(np.mean(s.closes[-50:]))
-        pct_from_50 = (cur - sma50) / sma50 * 100
-        lines.append(f"50 SMA: ${sma50:.2f} (price is {pct_from_50:+.1f}% from it)")
+    if t1 > 0:
+        reward_t1 = abs(t1 - entry)
+        rr1 = reward_t1 / risk_dollar if risk_dollar > 0 else 0
+        lines.append(f"T1:     ${t1:.2f}  ({reward_t1:.2f} from entry, {rr1:.2f}R)")
+    if t2 > 0 and t2 != t1:
+        reward_t2 = abs(t2 - entry)
+        rr2 = reward_t2 / risk_dollar if risk_dollar > 0 else 0
+        lines.append(f"T2:     ${t2:.2f}  ({reward_t2:.2f} from entry, {rr2:.2f}R)")
 
-    if s.n >= 200:
-        sma200 = float(np.mean(s.closes[-200:]))
-        pct_from_200 = (cur - sma200) / sma200 * 100
-        lines.append(f"200 SMA: ${sma200:.2f} (price is {pct_from_200:+.1f}% from it)")
+    if atr > 0:
+        stop_atr = risk_dollar / atr
+        t1_atr   = abs(t1 - entry) / atr if t1 > 0 else 0
+        t2_atr   = abs(t2 - entry) / atr if t2 > 0 else 0
+        lines.append(
+            f"In ATR multiples — Stop: {stop_atr:.2f}× ATR, "
+            f"T1: {t1_atr:.2f}× ATR, T2: {t2_atr:.2f}× ATR  (ATR=${atr:.2f})"
+        )
+        if stop_atr > 2.0:
+            lines.append("⚠ Stop is unusually wide (>2 ATR) — reduces position size needed for 1R risk")
+        elif stop_atr < 0.3:
+            lines.append("⚠ Stop is very tight (<0.3 ATR) — high probability of stop-out noise")
 
-    # Recent performance
-    if s.n >= 5:
-        ret_5d = (cur - s.closes[-6]) / s.closes[-6] * 100
-        lines.append(f"5-bar return: {ret_5d:+.1f}%")
-    if s.n >= 20:
-        ret_20d = (cur - s.closes[-21]) / s.closes[-21] * 100
-        lines.append(f"20-bar return: {ret_20d:+.1f}%")
+    if desc:
+        lines.append(f"Signal detail: {desc}")
 
-    # Volume context
-    if s.n >= 20:
-        avg_vol = float(np.mean(s.volumes[-20:]))
-        cur_vol = s.volumes[-1]
-        rvol = cur_vol / avg_vol if avg_vol > 0 else 1.0
-        lines.append(f"Volume: {cur_vol:,.0f} (RVOL: {rvol:.1f}x vs 20-bar avg)")
-
-    # Volatility regime
-    if s.n >= 60:
-        daily_rets = np.diff(s.closes[-61:]) / np.array(s.closes[-61:-1])
-        vol_60 = float(np.std(daily_rets))
-        if s.n >= 252:
-            daily_rets_long = np.diff(s.closes[-253:]) / np.array(s.closes[-253:-1])
-            vol_252 = float(np.std(daily_rets_long))
-            if vol_252 > 0:
-                vol_ratio = vol_60 / vol_252
-                if vol_ratio < 0.7:
-                    lines.append(f"Volatility: COMPRESSED ({vol_ratio:.0%} of historical)")
-                elif vol_ratio > 1.3:
-                    lines.append(f"Volatility: EXPANDED ({vol_ratio:.0%} of historical)")
-                else:
-                    lines.append(f"Volatility: Normal ({vol_ratio:.0%} of historical)")
-
-    # Support/Resistance levels
-    if hasattr(s, 'support_levels') and s.support_levels:
-        top_support = sorted(s.support_levels, key=lambda l: l.price, reverse=True)[:3]
-        sr_str = ", ".join(f"${l.price:.2f}({l.touches}t)" for l in top_support)
-        lines.append(f"Key support: {sr_str}")
-
-    if hasattr(s, 'resistance_levels') and s.resistance_levels:
-        top_res = sorted(s.resistance_levels, key=lambda l: l.price)[:3]
-        sr_str = ", ".join(f"${l.price:.2f}({l.touches}t)" for l in top_res)
-        lines.append(f"Key resistance: {sr_str}")
+    # Pattern splits
+    splits = setup.get("position_splits", [])
+    if splits and len(splits) >= 2:
+        lines.append(
+            f"Exit plan: {splits[0]:.0%} at T1, "
+            f"{splits[1]:.0%} at T2, "
+            f"{splits[2]:.0%} trail (if 3 splits provided)"
+            if len(splits) >= 3 else
+            f"Exit plan: {splits[0]:.0%} at T1, {splits[1]:.0%} remainder"
+        )
 
     return "\n".join(lines) + "\n"
 
 
 # ==============================================================================
-# 3. PATTERN HISTORY CONTEXT
+# 2. PATTERN HISTORY CONTEXT
 # ==============================================================================
 
 def get_pattern_history_context(pattern_name: str) -> str:
-    """Load backtest stats for this pattern and format as context.
-
-    Tells the AI how this pattern has performed historically.
-    """
+    """Load backtest stats for this pattern and provide concrete guidance."""
     stats = _load_pattern_stats(pattern_name)
+    lines = [f"[PATTERN HISTORY — {pattern_name}]"]
 
     if not stats or stats.get("total_signals", 0) == 0:
-        return f"[PATTERN HISTORY — {pattern_name}]\nNo backtest data available.\n"
+        lines.append("No backtest data available for this pattern.")
+        lines.append("Treat as unproven — require very strong confluence from other factors.")
+        return "\n".join(lines) + "\n"
 
-    lines = [f"[PATTERN HISTORY — {pattern_name}]"]
-    lines.append(f"Sample size: {stats.get('total_signals', 0)} signals across 500 symbols, 90 days")
-    lines.append(f"Win rate: {stats.get('win_rate', 0):.1f}%")
-    lines.append(f"Profit factor: {stats.get('profit_factor', 0):.2f}")
-    lines.append(f"Expectancy: {stats.get('expectancy', 0):+.3f}R per trade")
-    lines.append(f"Avg win: {stats.get('avg_win_r', 0):.2f}R | Avg loss: {stats.get('avg_loss_r', 0):.2f}R")
-    lines.append(f"Edge score: {stats.get('edge_score', 0):.0f}/100")
+    n     = stats.get("total_signals", 0)
+    wr    = stats.get("win_rate", 0)
+    pf    = stats.get("profit_factor", 0)
+    exp   = stats.get("expectancy", 0)
+    aw    = stats.get("avg_win_r", 0)
+    al    = stats.get("avg_loss_r", 0)
+    edge  = stats.get("edge_score", 0)
+    t1_r  = stats.get("t1_hit_rate")
+    t2_r  = stats.get("t2_hit_rate")
+    bars  = stats.get("avg_bars_to_resolution", 0)
 
-    # T1/T2 hit rates if available
-    t1 = stats.get('t1_hit_rate')
-    t2 = stats.get('t2_hit_rate')
-    if t1 is not None:
-        lines.append(f"T1 hit rate: {t1:.1f}% | T2 hit rate: {t2:.1f}%")
+    lines.append(f"Sample: {n} signals | Win rate: {wr:.1f}% | Profit factor: {pf:.2f}")
+    lines.append(f"Expectancy: {exp:+.3f}R/trade | Avg win: +{aw:.2f}R | Avg loss: -{al:.2f}R")
+    lines.append(f"Edge score: {edge:.0f}/100 | Avg bars to resolution: {bars:.1f}")
+    if t1_r is not None and t2_r is not None:
+        lines.append(f"T1 hit rate: {t1_r:.1f}% | T2 hit rate: {t2_r:.1f}%")
 
-    # Interpret
-    exp = stats.get('expectancy', 0)
-    if exp > 0.1:
-        lines.append("Assessment: STRONG positive edge. This pattern has been profitable.")
+    # Kelly sizing guidance — wr stored as 0-100, convert to fraction
+    if wr > 0 and pf > 0 and n >= 10:
+        win_pct = wr / 100.0
+        loss_pct = 1 - win_pct
+        win_r = aw
+        loss_r = al if al > 0 else 1.0
+        kelly = (win_pct / loss_r) - (loss_pct / win_r) if win_r > 0 else 0
+        kelly = max(0, min(kelly, 0.25))   # Cap at 25% of capital
+        lines.append(f"Kelly fraction: {kelly:.1%} of capital per trade")
+
+    # Assessment
+    if exp > 0.20:
+        lines.append("Assessment: STRONG positive edge — historically highly profitable.")
+    elif exp > 0.05:
+        lines.append("Assessment: Solid positive edge — take when other factors confirm.")
     elif exp > 0:
-        lines.append("Assessment: Marginal positive edge. Proceed with caution.")
-    elif exp > -0.1:
-        lines.append("Assessment: Near breakeven. Quality of individual setup matters more than the pattern average.")
+        lines.append("Assessment: Marginal edge — needs above-average setup quality to be worth taking.")
+    elif exp > -0.05:
+        lines.append("Assessment: Near breakeven — the individual setup quality is the deciding factor.")
     else:
-        lines.append("Assessment: NEGATIVE edge historically. Only take with very strong confluence.")
+        lines.append("Assessment: NEGATIVE edge historically — only take with exceptional confluence.")
 
     return "\n".join(lines) + "\n"
 
 
 # ==============================================================================
-# 4. MARKET CONTEXT
+# 3. TECHNICAL STRUCTURE CONTEXT
+# ==============================================================================
+
+def get_technical_context(s) -> str:
+    """
+    Build technical structure summary from extracted structures object.
+    s: ExtractedStructures from classifier.py extract_structures()
+    """
+    if s is None or s.n < 10:
+        return "[TECHNICAL]\nInsufficient bar data for technical analysis.\n"
+
+    lines = [f"[TECHNICAL — {s.symbol}, {s.timeframe}]"]
+
+    cur = float(s.closes[-1])
+    atr = float(s.current_atr) if s.current_atr else 0
+
+    lines.append(f"Current price: ${cur:.2f}  |  ATR(14): ${atr:.2f} ({atr/cur*100:.2f}% of price)")
+
+    # Moving averages + position
+    for period, label in [(20, "SMA20"), (50, "SMA50"), (200, "SMA200")]:
+        if s.n >= period + 1:
+            sma = float(np.mean(s.closes[-period:]))
+            pct = (cur - sma) / sma * 100
+            direction = "above" if cur > sma else "below"
+            lines.append(f"{label}: ${sma:.2f}  (price {direction} by {abs(pct):.1f}%)")
+
+    # Recent returns
+    for lookback, label in [(5, "5-bar"), (20, "20-bar"), (60, "60-bar")]:
+        if s.n >= lookback + 1:
+            ret = (cur - s.closes[-lookback - 1]) / s.closes[-lookback - 1] * 100
+            lines.append(f"{label} return: {ret:+.1f}%")
+
+    # Volatility regime
+    if s.n >= 60:
+        recent_rets = np.diff(np.array(s.closes[-61:], dtype=float)) / np.array(s.closes[-61:-1], dtype=float)
+        vol_recent = float(np.std(recent_rets)) * np.sqrt(252)
+        if s.n >= 252:
+            long_rets = np.diff(np.array(s.closes[-253:], dtype=float)) / np.array(s.closes[-253:-1], dtype=float)
+            vol_long = float(np.std(long_rets)) * np.sqrt(252)
+            ratio = vol_recent / vol_long if vol_long > 0 else 1.0
+            if ratio < 0.70:
+                regime = f"COMPRESSED ({ratio:.0%} of 1yr avg) — favors breakout setups"
+            elif ratio > 1.40:
+                regime = f"EXPANDED ({ratio:.0%} of 1yr avg) — wider stops needed; reversals possible"
+            else:
+                regime = f"Normal ({ratio:.0%} of 1yr avg)"
+            lines.append(f"Volatility regime: {regime}")
+        else:
+            lines.append(f"60-bar annualized vol: {vol_recent:.0%}")
+
+    # Volume
+    if s.n >= 20 and len(s.volumes) >= 20:
+        avg_vol = float(np.mean(np.array(s.volumes[-20:], dtype=float)))
+        cur_vol = float(s.volumes[-1])
+        rvol = cur_vol / avg_vol if avg_vol > 0 else 1.0
+        vol_label = "ELEVATED" if rvol > 1.5 else ("light" if rvol < 0.7 else "normal")
+        lines.append(f"Volume: {cur_vol:,.0f}  (RVOL {rvol:.1f}x vs 20-bar avg — {vol_label})")
+
+    # Support and resistance levels
+    sr_levels = getattr(s, 'sr_levels', []) or []
+    above = sorted([l for l in sr_levels if l.price > cur], key=lambda x: x.price)[:2]
+    below = sorted([l for l in sr_levels if l.price < cur], key=lambda x: x.price, reverse=True)[:2]
+    if above:
+        res_str = " | ".join(f"${l.price:.2f}({l.touches}t)" for l in above)
+        lines.append(f"Resistance above: {res_str}")
+    if below:
+        sup_str = " | ".join(f"${l.price:.2f}({l.touches}t)" for l in below)
+        lines.append(f"Support below:    {sup_str}")
+
+    return "\n".join(lines) + "\n"
+
+
+# ==============================================================================
+# 4. SCORING CONTEXT
+# ==============================================================================
+
+def get_scoring_context(setup: dict) -> str:
+    """Format the multi-factor score breakdown with weight context."""
+    scoring = setup.get("scoring", {})
+    composite = setup.get("composite_score", 0)
+    pre_ai = setup.get("composite_score_pre_ai", composite)
+
+    lines = [f"[SCORING — Composite: {composite:.0f}/100]"]
+    if pre_ai != composite:
+        lines[0] += f"  (pre-AI: {pre_ai:.0f})"
+
+    factor_map = [
+        ("pattern_confidence", "Pattern confidence",  "20%"),
+        ("feature_score",      "Feature score",       "25%"),
+        ("strategy_score",     "Strategy hot score",  "20%"),
+        ("regime_alignment",   "Regime alignment",    "15%"),
+        ("backtest_edge",      "Backtest edge",       "10%"),
+        ("volume_confirm",     "Volume confirmation", "10%"),
+    ]
+    for key, label, weight in factor_map:
+        val = scoring.get(key)
+        if val is not None:
+            bar = "█" * int(val / 10) + "░" * (10 - int(val / 10))
+            lines.append(f"  {label:<24} {bar}  {val:.0f}/100  (wt {weight})")
+
+    return "\n".join(lines) + "\n"
+
+
+# ==============================================================================
+# 5. MARKET CONTEXT
 # ==============================================================================
 
 def get_market_context(regime_str: str = "unknown") -> str:
-    """Build market-level context: regime + recent market headlines.
+    """Market regime + interpretation + recent macro headlines."""
+    lines = ["[MARKET CONTEXT]"]
+    lines.append(f"SPY regime: {regime_str.upper()}")
 
-    Args:
-        regime_str: Current market regime string from regime detector
-    """
-    lines = [f"[MARKET CONTEXT]"]
-    lines.append(f"Current regime: {regime_str.upper()}")
-
-    # Regime interpretation
-    regime_map = {
-        "trending_bull": "Markets trending higher. Momentum and breakout strategies favored. Mean reversion less reliable.",
-        "trending_bear": "Markets trending lower. Short momentum favored. Breakout longs risky. Quality/safety factors outperform.",
-        "mean_reverting": "Markets range-bound/choppy. Mean reversion strategies favored. Breakouts prone to failure.",
-        "high_volatility": "Elevated volatility. Wider stops needed. Reduced position sizing. Gap and reversal plays can work.",
-        "mixed": "No clear regime. Mixed signals. Be selective. Look for strongest individual setup quality.",
+    regime_guide = {
+        "trending_bull":  "Uptrend intact. Favor breakout longs and momentum continuation. Mean reversion longs less reliable. Short setups are against the trend — reduce size.",
+        "trending_bear":  "Downtrend. Favor short momentum and break-of-support setups. Long breakouts have lower follow-through. Quality/defensive names outperform.",
+        "mean_reverting": "Range-bound/choppy. Breakouts frequently fail. Favor mean-reversion entries near extremes. Tight stops on all trades.",
+        "high_volatility":"Elevated VIX. Gaps and reversals dominate. Widen stops beyond normal ATR targets. Reduce position size 25-50%.",
+        "mixed":          "No clear regime. Mixed signals. Use individual setup quality as primary filter. Prefer high-composite-score setups only.",
     }
-    interp = regime_map.get(regime_str, "Regime unknown. Use individual setup quality as primary filter.")
-    lines.append(f"Interpretation: {interp}")
+    lines.append(regime_guide.get(regime_str.lower(), f"{regime_str} — use individual setup quality as primary filter."))
 
-    # Try to get market headlines
+    # Recent market headlines
     try:
-        from backend.data.news_client import fetch_market_news, format_news_context
-        market_items = fetch_market_news(limit=5)
-        if market_items:
-            lines.append("\nRecent market headlines:")
-            lines.append(format_news_context(market_items, max_items=5))
+        from backend.news.pipeline import fetch_market_news
+        mkt = fetch_market_news(10)
+        if mkt:
+            lines.append("\nRecent macro headlines:")
+            for item in mkt[:5]:
+                lines.append(f"  • {item.headline}  [{item.source}]")
     except Exception:
         pass
 
@@ -232,73 +285,210 @@ def get_market_context(regime_str: str = "unknown") -> str:
 
 
 # ==============================================================================
-# 5. SETUP CONTEXT
+# 6. NEWS CONTEXT
 # ==============================================================================
 
-def get_setup_context(setup_dict: dict) -> str:
-    """Format the specific trade setup details.
-
-    Args:
-        setup_dict: TradeSetup.to_dict() or ScoredSetup.to_dict()
+def get_headline_context(symbol: str, max_headlines: int = 8) -> str:
     """
-    lines = [f"[TRADE SETUP]"]
+    Fetch headlines using Polygon news client (richer — has AI sentiment per ticker).
+    Falls back to Finnhub/RSS if Polygon fails.
+    """
+    lines = [f"[NEWS — {symbol}]"]
 
-    name = setup_dict.get("pattern_name", "Unknown")
-    sym = setup_dict.get("symbol", "")
-    bias = setup_dict.get("bias", "").upper()
-    entry = setup_dict.get("entry_price", 0)
-    stop = setup_dict.get("stop_loss", 0)
-    target = setup_dict.get("target_price", 0)
-    t1 = setup_dict.get("target_1", 0)
-    t2 = setup_dict.get("target_2", 0)
-    rr = setup_dict.get("risk_reward_ratio", 0)
-    conf = setup_dict.get("confidence", 0)
-    desc = setup_dict.get("description", "")
+    # Try Polygon first (has per-ticker AI sentiment reasoning)
+    polygon_ok = False
+    try:
+        from backend.data.news_client import fetch_polygon_news, format_news_context, aggregate_sentiment
+        items = fetch_polygon_news(symbol, limit=max_headlines)
+        if items:
+            agg = aggregate_sentiment(items, symbol)
+            lines.append(
+                f"Sentiment summary: net={agg['net']:+.2f}  "
+                f"({agg['positive']}+ / {agg['negative']}- / {agg['neutral']}=  "
+                f"from {agg['total']} articles)"
+            )
+            lines.append(format_news_context(items, symbol=symbol, max_items=max_headlines))
+            polygon_ok = True
+    except Exception:
+        pass
 
-    lines.append(f"Pattern: {name}")
-    lines.append(f"Symbol: {sym} | Bias: {bias}")
-    lines.append(f"Entry: ${entry:.2f}")
-    lines.append(f"Stop: ${stop:.2f}")
-    if t1 and t2:
-        lines.append(f"Target 1 (partial): ${t1:.2f}")
-        lines.append(f"Target 2 (full): ${t2:.2f}")
-    else:
-        lines.append(f"Target: ${target:.2f}")
-    lines.append(f"Risk:Reward: {rr:.1f}")
-    lines.append(f"Pattern confidence: {conf:.0%}")
-
-    if desc:
-        lines.append(f"Setup detail: {desc}")
-
-    # Key levels
-    key_levels = setup_dict.get("key_levels", {})
-    if key_levels:
-        kl_str = ", ".join(f"{k}=${v:.2f}" if isinstance(v, float) else f"{k}={v}"
-                           for k, v in key_levels.items())
-        lines.append(f"Key levels: {kl_str}")
+    # Fall back to Finnhub/RSS
+    if not polygon_ok:
+        try:
+            from backend.news.pipeline import fetch_news, format_headlines_for_llm
+            items = fetch_news(symbol, max_headlines)
+            if items:
+                lines.append(format_headlines_for_llm(items))
+            else:
+                lines.append("No recent news found.")
+        except Exception:
+            lines.append("News unavailable.")
 
     return "\n".join(lines) + "\n"
 
 
 # ==============================================================================
-# 6. SCORING CONTEXT
+# 7. RISK ASSESSMENT CONTEXT
 # ==============================================================================
 
-def get_scoring_context(setup_dict: dict) -> str:
-    """Format the multi-factor score breakdown."""
-    scoring = setup_dict.get("scoring", {})
-    composite = setup_dict.get("composite_score", 0)
+def get_risk_assessment_context(setup: dict, structures=None) -> str:
+    """
+    Identify and flag concrete risks that should affect position sizing or entry.
+    These become inputs to the AI's risk_flags list.
+    """
+    lines = ["[RISK ASSESSMENT]"]
+    flags = []
 
-    if not scoring:
-        return f"[SCORING]\nComposite score: {composite:.0f}/100\n"
+    entry  = float(setup.get("entry_price", 0) or 0)
+    stop   = float(setup.get("stop_loss", 0) or 0)
+    atr    = float(setup.get("current_atr", 0) or 0)
+    symbol = setup.get("symbol", "")
+    desc   = setup.get("description", "").lower()
+    bias   = setup.get("bias", "long").lower()
+    conf   = float(setup.get("confidence", 0) or 0)
+    scoring = setup.get("scoring", {})
 
-    lines = [f"[SCORING — Composite: {composite:.0f}/100]"]
-    lines.append(f"  Pattern confidence: {scoring.get('pattern_confidence', 'N/A')}/100 (weight: 20%)")
-    lines.append(f"  Feature score:      {scoring.get('feature_score', 'N/A')}/100 (weight: 25%)")
-    lines.append(f"  Strategy hot score: {scoring.get('strategy_score', 'N/A')}/100 (weight: 20%)")
-    lines.append(f"  Regime alignment:   {scoring.get('regime_alignment', 'N/A')}/100 (weight: 15%)")
-    lines.append(f"  Backtest edge:      {scoring.get('backtest_edge', 'N/A')}/100 (weight: 10%)")
-    lines.append(f"  Volume confirm:     {scoring.get('volume_confirm', 'N/A')}/100 (weight: 10%)")
+    risk_dollar = abs(entry - stop)
+
+    # 1. ATR-relative stop width
+    if atr > 0 and risk_dollar > 0:
+        stop_atr_mult = risk_dollar / atr
+        if stop_atr_mult > 2.5:
+            flags.append(f"Wide stop ({stop_atr_mult:.1f}× ATR) — position must be sized down proportionally")
+        elif stop_atr_mult < 0.25:
+            flags.append(f"Tight stop ({stop_atr_mult:.2f}× ATR) — high noise stop-out risk in normal price action")
+
+    # 2. Low volume confirmation
+    vol_score = scoring.get("volume_confirm", 60)
+    if vol_score < 30:
+        flags.append("Very low volume (<30/100) — no institutional participation; high risk of false breakout")
+    elif vol_score < 45:
+        flags.append(f"Below-average volume ({vol_score:.0f}/100) — reduced conviction; size down")
+
+    # 3. Regime misalignment
+    regime_score = scoring.get("regime_alignment", 60)
+    if regime_score < 35:
+        flags.append("Low regime alignment — this strategy type historically underperforms current regime")
+
+    # 4. Low backtest edge
+    bt_score = scoring.get("backtest_edge", 50)
+    if bt_score < 30:
+        flags.append("Weak or unproven backtest edge — pattern lacks sufficient historical validation")
+
+    # 5. Strategy score (hot score)
+    strat_score = scoring.get("strategy_score", 50)
+    if strat_score < 35:
+        flags.append("Strategy cold — this pattern has been underperforming in recent live signals")
+
+    # 6. Earnings/event risk detection (from description)
+    event_keywords = ["earnings", "fda", "clinical", "approval", "merger", "acquisition", "split"]
+    for kw in event_keywords:
+        if kw in desc:
+            flags.append(f"Potential event risk: '{kw}' detected in setup description — verify earnings dates")
+            break
+
+    # 7. Correlation risk (from setup if available)
+    spy_corr = setup.get("spy_correlation", {})
+    if isinstance(spy_corr, dict):
+        corr_val = spy_corr.get("correlation", spy_corr.get("r", None))
+        if corr_val is not None:
+            corr_val = float(corr_val)
+            if corr_val > 0.85 and bias == "long":
+                flags.append(f"High SPY correlation ({corr_val:.2f}) — adverse market move will amplify loss")
+            elif corr_val < -0.60 and bias == "short":
+                flags.append(f"Negative SPY correlation ({corr_val:.2f}) — market rally could squeeze short")
+
+    # 8. Technical context risks
+    if structures is not None:
+        try:
+            cur = float(structures.closes[-1])
+            # Proximity to round numbers (psychological resistance)
+            nearest_round = round(cur / 50) * 50
+            if abs(cur - nearest_round) / cur < 0.01:
+                flags.append(f"Price near major round number (${nearest_round:.0f}) — potential resistance/support")
+
+            # Extended from SMA
+            if structures.n >= 50:
+                sma50 = float(np.mean(structures.closes[-50:]))
+                ext_pct = abs(cur - sma50) / sma50 * 100
+                if ext_pct > 20 and bias == "long":
+                    flags.append(f"Price {ext_pct:.0f}% extended from 50 SMA — mean-reversion risk elevated")
+        except Exception:
+            pass
+
+    if not flags:
+        lines.append("No major risk flags identified.")
+    else:
+        for f in flags:
+            lines.append(f"⚠ {f}")
+
+    lines.append(f"\nRisk flag count: {len(flags)}/8")
+    return "\n".join(lines) + "\n"
+
+
+# ==============================================================================
+# TECHNICAL CONTEXT FROM BARS (fallback when no ExtractedStructures available)
+# ==============================================================================
+
+def _technical_from_bars(symbol: str, bars) -> str:
+    """Build technical context from a BarSeries when no ExtractedStructures available."""
+    if bars is None or len(bars.bars) < 20:
+        return "[TECHNICAL]\nInsufficient bar data for technical analysis.\n"
+
+    b = bars.bars
+    n = len(b)
+    closes  = np.array([x.close  for x in b], dtype=np.float64)
+    highs   = np.array([x.high   for x in b], dtype=np.float64)
+    lows    = np.array([x.low    for x in b], dtype=np.float64)
+    volumes = np.array([x.volume for x in b], dtype=np.float64)
+    cur = float(closes[-1])
+
+    # ATR(14)
+    atr = 0.0
+    if n >= 15:
+        tr = np.maximum(highs[1:] - lows[1:], np.abs(highs[1:] - closes[:-1]), np.abs(lows[1:] - closes[:-1]))
+        atr = float(np.mean(tr[-14:]))
+
+    lines = [f"[TECHNICAL — {symbol}]"]
+    atr_pct = atr / cur * 100 if cur > 0 else 0
+    lines.append(f"Current price: ${cur:.2f}  |  ATR(14): ${atr:.2f} ({atr_pct:.2f}% of price)")
+
+    # Moving averages
+    for period, label in [(20, "SMA20"), (50, "SMA50"), (200, "SMA200")]:
+        if n >= period + 1:
+            sma = float(np.mean(closes[-period:]))
+            pct = (cur - sma) / sma * 100
+            direction = "above" if cur > sma else "below"
+            lines.append(f"{label}: ${sma:.2f}  (price {direction} by {abs(pct):.1f}%)")
+
+    # Recent returns
+    for lookback, label in [(5, "5-bar"), (20, "20-bar"), (60, "60-bar")]:
+        if n >= lookback + 1:
+            ret = (cur - closes[-lookback - 1]) / closes[-lookback - 1] * 100
+            lines.append(f"{label} return: {ret:+.1f}%")
+
+    # Volatility regime
+    if n >= 60:
+        recent_rets = np.diff(closes[-61:]) / closes[-61:-1]
+        vol_60 = float(np.std(recent_rets)) * np.sqrt(252)
+        if n >= 252:
+            yr_rets = np.diff(closes[-253:]) / closes[-253:-1]
+            vol_yr  = float(np.std(yr_rets)) * np.sqrt(252)
+            ratio   = vol_60 / vol_yr if vol_yr > 0 else 1.0
+            if ratio < 0.70:
+                lines.append(f"Volatility: COMPRESSED ({ratio:.0%} of 1yr avg) — favors breakout setups")
+            elif ratio > 1.40:
+                lines.append(f"Volatility: EXPANDED ({ratio:.0%} of 1yr avg) — wider stops needed")
+            else:
+                lines.append(f"Volatility: Normal ({ratio:.0%} of 1yr avg)")
+
+    # Volume RVOL
+    if n >= 20:
+        avg_vol = float(np.mean(volumes[-20:]))
+        cur_vol = float(volumes[-1])
+        rvol    = cur_vol / avg_vol if avg_vol > 0 else 1.0
+        vol_lbl = "ELEVATED" if rvol > 1.5 else ("light" if rvol < 0.7 else "normal")
+        lines.append(f"Volume: {cur_vol:,.0f}  (RVOL {rvol:.1f}x — {vol_lbl})")
 
     return "\n".join(lines) + "\n"
 
@@ -311,43 +501,32 @@ def build_full_context(
     symbol: str,
     setup_dict: dict,
     regime_str: str = "unknown",
-    structures: object = None,
-    max_headlines: int = 10,
+    structures=None,
+    bars=None,
+    max_headlines: int = 8,
 ) -> str:
-    """Assemble the complete AI context from all sources.
-
-    Args:
-        symbol: Ticker symbol
-        setup_dict: TradeSetup.to_dict() or ScoredSetup.to_dict()
-        regime_str: Current market regime string
-        structures: Extracted structures object (from extract_structures)
-        max_headlines: Max news headlines to include
-
-    Returns:
-        A single concatenated string with all context sections.
+    """
+    Assemble the complete AI briefing from all context sections.
+    Each section degrades gracefully on failure — never raises.
     """
     sections = []
 
-    # 1. The trade setup itself (always first — this is what we're evaluating)
-    sections.append(get_setup_context(setup_dict))
+    def _safe(fn, *args, **kwargs) -> str:
+        try:
+            return fn(*args, **kwargs)
+        except Exception as e:
+            return f"[{fn.__name__} failed: {e}]\n"
 
-    # 2. Scoring breakdown
-    sections.append(get_scoring_context(setup_dict))
-
-    # 3. Pattern history (how does this pattern perform?)
-    pattern_name = setup_dict.get("pattern_name", "")
-    if pattern_name:
-        sections.append(get_pattern_history_context(pattern_name))
-
-    # 4. Technical structure
+    sections.append(_safe(get_setup_math_context, setup_dict))
+    sections.append(_safe(get_pattern_history_context, setup_dict.get("pattern_name", "")))
     if structures is not None:
-        sections.append(get_technical_context(structures))
-
-    # 5. Market context (regime + market news)
-    sections.append(get_market_context(regime_str))
-
-    # 6. Headlines for this specific stock (last — most variable)
-    sections.append(get_headline_context(symbol, max_headlines=max_headlines))
+        sections.append(_safe(get_technical_context, structures))
+    elif bars is not None:
+        sections.append(_safe(_technical_from_bars, symbol, bars))
+    sections.append(_safe(get_scoring_context, setup_dict))
+    sections.append(_safe(get_market_context, regime_str))
+    sections.append(_safe(get_headline_context, symbol, max_headlines))
+    sections.append(_safe(get_risk_assessment_context, setup_dict, structures))
 
     return "\n".join(sections)
 
@@ -357,11 +536,15 @@ def build_full_context(
 # ==============================================================================
 
 def _load_pattern_stats(pattern_name: str) -> dict:
-    """Load backtest stats for a specific pattern from cache."""
     if not BACKTEST_CACHE.exists():
         return {}
     try:
         data = json.loads(BACKTEST_CACHE.read_text())
-        return data.get("patterns", {}).get(pattern_name, {})
+        patterns = data.get("patterns", {})
+        stats = patterns.get(pattern_name, {})
+        # Handle nested TF format — prefer 1d stats for daily patterns
+        if "1d" in stats and isinstance(stats["1d"], dict):
+            return stats["1d"]
+        return stats
     except Exception:
         return {}

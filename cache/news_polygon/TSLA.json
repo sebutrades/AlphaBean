@@ -1,291 +1,441 @@
 {
-  "cached_at": 1774733420.702335,
+  "cached_at": 1775344943.7766087,
   "items": [
     {
-      "title": "Should the Current Stock Market Valuation Concern Investors? Here's What Billionaire Bill Ackman Thinks.",
-      "description": "Bill Ackman argues that despite high overall S&P 500 valuations (20.6x forward earnings), the market's premium is justified by the exceptional growth prospects and competitive advantages of mega-cap stocks like Amazon and Meta. While the top 10 companies account for 38.5% of the index and trade at higher multiples, they are expected to grow earnings by over 20% annually. However, not all stocks are fairly valued, and investors should be selective rather than assuming all high valuations are justified.",
-      "published_utc": "2026-03-28T12:20:00Z",
+      "title": "SpaceX Will Do 2 Things Never Before Seen in the IPO Market (Hint: 1 is a Big Deal for Retail Investors)",
+      "description": "SpaceX is preparing for an IPO that could raise $50-75 billion at a valuation up to $1.8 trillion, making it the largest IPO ever. The company plans to allocate 30% of the IPO to retail investors\u2014triple the typical amount\u2014leveraging founder Elon Musk's strong investor following. However, investors should be cautious about valuations and consider waiting for post-IPO price corrections after lock-up periods expire.",
+      "published_utc": "2026-04-04T15:04:00Z",
       "source": "The Motley Fool",
-      "article_url": "https://www.fool.com/investing/2026/03/28/should-the-current-stock-market-valuation-concern/?source=iedfolrf0000001",
+      "article_url": "https://www.fool.com/investing/2026/04/04/spacex-will-do-2-things-ipo-deal-retail-investors/?source=iedfolrf0000001",
       "tickers": [
-        "AMZN",
-        "META",
         "TSLA",
-        "WMT"
+        "MS",
+        "MSpA",
+        "MSpE",
+        "MSpF",
+        "MSpI",
+        "MSpK",
+        "MSpL",
+        "MSpO",
+        "MSpP",
+        "MSpQ",
+        "BAC",
+        "BACpB",
+        "BACpE",
+        "BACpK",
+        "BACpL",
+        "BACpM",
+        "BACpN",
+        "BACpO",
+        "BACpP",
+        "BACpQ",
+        "BACpS",
+        "BMLpG",
+        "BMLpH",
+        "BMLpJ",
+        "BMLpL",
+        "MERpK",
+        "C",
+        "CpN",
+        "CpR"
       ],
       "keywords": [
-        "stock market valuation",
-        "S&P 500",
-        "mega-cap stocks",
-        "price-to-earnings ratio",
-        "Bill Ackman",
-        "artificial intelligence",
-        "earnings growth",
-        "market concentration"
+        "SpaceX IPO",
+        "largest IPO",
+        "retail investors allocation",
+        "Elon Musk",
+        "valuation",
+        "Starlink",
+        "investment banks",
+        "lock-up provisions"
       ],
-      "author": "Adam Levy",
+      "author": "Bram Berkowitz",
       "insights": [
         {
-          "ticker": "AMZN",
+          "ticker": "TSLA",
+          "sentiment": "neutral",
+          "reasoning": "Tesla is mentioned as a comparison point for Musk's influence on retail investors and as one of the most-owned stocks on Robinhood. The mention is contextual rather than substantive to the article's main narrative."
+        },
+        {
+          "ticker": "MS",
+          "sentiment": "neutral",
+          "reasoning": "Morgan Stanley is mentioned as one of the investment banks handling IPO distribution through its E*TRADE platform. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "MSpA",
+          "sentiment": "neutral",
+          "reasoning": "Morgan Stanley is mentioned as one of the investment banks handling IPO distribution through its E*TRADE platform. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "MSpE",
+          "sentiment": "neutral",
+          "reasoning": "Morgan Stanley is mentioned as one of the investment banks handling IPO distribution through its E*TRADE platform. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "MSpF",
+          "sentiment": "neutral",
+          "reasoning": "Morgan Stanley is mentioned as one of the investment banks handling IPO distribution through its E*TRADE platform. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "MSpI",
+          "sentiment": "neutral",
+          "reasoning": "Morgan Stanley is mentioned as one of the investment banks handling IPO distribution through its E*TRADE platform. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "MSpK",
+          "sentiment": "neutral",
+          "reasoning": "Morgan Stanley is mentioned as one of the investment banks handling IPO distribution through its E*TRADE platform. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "MSpL",
+          "sentiment": "neutral",
+          "reasoning": "Morgan Stanley is mentioned as one of the investment banks handling IPO distribution through its E*TRADE platform. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "MSpO",
+          "sentiment": "neutral",
+          "reasoning": "Morgan Stanley is mentioned as one of the investment banks handling IPO distribution through its E*TRADE platform. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "MSpP",
+          "sentiment": "neutral",
+          "reasoning": "Morgan Stanley is mentioned as one of the investment banks handling IPO distribution through its E*TRADE platform. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "MSpQ",
+          "sentiment": "neutral",
+          "reasoning": "Morgan Stanley is mentioned as one of the investment banks handling IPO distribution through its E*TRADE platform. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "BAC",
+          "sentiment": "neutral",
+          "reasoning": "Bank of America is mentioned as handling high-net-worth individuals and family offices for the IPO distribution. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "BACpB",
+          "sentiment": "neutral",
+          "reasoning": "Bank of America is mentioned as handling high-net-worth individuals and family offices for the IPO distribution. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "BACpE",
+          "sentiment": "neutral",
+          "reasoning": "Bank of America is mentioned as handling high-net-worth individuals and family offices for the IPO distribution. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "BACpK",
+          "sentiment": "neutral",
+          "reasoning": "Bank of America is mentioned as handling high-net-worth individuals and family offices for the IPO distribution. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "BACpL",
+          "sentiment": "neutral",
+          "reasoning": "Bank of America is mentioned as handling high-net-worth individuals and family offices for the IPO distribution. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "BACpM",
+          "sentiment": "neutral",
+          "reasoning": "Bank of America is mentioned as handling high-net-worth individuals and family offices for the IPO distribution. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "BACpN",
+          "sentiment": "neutral",
+          "reasoning": "Bank of America is mentioned as handling high-net-worth individuals and family offices for the IPO distribution. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "BACpO",
+          "sentiment": "neutral",
+          "reasoning": "Bank of America is mentioned as handling high-net-worth individuals and family offices for the IPO distribution. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "BACpP",
+          "sentiment": "neutral",
+          "reasoning": "Bank of America is mentioned as handling high-net-worth individuals and family offices for the IPO distribution. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "BACpQ",
+          "sentiment": "neutral",
+          "reasoning": "Bank of America is mentioned as handling high-net-worth individuals and family offices for the IPO distribution. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "BACpS",
+          "sentiment": "neutral",
+          "reasoning": "Bank of America is mentioned as handling high-net-worth individuals and family offices for the IPO distribution. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "BMLpG",
+          "sentiment": "neutral",
+          "reasoning": "Bank of America is mentioned as handling high-net-worth individuals and family offices for the IPO distribution. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "BMLpH",
+          "sentiment": "neutral",
+          "reasoning": "Bank of America is mentioned as handling high-net-worth individuals and family offices for the IPO distribution. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "BMLpJ",
+          "sentiment": "neutral",
+          "reasoning": "Bank of America is mentioned as handling high-net-worth individuals and family offices for the IPO distribution. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "BMLpL",
+          "sentiment": "neutral",
+          "reasoning": "Bank of America is mentioned as handling high-net-worth individuals and family offices for the IPO distribution. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "MERpK",
+          "sentiment": "neutral",
+          "reasoning": "Bank of America is mentioned as handling high-net-worth individuals and family offices for the IPO distribution. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "C",
+          "sentiment": "neutral",
+          "reasoning": "Citigroup is mentioned as handling international retail investors for the IPO distribution. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "CpN",
+          "sentiment": "neutral",
+          "reasoning": "Citigroup is mentioned as handling international retail investors for the IPO distribution. The mention is factual without positive or negative implications."
+        },
+        {
+          "ticker": "CpR",
+          "sentiment": "neutral",
+          "reasoning": "Citigroup is mentioned as handling international retail investors for the IPO distribution. The mention is factual without positive or negative implications."
+        }
+      ]
+    },
+    {
+      "title": "Consumer Tech News (Mar 30-Apr 2): Tesla, Nio, XPeng Drive EV Growth, Apple iPhone 17, Meta Ray-Ban Launches & More",
+      "description": "The week saw significant developments across consumer tech and semiconductors. EV makers Tesla, Nio, and XPeng reported strong growth, with Nio delivering 35,486 vehicles (136% YoY increase). Apple's iPhone 17 showed steady demand with higher Pro model adoption. Meta plans new Ray-Ban smart glasses launches. In semiconductors, major players like Microsoft, IBM, AMD, and Intel announced strategic AI initiatives, while TSMC secured approval for advanced 3nm production in Japan. Autonomous vehicle services expanded with WeRide and Grab launching Singapore's first driverless public ride service.",
+      "published_utc": "2026-04-04T13:10:51Z",
+      "source": "Benzinga",
+      "article_url": "https://www.benzinga.com/markets/tech/26/04/51649729/consumer-tech-news-mar-30-apr-2-tesla-nio-xpeng-drive-ev-growth-apple-iphone-17-meta-ray-ban-launche?utm_source=benzinga_taxonomy&utm_medium=rss_feed_free&utm_content=taxonomy_rss&utm_campaign=channel",
+      "tickers": [
+        "TSLA",
+        "NIO",
+        "XPEV",
+        "RIVN",
+        "AAPL",
+        "META",
+        "MSFT",
+        "IBM",
+        "AMD",
+        "INTC",
+        "NVDA",
+        "TSM",
+        "MRVL",
+        "V",
+        "BABA",
+        "WRD",
+        "GRAB",
+        "GRABW",
+        "BIDU",
+        "PLTR",
+        "STLA"
+      ],
+      "keywords": [
+        "EV growth",
+        "AI development",
+        "semiconductors",
+        "autonomous vehicles",
+        "smart glasses",
+        "data centers",
+        "iPhone 17"
+      ],
+      "author": "Lekha Gupta",
+      "insights": [
+        {
+          "ticker": "TSLA",
           "sentiment": "positive",
-          "reasoning": "Ackman added to Pershing Square's Amazon position in Q4, indicating confidence in its valuation and growth prospects. Trading at 27x forward earnings with expected 20%+ earnings growth, it is viewed as reasonably valued given its competitive advantages and AI leadership."
+          "reasoning": "Reported 8.7% YoY increase in China EV sales with fifth consecutive month of growth; Q1 sales up 23.5%; surge in European market registrations"
+        },
+        {
+          "ticker": "NIO",
+          "sentiment": "positive",
+          "reasoning": "Delivered 35,486 vehicles in March (136% YoY increase); Q1 deliveries reached 83,465 vehicles (98.3% YoY growth)"
+        },
+        {
+          "ticker": "XPEV",
+          "sentiment": "neutral",
+          "reasoning": "March deliveries rebounded 80% month-on-month but remained 17% lower YoY; Q1 deliveries down 33.3% YoY despite being within guidance"
+        },
+        {
+          "ticker": "RIVN",
+          "sentiment": "negative",
+          "reasoning": "Q1 sales fell 26.5% YoY with 8,141 vehicles delivered; March sales declined nearly 1,000 units compared to prior year"
+        },
+        {
+          "ticker": "AAPL",
+          "sentiment": "positive",
+          "reasoning": "iPhone 17 showing steady demand with higher Pro model adoption helping offset rising component costs"
         },
         {
           "ticker": "META",
           "sentiment": "positive",
-          "reasoning": "Ackman established a new position in Meta, suggesting it is undervalued. Trading at 19.6x forward earnings (lowest among top 10) with strong growth expectations and competitive moats in AI and technology, it appears attractive at current valuations."
+          "reasoning": "Planning to launch two new Ray-Ban smart glasses, expanding consumer tech product portfolio"
         },
         {
-          "ticker": "TSLA",
-          "sentiment": "neutral",
-          "reasoning": "Tesla's 184x forward P/E ratio is extremely high and questioned in the article. Its valuation justification depends heavily on speculative expectations for robotaxi services and humanoid robots, making it uncertain whether the premium is warranted."
-        },
-        {
-          "ticker": "WMT",
-          "sentiment": "negative",
-          "reasoning": "Walmart's 42x forward P/E ratio is questioned as potentially unjustified, especially compared to Amazon's 27x multiple. The article suggests its digital transformation may not warrant such a significant valuation premium."
-        }
-      ]
-    },
-    {
-      "title": "Gene Munster Says Upcoming Tesla Deliveries Will Be 'First Good Read,' As Ford, GM Scale Back EV Ambitions\u2014 Here's Why",
-      "description": "Gene Munster of Deepwater Asset Management views Tesla's Q1 delivery report as a critical indicator of EV demand post-tax credit expiration. With legacy automakers like Ford, GM, and Toyota scaling back EV investments, Tesla faces limited U.S. competition, particularly with BYD absent from the market. Wall Street expects ~466,000 deliveries with 8% growth, while Tesla's focus on high-volume models and autonomy positions it for market share gains.",
-      "published_utc": "2026-03-28T07:12:19Z",
-      "source": "Benzinga",
-      "article_url": "https://www.benzinga.com/analyst-stock-ratings/analyst-color/26/03/51527206/gene-munster-says-upcoming-tesla-deliveries-will-be-first-good-read-as-ford-g?utm_source=benzinga_taxonomy&utm_medium=rss_feed_free&utm_content=taxonomy_rss&utm_campaign=channel",
-      "tickers": [
-        "TSLA",
-        "F",
-        "FpB",
-        "FpC",
-        "FpD",
-        "GM",
-        "TM",
-        "HMC",
-        "STLA",
-        "BYDDY"
-      ],
-      "keywords": [
-        "Tesla deliveries",
-        "EV demand",
-        "tax credits",
-        "legacy automakers",
-        "market competition",
-        "autonomy",
-        "electric vehicles"
-      ],
-      "author": "Ananya Gairola",
-      "insights": [
-        {
-          "ticker": "TSLA",
+          "ticker": "MSFT",
           "sentiment": "positive",
-          "reasoning": "Positioned to gain market share as competitors scale back EV investments; Q1 delivery report expected to show underlying demand strength; limited U.S. competition and focus on high-volume models support growth trajectory."
-        },
-        {
-          "ticker": "F",
-          "sentiment": "negative",
-          "reasoning": "Scaling back EV investments and shifting focus toward hybrids and gas-powered vehicles, indicating reduced commitment to electric vehicle market."
-        },
-        {
-          "ticker": "FpB",
-          "sentiment": "negative",
-          "reasoning": "Scaling back EV investments and shifting focus toward hybrids and gas-powered vehicles, indicating reduced commitment to electric vehicle market."
-        },
-        {
-          "ticker": "FpC",
-          "sentiment": "negative",
-          "reasoning": "Scaling back EV investments and shifting focus toward hybrids and gas-powered vehicles, indicating reduced commitment to electric vehicle market."
-        },
-        {
-          "ticker": "FpD",
-          "sentiment": "negative",
-          "reasoning": "Scaling back EV investments and shifting focus toward hybrids and gas-powered vehicles, indicating reduced commitment to electric vehicle market."
-        },
-        {
-          "ticker": "GM",
-          "sentiment": "negative",
-          "reasoning": "Reducing EV spending and facing weak EV profitability, creating a competitive disadvantage against Tesla in the electric vehicle space."
-        },
-        {
-          "ticker": "TM",
-          "sentiment": "negative",
-          "reasoning": "Among legacy automakers scaling back EV investments, indicating reduced focus on electric vehicle development."
-        },
-        {
-          "ticker": "HMC",
-          "sentiment": "negative",
-          "reasoning": "Scaling back EV investments and shifting toward hybrids and traditional powertrains, reducing competitive presence in the EV market."
-        },
-        {
-          "ticker": "STLA",
-          "sentiment": "negative",
-          "reasoning": "Part of the broader trend of legacy automakers reducing EV spending and shifting investment priorities away from electric vehicles."
-        },
-        {
-          "ticker": "BYDDY",
-          "sentiment": "neutral",
-          "reasoning": "Noted as absent from the U.S. market, which benefits Tesla's competitive position, but no direct negative sentiment toward the company itself."
-        }
-      ]
-    },
-    {
-      "title": "Tesla Emerges As Big Winner In Brutal 28% EV Sales Slump",
-      "description": "U.S. EV sales declined 28% year-over-year in Q1 2026, falling to 5.8% of total automotive sales. Despite the sector-wide downturn, Tesla emerged as a winner, reclaiming over 50% market share in the EV segment. Rising gas prices and increased consumer interest in used EVs are providing tailwinds for the market.",
-      "published_utc": "2026-03-27T19:23:13Z",
-      "source": "Benzinga",
-      "article_url": "https://www.benzinga.com/trading-ideas/long-ideas/26/03/51522080/tesla-emerges-as-big-winner-in-brutal-28-ev-sales-slump?utm_source=benzinga_taxonomy&utm_medium=rss_feed_free&utm_content=taxonomy_rss&utm_campaign=channel",
-      "tickers": [
-        "TSLA",
-        "F",
-        "FpB",
-        "FpC",
-        "FpD",
-        "GM"
-      ],
-      "keywords": [
-        "electric vehicles",
-        "EV sales decline",
-        "market share",
-        "used EV market",
-        "gas prices",
-        "automotive industry"
-      ],
-      "author": "Chris Katje",
-      "insights": [
-        {
-          "ticker": "TSLA",
-          "sentiment": "positive",
-          "reasoning": "Tesla reclaimed over 50% EV market share in the U.S. during Q1, up from below 50% in the prior year. The company is positioned as a winner despite the overall 28% sector decline, with opportunities to gain share as legacy automakers reduce EV production. Rising gas prices and consumer interest provide additional tailwinds."
-        },
-        {
-          "ticker": "F",
-          "sentiment": "negative",
-          "reasoning": "Ford is mentioned as a legacy automaker stopping production of some EV models, contributing to the overall sector decline and losing market share to Tesla."
-        },
-        {
-          "ticker": "FpB",
-          "sentiment": "negative",
-          "reasoning": "Ford is mentioned as a legacy automaker stopping production of some EV models, contributing to the overall sector decline and losing market share to Tesla."
-        },
-        {
-          "ticker": "FpC",
-          "sentiment": "negative",
-          "reasoning": "Ford is mentioned as a legacy automaker stopping production of some EV models, contributing to the overall sector decline and losing market share to Tesla."
-        },
-        {
-          "ticker": "FpD",
-          "sentiment": "negative",
-          "reasoning": "Ford is mentioned as a legacy automaker stopping production of some EV models, contributing to the overall sector decline and losing market share to Tesla."
-        },
-        {
-          "ticker": "GM",
-          "sentiment": "negative",
-          "reasoning": "General Motors is mentioned alongside Ford as a legacy automaker reducing EV production, which is contributing to the sector's 28% sales decline and market share loss to Tesla."
-        }
-      ]
-    },
-    {
-      "title": "The Newest Big Idea From Elon Musk: Terafab",
-      "description": "Elon Musk announced Terafab, a $25 billion joint venture between Tesla, SpaceX, and XAI to build a vertically integrated semiconductor factory producing 1 terawatt of AI computing power annually. The facility aims to address supply chain bottlenecks and support Tesla's robotaxi and humanoid robot ambitions, plus SpaceX's orbital AI satellite constellation. While ambitious, industry experts question feasibility given the complexity of chip fabrication and Musk's mixed track record on delivery timelines.",
-      "published_utc": "2026-03-27T18:16:17Z",
-      "source": "The Motley Fool",
-      "article_url": "https://www.fool.com/investing/2026/03/27/the-newest-big-idea-from-elon-musk-terafab/?source=iedfolrf0000001",
-      "tickers": [
-        "TSLA",
-        "IBM",
-        "ISRG",
-        "CVX",
-        "OXY",
-        "OXY.WS",
-        "AMZN",
-        "JNJ",
-        "MDT"
-      ],
-      "keywords": [
-        "Terafab",
-        "semiconductor manufacturing",
-        "AI computing",
-        "vertical integration",
-        "supply chain",
-        "Iran conflict",
-        "oil prices",
-        "quantum computing",
-        "physical AI",
-        "secular growth trends"
-      ],
-      "author": "Motley Fool Staff",
-      "insights": [
-        {
-          "ticker": "TSLA",
-          "sentiment": "positive",
-          "reasoning": "Terafab partnership positions Tesla to achieve self-reliance for AI computing needs for robotaxis and humanoid robots, addressing critical supply constraints. However, execution risk exists given semiconductor manufacturing complexity."
+          "reasoning": "Accelerating in-house AI development with new models designed to improve speed, efficiency, and cost for enterprise use cases"
         },
         {
           "ticker": "IBM",
-          "sentiment": "neutral",
-          "reasoning": "Mentioned as a gauge for quantum computing trends, which is identified as an emerging secular growth opportunity, but no direct impact from Terafab announcement."
-        },
-        {
-          "ticker": "ISRG",
           "sentiment": "positive",
-          "reasoning": "Highlighted as leader in physical AI and surgical robotics, representing a secular growth trend in healthcare automation and personalized medicine."
+          "reasoning": "Announced strategic collaboration with ARM to develop dual-architecture hardware for AI and data-intensive enterprise workloads"
         },
         {
-          "ticker": "CVX",
-          "sentiment": "neutral",
-          "reasoning": "Energy sector volatility discussed due to Iran conflict and oil price swings; mentioned as example of unpredictable sector despite company fundamentals."
-        },
-        {
-          "ticker": "OXY",
-          "sentiment": "neutral",
-          "reasoning": "Energy stock subject to geopolitical volatility from Iran conflict; shares retreated on de-escalation news despite strong company operations."
-        },
-        {
-          "ticker": "OXY.WS",
-          "sentiment": "neutral",
-          "reasoning": "Energy stock subject to geopolitical volatility from Iran conflict; shares retreated on de-escalation news despite strong company operations."
-        },
-        {
-          "ticker": "AMZN",
-          "sentiment": "neutral",
-          "reasoning": "Referenced for massive CapEx spending ($200 billion annually) as context for Terafab's $25 billion investment scale; no direct sentiment impact."
-        },
-        {
-          "ticker": "JNJ",
+          "ticker": "AMD",
           "sentiment": "positive",
-          "reasoning": "Identified as major player in physical AI and healthcare robotics, benefiting from secular growth trend in personalized medicine and surgical automation."
+          "reasoning": "Positioning processors at core of next-generation space missions as NASA shifts toward sustained lunar and deep-space exploration"
         },
         {
-          "ticker": "MDT",
+          "ticker": "INTC",
           "sentiment": "positive",
-          "reasoning": "Highlighted as key player in physical AI healthcare applications, positioned to benefit from secular growth in robotic-assisted medical procedures."
+          "reasoning": "Agreed to buy back Apollo Global Management's 49% stake in Ireland Fab 34 for $14.2 billion, taking full ownership"
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "reasoning": "Announced integration deal with Marvell Technology into Nvidia's AI factory and AI-RAN ecosystem using NVLink Fusion"
+        },
+        {
+          "ticker": "TSM",
+          "sentiment": "positive",
+          "reasoning": "Secured government approval to deploy advanced 3-nanometer process at second Japan facility; plans mass production in 2028"
+        },
+        {
+          "ticker": "MRVL",
+          "sentiment": "positive",
+          "reasoning": "Announced integration deal with Nvidia into AI factory and AI-RAN ecosystem"
+        },
+        {
+          "ticker": "V",
+          "sentiment": "positive",
+          "reasoning": "Introduced six AI-powered dispute resolution tools aimed at reducing fraud losses and improving processes"
+        },
+        {
+          "ticker": "BABA",
+          "sentiment": "positive",
+          "reasoning": "Accelerating push into proprietary AI models to monetize growing AI portfolio and strengthen revenue streams"
+        },
+        {
+          "ticker": "WRD",
+          "sentiment": "positive",
+          "reasoning": "Launched Singapore's first autonomous public ride service and fully driverless Robotaxi operations in Dubai"
+        },
+        {
+          "ticker": "GRAB",
+          "sentiment": "positive",
+          "reasoning": "Launched Singapore's first autonomous public ride service with WeRide following successful trials"
+        },
+        {
+          "ticker": "GRABW",
+          "sentiment": "positive",
+          "reasoning": "Launched Singapore's first autonomous public ride service with WeRide following successful trials"
+        },
+        {
+          "ticker": "BIDU",
+          "sentiment": "negative",
+          "reasoning": "Multiple Apollo Go Robotaxis reportedly froze in Wuhan, sparking safety concerns about autonomous vehicles"
+        },
+        {
+          "ticker": "PLTR",
+          "sentiment": "positive",
+          "reasoning": "Renewed and expanded partnership with Stellantis through new five-year agreement to advance AI and data capabilities"
+        },
+        {
+          "ticker": "STLA",
+          "sentiment": "neutral",
+          "reasoning": "Facing opposition from Ontario Premier on potential EV manufacturing agreement; also expanded partnership with Palantir"
         }
       ]
     },
     {
-      "title": "Elon Musk 'Starved The Balance Sheet' At Tesla Post-IPO To Keep Employees Sharp, Says Former TSLA President McNeill",
-      "description": "Former Tesla president Jon McNeill revealed that Elon Musk intentionally kept minimal cash reserves post-IPO to maintain employee focus and discipline, sometimes operating with less than three weeks of cash. McNeill suggested SpaceX could face similar challenges after its potential IPO, as it reportedly moves toward a $1.75 trillion valuation.",
-      "published_utc": "2026-03-27T10:24:50Z",
-      "source": "Benzinga",
-      "article_url": "https://www.benzinga.com/markets/ipos/26/03/51502971/elon-musk-starved-the-balance-sheet-at-tesla-post-ipo-to-keep-employees-sharp-says-former-tsla-presi?utm_source=benzinga_taxonomy&utm_medium=rss_feed_free&utm_content=taxonomy_rss&utm_campaign=channel",
+      "title": "1 Reason I'm Never Selling Alphabet Stock",
+      "description": "Motley Fool contributor Jason Hall explains why he intends to hold Alphabet permanently, citing the company's transition from an AI laggard to one of the likely biggest winners in the AI era. The article highlights Alphabet's potential alongside discussions of its competitive positioning against other tech giants.",
+      "published_utc": "2026-04-04T10:07:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/04/04/1-reason-im-never-selling-hot-ticker-stock/?source=iedfolrf0000001",
       "tickers": [
+        "GOOG",
+        "GOOGL",
+        "NVDA",
+        "MSFT",
         "TSLA"
       ],
       "keywords": [
-        "Tesla",
-        "Elon Musk",
-        "IPO",
-        "cash management",
-        "SpaceX",
-        "financial discipline",
-        "employee motivation"
+        "Alphabet",
+        "AI",
+        "long-term investing",
+        "tech stocks",
+        "growth stocks"
       ],
-      "author": "Mohd Haider",
+      "author": "Jason Hall",
+      "insights": [
+        {
+          "ticker": "GOOG",
+          "sentiment": "positive",
+          "reasoning": "The article presents a strong bullish case for Alphabet, with the author declaring intent to hold the stock permanently. The company is described as having transformed from an AI laggard to 'one of the likely biggest winners' in the AI space, indicating significant competitive advantages and growth potential."
+        },
+        {
+          "ticker": "GOOGL",
+          "sentiment": "positive",
+          "reasoning": "The article presents a strong bullish case for Alphabet, with the author declaring intent to hold the stock permanently. The company is described as having transformed from an AI laggard to 'one of the likely biggest winners' in the AI space, indicating significant competitive advantages and growth potential."
+        },
+        {
+          "ticker": "NVDA",
+          "sentiment": "positive",
+          "reasoning": "Nvidia is mentioned in comparative analysis as having 'amazing potential in an AI era,' suggesting strong positioning in the AI sector, though positioned as a comparison point rather than the primary focus."
+        },
+        {
+          "ticker": "MSFT",
+          "sentiment": "neutral",
+          "reasoning": "Microsoft is mentioned only in a comparative headline about growth stock selection during market rotation, without specific positive or negative commentary about the company itself."
+        },
+        {
+          "ticker": "TSLA",
+          "sentiment": "neutral",
+          "reasoning": "Tesla is mentioned briefly in context of robotaxi developments alongside Alphabet, but without substantive analysis or sentiment indicators in the main article."
+        }
+      ]
+    },
+    {
+      "title": "SpaceX IPO: Will It Be a Buy or a Bust?",
+      "description": "SpaceX confidentially filed for an IPO on April 1, 2026, targeting a $2 trillion valuation after merging with Elon Musk's xAI. The company could raise up to $75 billion, making it the largest IPO in history. However, at a P/S ratio of 130x and P/EBITDA of 250x, SpaceX's valuation appears grossly exaggerated relative to its $15-16 billion revenue and ~20% growth rate, with most revenue coming from Starlink. The analyst recommends investors pass on the IPO, citing Musk's history of overpromising on timelines and the stock's vulnerability to crashes in volatile markets.",
+      "published_utc": "2026-04-04T05:15:00Z",
+      "source": "The Motley Fool",
+      "article_url": "https://www.fool.com/investing/2026/04/04/is-the-spacex-ipo-a-buy-or-could-it-be-the-biggest/?source=iedfolrf0000001",
+      "tickers": [
+        "TSLA",
+        "META",
+        "PLTR"
+      ],
+      "keywords": [
+        "IPO",
+        "SpaceX",
+        "xAI",
+        "valuation",
+        "Starlink",
+        "Elon Musk",
+        "merger",
+        "space industry"
+      ],
+      "author": "Jeremy Bowman",
       "insights": [
         {
           "ticker": "TSLA",
           "sentiment": "neutral",
-          "reasoning": "The article discusses Tesla's unconventional cash management strategy post-IPO as a deliberate business practice to maintain employee focus. While the approach was risky, it's presented as intentional and effective rather than problematic, with no negative outcomes mentioned."
+          "reasoning": "Tesla is mentioned as a comparison point, noting that Elon Musk has successfully obtained lofty valuations based on future promises rather than current results. The article suggests Musk is repeating this strategy with SpaceX, but does not provide specific sentiment on Tesla itself."
+        },
+        {
+          "ticker": "META",
+          "sentiment": "neutral",
+          "reasoning": "Meta is mentioned only as a valuation comparison point, noting that SpaceX's $2 trillion valuation would exceed Meta's market value. No specific sentiment is expressed about Meta's business or prospects."
+        },
+        {
+          "ticker": "PLTR",
+          "sentiment": "positive",
+          "reasoning": "Palantir is highlighted as a positive comparison, with a P/S ratio of 79 (lower than SpaceX's 130x) while posting 70% revenue growth versus SpaceX's 20%, demonstrating stronger growth justifies higher valuations more appropriately."
         }
       ]
     }

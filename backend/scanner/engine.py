@@ -93,7 +93,8 @@ def scan_symbol(
 
         # --- Phase 6: Score ---
         for setup in setups:
-            bt = bt_scores.get(setup.pattern_name, 50.0)
+            # Default 30: no-evidence patterns are penalized until backtest validates them
+            bt = bt_scores.get(setup.pattern_name, 30.0)
             scored = score_setup(setup, features, regime, evaluator, bt)
             scored.setup.timeframe_detected = _tf_label(tf)
 

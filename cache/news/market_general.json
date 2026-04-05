@@ -1,50 +1,95 @@
 {
-  "cached_at": 1774635887.1138525,
+  "cached_at": 1775346867.2780898,
   "items": [
     {
-      "headline": "Stock Market Today: Nasdaq's Gloom Deepens On U.S.-Iran War News; Tech Sells Off (Live Coverage)",
+      "headline": "Stock Market Volatility is Increasing: 1 Spectacular Stock You Can Buy at a Bargain Price Today",
+      "source": "fool.com",
+      "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxOcTNhTVgtdWFoSGNXSVVLSG5VRDE4ZUN2akUzdDdiTF9DU0VoclI0QThYTUtVUS1pYWVQYjlMZGR5cVVKdTNkV0wybDVmZk5uNDg5dzdfMzJBbng2NEtZWEFPRmVXZ3pUZlI1VjJwQlVDbFZZNXFzQVRrRll3eG51dldvakVuVmN1LUM0LVpUTTdDS2RQc0VJYw?oc=5",
+      "published": "2026-04-04T23:18:24",
+      "symbol": "MARKET",
+      "provider": "google_news",
+      "sentiment_hint": "positive"
+    },
+    {
+      "headline": "Dow Jones Futures: Leading Stocks Stand Tall As Market Bounces; Look For This Bullish Signal",
       "source": "Investor's Business Daily",
-      "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxPYU0ybWc1ZERoMEdxV0YwMzF0SHpBX0E4LWdHRWJLbDNCaGJ1dDBFQ0UxUklycGNSbVdmTFFFcWRtQTI3OVBnLWpyV3FSRUhxZnlOa2p4VV9XMTBRbVB6ZUkzWmdEbWJtZmZYWlJ3c1pnSnBXN3dnNENqWE5rYmJvVk1IQTNyMFMwNUtEdUJCbkoyTjU0QlNvLURoR0tneEhaM1ZIWUxjTHRPRGo1VU9V?oc=5",
-      "published": "2026-03-27T18:20:59",
+      "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNaDFJZmUwcDdvX2lPSnpaUVJTQ3hoR0xsTGZPNkhRVEc2ZGQ3TUZDLXdYZEJrdUJycU5fRExxS0xQMm1JWTE5UmxNVlQ3blFGZmF5QUdRekV3V1JDQjRveWJ4bFdiOUpnUkVqQ1oxRUt3bjZHRG92TXhUd3NWUjlhMjNQNEYycTdDbWZ1UGt2UW0zWElxRHEwRDd2LVNDMXYzRVVDQnYycE4?oc=5",
+      "published": "2026-04-04T21:14:00",
       "symbol": "MARKET",
       "provider": "google_news",
+      "sentiment_hint": "positive"
+    },
+    {
+      "headline": "Iran says it hit Israel-linked vessel in Hormuz strait - Reuters",
+      "source": "Reuters",
+      "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxOaDR0NGUycEFhMWVqd1g4dUtLY1lyeWhIV1JnckZwdy1oOFA2R0ZMdG4tMXpOaEdqTzA0SnFRQm0wdHdJU0VSM3NZSWZzV1AwSVlUQzB6WnFYbEotY0ZFRk1lTzd4enU1X2FjWlVvcnlmOEdiemI5NUFRdWtNZUh2TXh1c1pybVV5M3BITkU3NXM5cDZfRFJNM2xoWWdTc3M5OE9GY1ViS2s?oc=5",
+      "published": "2026-04-04T17:12:43",
+      "symbol": "MARKET",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "US says its agents arrested Qassem Soleimani's relatives after revoking green cards - Reuters",
+      "source": "Reuters",
+      "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxPMlZXRVJHOE5oclhKaGVjcGlFVkpyd09HTmxlZlQzLXY0X0RZb2I0R2RJSUZadVhsbVQzSjdZanJhdjlJLWhINE1HRG43Z2liOVVrQzVxcUh2ODdkRTFtV1MtYjlvOWNMUmY0NlZpVEFQYkplZGdSMmk3X1FKaXVHT2VzaElpSm1aRV9EYm14WjBMZm1RMzBYXzhyUE45MU9jZndFemZyeC1VM0NVUC1JbXNCeElURlJjUEp0ZGdn?oc=5",
+      "published": "2026-04-04T14:34:44",
+      "symbol": "MARKET",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "US pilot missing as Iran says it never ruled out talks - Reuters",
+      "source": "Reuters",
+      "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNd3NtNXJkWFFWYk1NSmtmQl9RYnhSR1ROcllmWmtlNlBYM2FlcEdIb0hVTjdzU19lUXctdTFrOC0zTHlCR00zSlVFdENKRWNOek91c0QxbjBySlZNYkRGcXg1MlU4dUlzb0hEQXlSdG5CZGljWHktb0phNmo3em4zc1d6VlFTX1YzbHpEd2tSdTFPcEljVWc0VVhhV3U?oc=5",
+      "published": "2026-04-04T14:09:05",
+      "symbol": "MARKET",
+      "provider": "finnhub",
       "sentiment_hint": "negative"
     },
     {
-      "headline": "Stock Market Today: Dow falls over 700 points, S&P 500 and Nasdaq sharply lower as Trump's deadline extension for Iran talks fails to rally equities",
-      "source": "MarketWatch",
-      "url": "https://news.google.com/rss/articles/CBMitgNBVV95cUxOcXZKWWNEU3NCZEVjQTIxckZ6QTFNYzhaUUhneGt5Q3dFZUlYd2ljTVFHV3p6OEZFcGdLUEVodU5TZFNDWG1pak9uWHBiYWo4TzE3N0k3cWpwd0xUa2F0WXotWEpZUFlTaVZOMmZCdXlHU2lrRDV5dElOajRFcTliRWpYZGZXVmVVcnNCcTUzSXZOSWo2cjc2MEpxTFFCLVRFbjhVTFpKdTVOZi1DT2k4Y2NfaHpuU0hUVFZWUFBfMHozdFhDR1Q0UFNZNWthWjRHeVpYZ19SUl9rWnFzZzA0WWdTdXFUdlltTnA1ODlGcjlkeTFmQkJObUdEUFB0RHA2azN6ZTZBcXZsMTNzNFo4RzhMRkJBUnZLd09DZ01QV0kwQWo5VVpKeTd1N1RBZ3ViaGdGVGpjRVVtSmNxbmVVRUZVR3gyNVdtMnJ1QmxSdnVkenhBQ2JHU3pfRzdVZUNpdnlVdC1fR2dMdElUNlJRT1BRalUtN0loYTgtUkZBZUppTkFyMXl5b1lTS0k2eE1PTE1SMms3RDhXMGlscXZXQTduN0hJUmRwaks1allBUVpfWkJaU0E?oc=5",
-      "published": "2026-03-27T18:09:26",
+      "headline": "Israel preparing for attacks on Iranian energy sites, awaits US green light, official says - Reuters",
+      "source": "Reuters",
+      "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxOTUNjM1NDenFRZlpxODM1SDgyTDdCa3hUT2NWWUtKdGZZWnVMQ2RybVpxbThtbEhNR3RMYXpQSERrYTJXRGlHS1hHbUFrQzZ1Y1ZoVmlSRzV4TDI0Ri03SDZIYnlYUktZcjMzTU1rV0dTSVZtbGxZN2lxTjdPMF9Cb1ZaQ0p6TVRraXNWOEtfRHE3WHFrNWNMenNJXzV6Z1JwTlRIVVBBRkxxVFNwOEROTWxObG5zdmlyaXhfWWpKVGw4TDdBUFJXNUNR?oc=5",
+      "published": "2026-04-04T12:50:34",
       "symbol": "MARKET",
-      "provider": "google_news",
+      "provider": "finnhub",
       "sentiment_hint": "neutral"
     },
     {
-      "headline": "S&P 500 Is on Track for 5th Straight Weekly Decline",
-      "source": "Barron's",
-      "url": "https://news.google.com/rss/articles/CBMi-wJBVV95cUxNVkNwd09lT3hsazdURzgxVTJOX2xNSXQ2bHh3LUpzclBKYnRoVzRDNGhpcF9oUk5mUlBBZkpfOGJ4X0JzVUc5LTBlZDl5dlVRUUdtV25rdG4ycElNS2Q5UWx3ODQ0eXdmYW1yQlBQQVVOVDZBRU44cGpMelJIY1VZcHlQa2hwTVl5MUZobzdNLVNOOGx1WHhjNnlJclV6YUtleENyaHRLTmhENFRyaU9ZdWh5VGsyM2ZfUFF4c0ZnSUlSUzI0aS02TFF6MGdEeHJudzJ2WnJxcEtRaHdkRHVoQkNSaWlIR0xBRmhyaEpQdW9GUFJBb0VSWVVpeFBQOXowUWhoLU1IUmFHRGZnbWM0TzAwcVZnaWtnRnppeWQxbVBUUDh1OEg0aExkeWg2NDJOeDNmb3FseHljMGpNdHJhMmNKaDVwTk1hQ2NDSjBLRVRKN1JGS1NYc3RfTVNsb3VQMGJGTXJMWElULUJobGloTlJXcHFSMlA2b3VR?oc=5",
-      "published": "2026-03-27T17:46:16",
+      "headline": "Iraq-Iran border crossing at Shalamcheh returns to normal after closure due to air strikes - Reuters",
+      "source": "Reuters",
+      "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxPVUg4MWFyLXVDTDR0ZlMwMk1SRWprMHpFVjE3a0hKYmthSDlWcjk4X2J5NFVqcTc3Q1JjUVAtbW5Fa2h4SVZfaUFyR1N5NEhHM25JTy13eWNzb1U0UjIyNVdkWGhhVjlaNFlLRU8xWEFRbnV0ZG01OXVzRnZVaTBOV2tXYlB3dHVqRUlNMGZ5NTRVRVU2OHV1N0RSOGJORDdLRjlvbUxmRGhJX0FWYkhlTzhnd0ZITjczNFpWUkFjTTc?oc=5",
+      "published": "2026-04-04T12:19:56",
       "symbol": "MARKET",
-      "provider": "google_news",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Russia evacuates 198 more staff from Iran's Bushehr nuclear plant, agencies report - Reuters",
+      "source": "Reuters",
+      "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxOYzcyWkgyMU9vOGM3VlI0cjU4QmNJMEp2Y2RUOFNZMW1LME9EbGRxZUpVR0M1U0ZZazB5bGlIVXFBY1pNQjQ1UTNuZ2VNdzl5YUNZdUJCeTFrT3htREJhQjB6cG9rUHBHSm02QzVFVTFjbEhDQU0xTWxqc2lrZU1Xekp3N2xkOVlvcnNHU19WMUJ6Vnlma3o2UG9JbVFXQ1paaHRndVphTE1UVTF3cmFYSElpc3M4RGtD?oc=5",
+      "published": "2026-04-04T11:29:48",
+      "symbol": "MARKET",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Iran says Iraq exempt from any Strait of Hormuz restrictions - Reuters",
+      "source": "Reuters",
+      "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxPRGdJa3BuRG1za3pMa1NVU3VSXy1JN2xjcTZwekFSYjcyZHBvNkxTVjh2bmRncnZGRWs4WkJ6VlQ0VXBUNTNlcGRvR1A3ZzRXXzZ6QWhueHFraER4am9jM1hpY2R6QWpJcEhlM0FCSUJyVkRWVFFQUmF3Y2Z2QVdVckFWam1JTS1VWXUxRk9DMXI3NXZXR1ZKLVRxQTNHRl9xUGQ2X3NjYU9EQQ?oc=5",
+      "published": "2026-04-04T11:26:12",
+      "symbol": "MARKET",
+      "provider": "finnhub",
+      "sentiment_hint": "neutral"
+    },
+    {
+      "headline": "Exclusive: Five EU countries call for windfall tax on energy companies - Reuters",
+      "source": "Reuters",
+      "url": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxQM3NQM0lpZExNQ1ZqalgwbzU2c1EyV0RJaGNsQ1ZiZDNYLVJWb0JOY0xYMzgzZjJ0aERhUVNITnV2TU83V3NGOEZNYnNYbmZ3dUtqSm4yTnE1aWtudF9aTE54b2FTWUM4ZkFEaklQN1hINWZtLVhLczNsMjZMVEgtaWNpdjl3Xzk5S3FKaG1TRXJGSjQ4cHZBSE1zWHVQS2VLOWRuWGlwYW1oUVdZYmlfbG1nb0Z6MUh5Z3Zmb2dhLTdRamZ1RUpyN1lXSTlfd2lCMDhDdmNCZ2s4QkU?oc=5",
+      "published": "2026-04-04T10:42:47",
+      "symbol": "MARKET",
+      "provider": "finnhub",
       "sentiment_hint": "negative"
-    },
-    {
-      "headline": "Dow tumbles 600 points, enters correction territory as Trump's Iran extension fails to soothe markets: Live updates",
-      "source": "CNBC",
-      "url": "https://news.google.com/rss/articles/CBMid0FVX3lxTE9mVTJiMjN0VGVIdGI0S0FydkFfeFBCVUFQT3BBU24zWnI1aDQ0TWJOVHRhN1lkTzhhN25rQUFjaC1LWmV6bVRjR19rZ3R6cnprQVVtRnM0UDZsN0h1YllWUWVJY3REZTFlZzRodEhlYVFjakVNcHFN?oc=5",
-      "published": "2026-03-27T17:45:00",
-      "symbol": "MARKET",
-      "provider": "google_news",
-      "sentiment_hint": "neutral"
-    },
-    {
-      "headline": "Stock Market Today (LIVE): Beijing Blocks Meta's $2B Acquisition; Microsoft's AI Bills Keep Growing",
-      "source": "The Motley Fool",
-      "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxPVkhINGdvam5HOUhqRjNmRHFWQ0hTS0E5dVVQekZZQXVMekJ4YzZjOXNjN3NvZ2tFdncyTXd0blJzSWdHMlBlN0FHUmxxZnYwMGNSU3FFeDZiOFp3cHhId0RGYmdjUUF0MHdFYkk0dHYzQ2ExaWNvQzJybDFwaUJxLQ?oc=5",
-      "published": "2026-03-27T17:40:39",
-      "symbol": "MARKET",
-      "provider": "google_news",
-      "sentiment_hint": "neutral"
     }
   ]
 }
