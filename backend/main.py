@@ -54,12 +54,8 @@ def _job_scan():
 
 # Refresh every 30 min, Mon–Fri, 9:30 AM – 4:00 PM ET
 _scheduler.add_job(_job_refresh, CronTrigger(
-    day_of_week="mon-fri", hour="9-15", minute="0,30", timezone="America/New_York"
+    day_of_week="mon-fri", hour="9-15", minute="*/5", timezone="America/New_York"
 ), id="refresh", name="Price Refresh")
-# Also catch the 9:30 open exactly
-_scheduler.add_job(_job_refresh, CronTrigger(
-    day_of_week="mon-fri", hour=9, minute=30, timezone="America/New_York"
-), id="refresh_open", name="Market Open Refresh")
 # Daily scan 30 min after close
 _scheduler.add_job(_job_scan, CronTrigger(
     day_of_week="mon-fri", hour=16, minute=30, timezone="America/New_York"
@@ -68,7 +64,7 @@ _scheduler.add_job(_job_scan, CronTrigger(
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     _scheduler.start()
-    print("  [Scheduler] Started — daily scan 4:30 PM ET | refresh every 30 min market hours")
+    print("  [Scheduler] Started — daily scan 4:30 PM ET | refresh every 5 min market hours")
     yield
     _scheduler.shutdown(wait=False)
     print("  [Scheduler] Stopped")

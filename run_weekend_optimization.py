@@ -14,9 +14,9 @@ Usage:
   python run_weekend_optimization.py --quick            # 20 trials per (fast test)
 
 Expected runtime (50 symbols, 90 days):
-  Tier 1 (14 strategies × 80 trials):  ~9 hours
+  Tier 1 (13 strategies × 80 trials):  ~9 hours
   Tier 2 (12 strategies × 50 trials):  ~5 hours
-  Tier 3 (28 strategies × 30 trials):  ~7 hours
+  Tier 3 (27 strategies × 30 trials):  ~7 hours
   TOTAL:                                ~21 hours
 """
 import json
@@ -32,52 +32,42 @@ from pathlib import Path
 
 # Tier 1: Confirmed positive edge — more trials to make them elite
 TIER_1 = [
-    "Juicer Long",
-    "RS Persistence Long",
-    "Momentum Breakout",
-    "Turtle Breakout Long",
-    "BB Squeeze Long",
-    "TS Momentum Long",
-    "BAB Long",
-    "Accumulation Long",
-    "Tidal Wave",
-    "Mean Reversion",
-    "VP Divergence Long",
-    "Streak Reversal Long",
-    "VWAP Reversion",
-    "Gap Reversal Long",
+    # Grade B — proven edge
+    "Accumulation Long",       # +0.756R, Grade B
+    "Juicer Long",             # +2.486R, Grade B (fat tail)
+    "RS Persistence Long",     # +2.089R, Grade B (fat tail)
+    "Gap Reversal Long",       # +0.100R, Grade B
+    "Tidal Wave",              # +0.128R, Grade B
+    # Positive expectancy with large sample
+    "Momentum Breakout",       # +0.724R, 269 signals
+    "Turtle Breakout Long",    # +0.639R, 442 signals
+    "VP Divergence Long",      # +0.429R, 6629 signals
+    "VP Divergence Short",     # +0.195R, 8564 signals
+    "BAB Long",                # +0.406R, 1842 signals
+    "Streak Reversal Long",    # +0.308R, 1582 signals
+    "TS Momentum Long",        # +0.274R, 1985 signals
+    "ST Reversal Long",        # +0.136R, 392 signals
 ]
 
 # Tier 2: Near breakeven — optimization might flip them positive
 TIER_2 = [
-    "ATR Expansion Long",
-    "Donchian Breakout",
-    "Volume Breakout",
-    "Multi-TF Trend Long",
-    "Opening Drive Long",
-    "Midday Reversal Long",
-    "ST Reversal Long",
-    "Keltner Breakout Long",
-    "MACD Turn Long",
-    "RSI Divergence Long",
-    "Second Chance Scalp",
-    "Fashionably Late",
+    "BB Squeeze Long",         # +0.100R, 331 signals
+    "Mean Reversion",          # +0.093R, 2914 signals
+    "Gap Fade",                # untested — 5min quant
+    "Trend Pullback",          # untested — 5min quant
+    "Opening Drive Long",      # +0.029R, 224 signals
+    "VWAP Reversion",          # +0.029R, 2679 signals
+    "Volume Climax Long",      # -0.018R, 847 signals (near zero)
+    "ATR Expansion Long",      # -0.017R, 1278 signals (near zero)
+    "Midday Reversal Long",    # -0.138R, 374 signals
+    "VWAP Trend Long",         # -0.013R, 1308 signals (near zero)
+    "RSI Divergence Long",     # -0.043R, 3168 signals
+    "Donchian Breakout",       # -0.088R, 1241 signals
 ]
 
-# Tier 3: Unproven or previously negative — needs data to decide
+# Tier 3: Previously negative or unproven classical — establish baseline
 TIER_3 = [
-    # Intraday quant (no prior results)
-    "Trend Pullback",
-    "Gap Fade",
-    "Power Hour Long",
-    "Volume Climax Long",
-    "VWAP Trend Long",
-    # SMB scalps (untested)
-    "RubberBand Scalp",
-    "ORB 15min",
-    "ORB 30min",
-    "Gap Give & Go",
-    # Classical structural
+    # Classical structural (need baseline before optimizing)
     "Head & Shoulders",
     "Inverse H&S",
     "Double Top",
@@ -93,11 +83,19 @@ TIER_3 = [
     "Rectangle",
     "Rising Wedge",
     "Falling Wedge",
-    # Daily quant
-    "Range Expansion",
-    "Vol Compression Breakout",
-    "52W High Momentum",
-    "Low Vol Long",
+    # SMB scalps
+    "RubberBand Scalp",
+    "ORB 15min",
+    "ORB 30min",
+    "Gap Give & Go",
+    "Second Chance Scalp",
+    "Fashionably Late",
+    # Daily quant with negative results
+    "Multi-TF Trend Long",     # -0.131R, 741 signals
+    "Range Expansion",         # -0.146R, 1788 signals
+    "Volume Breakout",         # -0.064R, 614 signals
+    "Keltner Breakout Long",   # -0.152R, 1279 signals
+    "MACD Turn Long",          # -0.267R, 1445 signals
 ]
 
 TIER_TRIALS = {1: 80, 2: 50, 3: 30}

@@ -153,8 +153,6 @@ PATTERN_META = {
                              "tf": ["5min"], "cd": 480, "mh": 240},
     "Opening Drive Long":   {"wr": 0.52, "type": "momentum",       "cat": PatternCategory.QUANT,
                              "tf": ["5min"], "cd": 480, "mh": 240},
-    "Power Hour Long":      {"wr": 0.52, "type": "momentum",       "cat": PatternCategory.QUANT,
-                             "tf": ["5min"], "cd": 480, "mh": 60},
     "Volume Climax Long":   {"wr": 0.52, "type": "mean_reversion", "cat": PatternCategory.QUANT,
                              "tf": ["5min"], "cd": 240, "mh": 240},
     "VWAP Trend Long":      {"wr": 0.55, "type": "momentum",       "cat": PatternCategory.QUANT,
@@ -172,6 +170,8 @@ PATTERN_META = {
     "MACD Turn Long":        {"wr": 0.52, "type": "momentum",      "cat": PatternCategory.QUANT,
                               "tf": ["15min", "1h"], "cd": 240, "mh": 480},
     "VP Divergence Long":    {"wr": 0.52, "type": "mean_reversion","cat": PatternCategory.QUANT,
+                              "tf": ["15min", "1h"], "cd": 240, "mh": 480},
+    "VP Divergence Short":   {"wr": 0.48, "type": "mean_reversion","cat": PatternCategory.QUANT,
                               "tf": ["15min", "1h"], "cd": 240, "mh": 480},
 
     # =========================================================================

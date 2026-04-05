@@ -1976,6 +1976,11 @@ def _detect_accumulation_day(s):
 # Intraday strategies running with defaults pending optimization
 # ═══════════════════════════════════════════════════════════════
 
+def _detect_vp_divergence_short(s):
+    """Wrapper — only returns the Short result from _detect_vol_price_divergence."""
+    r = _detect_vol_price_divergence(s)
+    return r if (r is not None and r.pattern_name == "VP Divergence Short") else None
+
 _DETECTOR_MAP: dict[str, callable] = {
     # Classical structural (14 re-enabled)
     "Head & Shoulders":     _detect_head_and_shoulders,
@@ -2008,7 +2013,6 @@ _DETECTOR_MAP: dict[str, callable] = {
     "VWAP Reversion":       _detect_vwap_reversion,
     "Gap Reversal Long":    _detect_overnight_gap_reversal,
     "Opening Drive Long":   _detect_opening_drive,
-    "Power Hour Long":      _detect_power_hour,
     "Volume Climax Long":   _detect_volume_climax,
     "VWAP Trend Long":      _detect_vwap_trend,
     "RSI Divergence Long":  _detect_rsi_divergence,
@@ -2017,6 +2021,7 @@ _DETECTOR_MAP: dict[str, callable] = {
     "Keltner Breakout Long":  _detect_keltner_breakout,
     "MACD Turn Long":         _detect_macd_reversal,
     "VP Divergence Long":     _detect_vol_price_divergence,
+    "VP Divergence Short":    _detect_vp_divergence_short,
     # ✅ Quant Daily — OPTIMIZED (8 strategies with tuned params)
     "Juicer Long":             _detect_juicer_long,           # +2.440R optimized
     "Momentum Breakout":       _detect_momentum_breakout,     # +0.079R optimized
@@ -2055,7 +2060,8 @@ def classify_all(bars: BarSeries) -> list[TradeSetup]:
         if tf not in allowed_tfs: continue
         try:
             result = fn(s)
-            if result is not None: setups.append(result)
+            if result is not None and result.pattern_name == pattern_name:
+                setups.append(result)
         except Exception: continue
     setups.sort(key=lambda x: x.confidence, reverse=True)
     return setups
