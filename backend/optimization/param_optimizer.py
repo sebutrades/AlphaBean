@@ -570,12 +570,18 @@ def optimize_strategy(
 
         result = run_single_strategy_backtest(strategy_name, train_symbols, params)
 
-        if result["signals"] < 10:
+        # Hard gates — degenerate solutions rejected outright
+        if result["signals"] < 25:
+            return -10.0
+        if result["win_rate"] < 0.25:
             return -10.0
 
-        score = result["expectancy"]
-        if result["signals"] > 30:
-            score += 0.005  # tiny bonus for generating enough signals
+        # Score = expectancy weighted by statistical confidence.
+        # sqrt(N/100) scales from ~0.5x at 25 signals to 1.0x at 100+,
+        # so a strategy with more signals must genuinely outperform a
+        # lucky sparse one, not just tie it.
+        n_factor = min(1.0, (result["signals"] / 100) ** 0.5)
+        score = result["expectancy"] * n_factor
 
         if result["expectancy"] > best_exp:
             best_exp = result["expectancy"]
@@ -598,12 +604,12 @@ def optimize_strategy(
     # ── VALIDATION PASS ─────────────────────────────────────────────────────
     # Run best params once on the held-out 250 symbols — no optimization here
     val_result = run_single_strategy_backtest(strategy_name, val_symbols, best_params)
-    val_exp = round(val_result["expectancy"], 4) if val_result["signals"] >= 5 else None
+    val_exp = round(val_result["expectancy"], 4) if val_result["signals"] >= 15 else None
 
-    # Overfit flag: val drops below zero or is less than 40% of train
+    # Overfit flag: val drops below zero or is less than 50% of train
     overfit = False
     if val_exp is not None:
-        if val_exp < 0 or (train_exp > 0 and val_exp < train_exp * 0.4):
+        if val_exp < 0 or (train_exp > 0 and val_exp < train_exp * 0.5):
             overfit = True
 
     best_universal = {k: v for k, v in best_params.items() if k in UNIVERSAL_PARAMS}
