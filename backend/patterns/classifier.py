@@ -309,10 +309,10 @@ def _detect_juicer_long(s):
     adx_bonus = min(0.10, (adx - 25) / 50 * 0.10)
     vol_ratio = vol_20 / vol_50 if vol_50 > 0 else 1.0
     conf = 0.60 + adx_bonus + min(0.05, (vol_ratio - 1.0) * 0.10) + regime_bonus
-    _trail = get_param(_p, "trail_atr_mult", 3.0)  # was 2.0
-    entry = cur; stop = cur - atr * get_param(_p, "stop_atr_mult", 0.5)  # was 2.0
-    t1 = round(entry + atr * get_param(_p, "t1_atr_mult", 2.25), 2)  # was 2.0
-    t2 = round(entry + atr * get_param(_p, "t2_atr_mult", 7.0), 2)  # was 4.0
+    _trail = get_param(_p, "trail_atr_mult", 2.0)
+    entry = cur; stop = cur - atr * get_param(_p, "stop_atr_mult", 2.0)
+    t1 = round(entry + atr * get_param(_p, "t1_atr_mult", 2.0), 2)
+    t2 = round(entry + atr * get_param(_p, "t2_atr_mult", 4.0), 2)
     if entry - stop <= 0: return None
     return _make(s, _p, Bias.LONG, entry, stop, t2, conf,
                  f"Juicer Long: ADX={adx:.0f}, {cur:.2f}>{sma_f:.2f}>{sma_s:.2f}, vol {vol_ratio:.1f}x",
@@ -623,7 +623,7 @@ def _detect_power_hour(s):
     if s.n < 30 or s.timeframe != "5min": return None
     atr = s.current_atr
     if atr <= 0: return None
-    if not (time(15, 0) <= s.timestamps[-1].time() <= time(15, 30)): return None
+    if not (time(14, 0) <= s.timestamps[-1].time() <= time(14, 30)): return None
     cur = s.closes[-1]; vwap = _vwap_today(s)
     if vwap is None or vwap <= 0: return None
     pm_bars = [i for i in range(s.n) if s.timestamps[i].time() >= time(13, 0)]
@@ -908,9 +908,9 @@ def _detect_momentum_breakout(s):
     avg_vol = float(np.mean(s.volumes[-20:]))
     vm = get_param(_p, "vol_mult", 2.5)  # was 1.5
     if avg_vol > 0 and s.volumes[-1] < avg_vol * vm: return None
-    entry = cur; stop = entry - atr * get_param(_p, "stop_atr_mult", 0.5)  # was 2.0
+    entry = cur; stop = entry - atr * get_param(_p, "stop_atr_mult", 2.0)
     if entry - stop <= 0: return None
-    t1 = round(entry + atr * get_param(_p, "t1_atr_mult", 4.0), 2)
+    t1 = round(entry + atr * get_param(_p, "t1_atr_mult", 2.0), 2)
     t2 = round(entry + atr * get_param(_p, "t2_atr_mult", 4.5), 2)
     return _make(s, _p, Bias.LONG, entry, stop, t2, 0.58,
                  f"Momentum BO: new {_lb}d high",
@@ -1047,22 +1047,22 @@ def _detect_time_series_momentum(s):
     if vol_60 <= 0: return None
     conf = 0.55 + min(abs(mom_ret) / 0.30, 1.0) * 0.10
     if mom_ret > _thresh_l:
-        _sm = get_param(_p, "stop_atr_mult", 0.5)
+        _sm = get_param(_p, "stop_atr_mult", 2.0)
         entry = cur; stop = cur - atr * _sm
         if entry - stop <= 0: return None
-        return _make(s, "TS Momentum Long", Bias.LONG, entry, stop, round(entry + atr * get_param(_p, "t2_atr_mult", 5.0), 2), conf,
+        return _make(s, "TS Momentum Long", Bias.LONG, entry, stop, round(entry + atr * get_param(_p, "t2_atr_mult", 4.0), 2), conf,
                      f"TS Mom Long: ret={mom_ret:+.1%}",
-                     target_1=round(entry + atr * get_param(_p, "t1_atr_mult", 3.5), 2), target_2=round(entry + atr * get_param(_p, "t2_atr_mult", 5.0), 2),
+                     target_1=round(entry + atr * get_param(_p, "t1_atr_mult", 2.0), 2), target_2=round(entry + atr * get_param(_p, "t2_atr_mult", 4.0), 2),
                      trail_type="atr", trail_param=get_param(_p, "trail_atr_mult", 2.0),
                      position_splits=(0.40, 0.40, 0.20))
     elif mom_ret < -_thresh_s:
         _p_s = "TS Momentum Short"
-        _sm_s = get_param(_p_s, "stop_atr_mult", 0.5)
+        _sm_s = get_param(_p_s, "stop_atr_mult", 2.0)
         entry = cur; stop = cur + atr * _sm_s
         if stop - entry <= 0: return None
-        return _make(s, "TS Momentum Short", Bias.SHORT, entry, stop, round(entry - atr * get_param(_p_s, "t2_atr_mult", 5.0), 2), conf,
+        return _make(s, "TS Momentum Short", Bias.SHORT, entry, stop, round(entry - atr * get_param(_p_s, "t2_atr_mult", 4.0), 2), conf,
                      f"TS Mom Short: ret={mom_ret:+.1%}",
-                     target_1=round(entry - atr * get_param(_p_s, "t1_atr_mult", 3.5), 2), target_2=round(entry - atr * get_param(_p_s, "t2_atr_mult", 5.0), 2),
+                     target_1=round(entry - atr * get_param(_p_s, "t1_atr_mult", 2.0), 2), target_2=round(entry - atr * get_param(_p_s, "t2_atr_mult", 4.0), 2),
                      trail_type="atr", trail_param=get_param(_p_s, "trail_atr_mult", 2.0),
                      position_splits=(0.40, 0.40, 0.20))
     return None
@@ -1122,7 +1122,7 @@ def _detect_short_term_reversal(s):
     _zt_s = get_param("ST Reversal Short", "z_threshold", 2.0)
     if z >= -_zt_l and z <= _zt_s: return None
     vol_bonus = 0.05 if _volume_exhaustion(s, -1) else 0.0
-    conf = 0.55 + vol_bonus + min(0.10, (abs(z) - _zt) * 0.05)
+    conf = 0.55 + vol_bonus + min(0.10, (abs(z) - _zt_l) * 0.05)
     _sm = get_param(_p, "stop_atr_mult", 1.5)
     if z < -_zt_l:
         entry = cur; stop = cur - atr * _sm
@@ -1218,13 +1218,13 @@ def _detect_bab(s):
     if cur < sma50 or cur < sma200: return None
     if s.n >= 63 and (cur - s.closes[-63]) / s.closes[-63] < 0: return None
     conf = 0.58 + (max_vol - v60) * 0.20
-    entry = cur; stop = cur - atr * get_param(_p, "stop_atr_mult", 0.5)  # was 2.0
+    entry = cur; stop = cur - atr * get_param(_p, "stop_atr_mult", 2.0)
     if entry - stop <= 0: return None
-    return _make(s, _p, Bias.LONG, entry, stop, round(entry + atr * get_param(_p, "t2_atr_mult", 7.0), 2), conf,  # t2 was 4.0
+    return _make(s, _p, Bias.LONG, entry, stop, round(entry + atr * get_param(_p, "t2_atr_mult", 4.0), 2), conf,
                  f"BAB Long: vol={v60:.0%}",
-                 target_1=round(entry + atr * get_param(_p, "t1_atr_mult", 4.0), 2), target_2=round(entry + atr * get_param(_p, "t2_atr_mult", 7.0), 2),  # t1 was 2.0
-                 trail_type="atr", trail_param=get_param(_p, "trail_atr_mult", 1.5),
-                 position_splits=(0.20, 0.10, 0.70))  # was (0.30, 0.30, 0.40)
+                 target_1=round(entry + atr * get_param(_p, "t1_atr_mult", 2.0), 2), target_2=round(entry + atr * get_param(_p, "t2_atr_mult", 4.0), 2),
+                 trail_type="atr", trail_param=get_param(_p, "trail_atr_mult", 2.0),
+                 position_splits=(0.30, 0.30, 0.40))
 
 
 def _detect_52w_high_momentum(s):
@@ -1262,13 +1262,13 @@ def _detect_relative_strength(s):
     if cur < sma20: return None
     v20 = float(np.mean(s.volumes[-20:])); v50 = float(np.mean(s.volumes[-50:]))
     conf = 0.56 + (0.05 if v50 > 0 and v20 > v50 else 0) + (0.05 if rs > 1.10 else 0)
-    entry = cur; stop = entry - atr * get_param(_p, "stop_atr_mult", 0.5)  # was sma20-based
+    entry = cur; stop = entry - atr * get_param(_p, "stop_atr_mult", 2.0)
     if entry - stop <= 0: return None
-    return _make(s, _p, Bias.LONG, entry, stop, round(entry + atr * get_param(_p, "t2_atr_mult", 7.0), 2), conf,  # t2 was 4.0
+    return _make(s, _p, Bias.LONG, entry, stop, round(entry + atr * get_param(_p, "t2_atr_mult", 4.0), 2), conf,
                  f"RS Persistence: RS={rs:.2f}",
-                 target_1=round(entry + atr * get_param(_p, "t1_atr_mult", 3.75), 2), target_2=round(entry + atr * get_param(_p, "t2_atr_mult", 7.0), 2),  # t1 was 2.0
+                 target_1=round(entry + atr * get_param(_p, "t1_atr_mult", 2.0), 2), target_2=round(entry + atr * get_param(_p, "t2_atr_mult", 4.0), 2),
                  trail_type="atr", trail_param=get_param(_p, "trail_atr_mult", 2.0),
-                 position_splits=(0.20, 0.10, 0.70))  # was (0.30, 0.30, 0.40)
+                 position_splits=(0.30, 0.30, 0.40))
 
 
 def _detect_consecutive_reversal(s):

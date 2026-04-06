@@ -123,6 +123,7 @@ class TrackedTrade:
         self.entered_at = data.get("entered_at", "")
         self.closed_at = data.get("closed_at", "")
         self.realized_r = data.get("realized_r", 0.0)
+        self.gap_risk = data.get("gap_risk", False)   # True = held overnight by EOD logic
         self.notes = data.get("notes", "")
 
     def to_dict(self) -> dict:
@@ -160,6 +161,7 @@ class TrackedTrade:
             "closed_at": self.closed_at,
             "realized_r": self.realized_r,
             "initial_risk": self.initial_risk,
+            "gap_risk": self.gap_risk,
             "notes": self.notes,
         }
 
@@ -348,12 +350,25 @@ class TradeTracker:
 
         if symbols is None:
             if SYMBOLS_CACHE.exists():
-                symbols = json.loads(SYMBOLS_CACHE.read_text()).get("symbols", [])[:100]
+                symbols = json.loads(SYMBOLS_CACHE.read_text()).get("symbols", [])[:500]
             else:
                 symbols = ["AAPL", "NVDA", "TSLA", "MSFT", "META", "AMZN",
                            "GOOGL", "AMD", "SPY", "QQQ"]
 
-        existing = {(t.symbol, t.pattern_name) for t in self.trades if t.is_active}
+        # Dedup against active trades AND trades closed within the last 30 days.
+        # Without the recency window, a stopped trade gets re-added on the very next
+        # daily scan because it's no longer "active" and bypasses the check.
+        _cutoff = datetime.now() - timedelta(days=30)
+        existing: set[tuple] = set()
+        for t in self.trades:
+            if t.is_active:
+                existing.add((t.symbol, t.pattern_name))
+            elif t.is_closed and t.closed_at:
+                try:
+                    if datetime.fromisoformat(t.closed_at) > _cutoff:
+                        existing.add((t.symbol, t.pattern_name))
+                except Exception:
+                    pass
         all_setups = []
         print(f"  Historical scan: {len(symbols)} symbols × {lookback_days} days back")
 
@@ -512,14 +527,25 @@ class TradeTracker:
                 for fbar in forward_bars[1:]:   # includes entry bar; check its full range
                     if trade.is_closed:
                         break
-                    # Use bar's worst-case extreme for stop detection so we
-                    # catch intraday breaches (low for longs, high for shorts)
-                    worst = fbar.low if trade.is_long else fbar.high
+                    # worst-case extreme: stop detection (low for longs, high for shorts)
+                    # best-case extreme: target detection (high for longs, low for shorts)
+                    worst = fbar.low  if trade.is_long else fbar.high
+                    best  = fbar.high if trade.is_long else fbar.low
                     if trade.status in ("ACTIVE", "AT_T1") and (
                         (trade.is_long and worst <= trade.stop_loss) or
                         (not trade.is_long and worst >= trade.stop_loss)
                     ):
                         trade.update_with_price(trade.stop_loss, atr)
+                    elif trade.status == "ACTIVE" and trade.target_1 > 0 and (
+                        (trade.is_long and best >= trade.target_1) or
+                        (not trade.is_long and best <= trade.target_1)
+                    ):
+                        trade.update_with_price(trade.target_1, atr)
+                    elif trade.status == "AT_T1" and trade.target_2 > 0 and (
+                        (trade.is_long and best >= trade.target_2) or
+                        (not trade.is_long and best <= trade.target_2)
+                    ):
+                        trade.update_with_price(trade.target_2, atr)
                     else:
                         trade.update_with_price(fbar.close, atr)
             else:
@@ -533,6 +559,85 @@ class TradeTracker:
         print(f"\n  Added {added} historical trades ({len(self.trades)} total)")
         print(f"  Detection range: {lookback_days} trading days back")
         return added
+
+    # ── END-OF-DAY INTRADAY CLOSE ──
+
+    _INTRADAY_TFS = {"5min", "15min"}
+
+    def _is_gap_risk(self, trade: "TrackedTrade", threshold: float = 0.70) -> bool:
+        """
+        True if the trade should be held overnight rather than force-closed.
+
+        Criteria: the trade has moved >= `threshold` of the way to its next
+        unresolved target.  Trailing trades are always held — they've already
+        cleared T2 and are riding a winner.
+        """
+        if trade.status in ("AT_T2", "TRAILING"):
+            return True  # Already past T2 — trailing a winner, never cut early
+
+        price = trade.current_price
+        entry = trade.entry_price
+
+        if trade.status == "ACTIVE" and trade.target_1 > 0:
+            t1_dist = abs(trade.target_1 - entry)
+            if t1_dist > 0:
+                progress = (
+                    (price - entry) / t1_dist if trade.is_long
+                    else (entry - price) / t1_dist
+                )
+                return progress >= threshold
+
+        if trade.status == "AT_T1" and trade.target_2 > 0:
+            t2_dist = abs(trade.target_2 - entry)
+            if t2_dist > 0:
+                progress = (
+                    (price - entry) / t2_dist if trade.is_long
+                    else (entry - price) / t2_dist
+                )
+                return progress >= threshold
+
+        return False
+
+    def end_of_day_intraday_close(self, gap_risk_pct: float = 0.70) -> dict:
+        """
+        Called at market close (4:30 PM ET) by the live feed's _daily_close job.
+
+        Closes all active 5min / 15min trades at their current price.
+        Trades that are >= gap_risk_pct of the way to their next target are
+        flagged GAP RISK and held overnight instead of being force-closed.
+        """
+        closed_n = 0
+        gap_syms: list[str] = []
+
+        for trade in self.trades:
+            if not trade.is_active:
+                continue
+            if trade.timeframe not in self._INTRADAY_TFS:
+                continue
+
+            if self._is_gap_risk(trade, gap_risk_pct):
+                trade.gap_risk = True
+                gap_syms.append(trade.symbol)
+                print(f"    [EOD] {trade.symbol} {trade.pattern_name} → GAP RISK (held)")
+            else:
+                trade.gap_risk = False
+                price = trade.current_price
+                ir    = trade.initial_risk
+                if ir > 0:
+                    trade.realized_r = round(
+                        (price - trade.entry_price) / ir if trade.is_long
+                        else (trade.entry_price - price) / ir,
+                        3,
+                    )
+                trade.status    = "CLOSED"
+                trade.closed_at = datetime.now().isoformat()
+                closed_n += 1
+                print(f"    [EOD] {trade.symbol} {trade.pattern_name} → CLOSED "
+                      f"{trade.realized_r:+.2f}R at ${price:.2f}")
+
+        self.save()
+        print(f"  [EOD] Intraday close: {closed_n} closed, {len(gap_syms)} gap-risk held")
+        return {"closed": closed_n, "gap_risk": gap_syms}
 
     def add_manual(self, setup_dict: dict) -> TrackedTrade:
         """Manually add a trade from the UI."""
@@ -638,12 +743,23 @@ class TradeTracker:
                 for bar in bars_to_check:
                     if trade.is_closed:
                         break
-                    worst = bar.low if trade.is_long else bar.high
+                    worst = bar.low  if trade.is_long else bar.high
+                    best  = bar.high if trade.is_long else bar.low
                     if trade.status in ("ACTIVE", "AT_T1") and (
                         (trade.is_long  and worst <= trade.stop_loss) or
                         (not trade.is_long and worst >= trade.stop_loss)
                     ):
                         trade.update_with_price(trade.stop_loss, atr)
+                    elif trade.status == "ACTIVE" and trade.target_1 > 0 and (
+                        (trade.is_long and best >= trade.target_1) or
+                        (not trade.is_long and best <= trade.target_1)
+                    ):
+                        trade.update_with_price(trade.target_1, atr)
+                    elif trade.status == "AT_T1" and trade.target_2 > 0 and (
+                        (trade.is_long and best >= trade.target_2) or
+                        (not trade.is_long and best <= trade.target_2)
+                    ):
+                        trade.update_with_price(trade.target_2, atr)
                     else:
                         trade.update_with_price(bar.close, atr)
             else:
@@ -651,12 +767,23 @@ class TradeTracker:
                 bar = bar_cache_daily.get(trade.symbol)
                 if not bar:
                     continue
-                worst = bar.low if trade.is_long else bar.high
+                worst = bar.low  if trade.is_long else bar.high
+                best  = bar.high if trade.is_long else bar.low
                 if trade.status in ("ACTIVE", "AT_T1") and (
                     (trade.is_long  and worst <= trade.stop_loss) or
                     (not trade.is_long and worst >= trade.stop_loss)
                 ):
                     trade.update_with_price(trade.stop_loss, atr)
+                elif trade.status == "ACTIVE" and trade.target_1 > 0 and (
+                    (trade.is_long and best >= trade.target_1) or
+                    (not trade.is_long and best <= trade.target_1)
+                ):
+                    trade.update_with_price(trade.target_1, atr)
+                elif trade.status == "AT_T1" and trade.target_2 > 0 and (
+                    (trade.is_long and best >= trade.target_2) or
+                    (not trade.is_long and best <= trade.target_2)
+                ):
+                    trade.update_with_price(trade.target_2, atr)
                 else:
                     trade.update_with_price(bar.close, atr)
                 # For still-open daily trades, use latest intraday bar as

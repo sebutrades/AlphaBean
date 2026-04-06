@@ -772,6 +772,7 @@ function TrackerRow({ trade, onClose, onRemove, t }: { trade: any; onClose: () =
               <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 5, background: sc + "20", color: sc }}>{stat.icon} {stat.label}</span>
               {trade.t1_hit && <span style={{ fontSize: 10, color: t.long, fontWeight: 700 }}>✓T1</span>}
               {trade.t2_hit && <span style={{ fontSize: 10, color: t.long, fontWeight: 700 }}>✓T2</span>}
+              {trade.gap_risk && <span style={{ fontSize: 10, fontWeight: 800, padding: "2px 7px", borderRadius: 5, background: "#f59e0b22", color: "#f59e0b", letterSpacing: "0.05em" }}>⚠ GAP RISK</span>}
               {trade.source === "manual" && <span style={{ fontSize: 10, color: t.textMuted }}>manual</span>}
               {trade.confidence > 0 && <span style={{ fontSize: 10, color: t.textMuted }}>{(trade.confidence * 100).toFixed(0)}% conf</span>}
             </div>

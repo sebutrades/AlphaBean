@@ -234,3 +234,35 @@ def archive_closed():
     tracker = get_tracker()
     n = tracker.archive_closed()
     return {"archived": n}
+
+
+@router.get("/intraday")
+def get_intraday_setups():
+    """
+    Return open intraday setups from the intraday_setup_tracker.
+    These are 5min/15min setups tracked separately from daily swing trades.
+    """
+    try:
+        from live_data_cache.intraday_setup_tracker import get_open_setups, get_closed_setups
+        open_s  = get_open_setups()
+        # Today's closed intraday setups for history
+        closed_s = get_closed_setups()
+        return {
+            "open":   {"count": len(open_s),   "setups": open_s},
+            "closed": {"count": len(closed_s),  "setups": closed_s},
+        }
+    except Exception as e:
+        raise HTTPException(500, f"Intraday tracker error: {e}")
+
+
+@router.post("/eod")
+def end_of_day_close():
+    """
+    Manually trigger EOD intraday close.
+    Normally called automatically at 4:30 PM ET by the live feed scheduler.
+    Closes all active 5min/15min trades at current price.
+    Trades >= 70% of the way to their next target are flagged GAP RISK instead.
+    """
+    tracker = get_tracker()
+    result = tracker.end_of_day_intraday_close()
+    return result

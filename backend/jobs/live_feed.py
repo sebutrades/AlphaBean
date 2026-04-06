@@ -497,7 +497,23 @@ class LiveFeed:
             print(f"  [Feed] daily_summary  ERR  {e}")
         _save_feed(self._feed)
 
-        # 4. Daily tracker scan (existing behaviour)
+        # 4. EOD intraday close — shut 5min/15min trades, flag gap-risk holds
+        try:
+            from backend.tracker.routes import get_tracker
+            eod = get_tracker().end_of_day_intraday_close()
+            self._feed["jobs"]["intraday_eod"] = _job_result(
+                "ok",
+                f"{eod['closed']} closed, {len(eod['gap_risk'])} gap-risk",
+                time.time() - t,
+            )
+            print(f"  [Feed] intraday_eod  ok  "
+                  f"{eod['closed']} closed, gap-risk: {eod['gap_risk']}")
+        except Exception as e:
+            self._feed["jobs"]["intraday_eod"] = _job_result("error", str(e)[:120])
+            print(f"  [Feed] intraday_eod  ERR  {e}")
+        _save_feed(self._feed)
+
+        # 5. Daily tracker scan (existing behaviour)
         try:
             from backend.tracker.routes import get_tracker
             added = get_tracker().scan_and_add(top_n=50)
