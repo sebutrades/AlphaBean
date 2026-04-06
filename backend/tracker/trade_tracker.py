@@ -534,7 +534,17 @@ class TradeTracker:
     # ── PRICE REFRESH ──
 
     def refresh_prices(self):
-        """Fetch current prices and update all active trade statuses."""
+        """
+        Fetch current prices and update all active trade statuses.
+
+        For each symbol the method tries — in order — three data sources:
+          1. live_data_cache bar store  (no API call, always fresh after bar_updater runs)
+          2. Direct Massive API fetch   (fallback when bar store is empty)
+
+        Intraday trades (5min / 15min) are walked bar-by-bar through ALL new
+        bars since their last update so that intrabar stop wicks are caught.
+        Daily trades use the most recent daily bar as before.
+        """
         from backend.data.massive_client import fetch_bars
 
         active = [t for t in self.trades if t.is_active]
@@ -545,34 +555,94 @@ class TradeTracker:
         symbols = set(t.symbol for t in active)
         print(f"  Refreshing prices for {len(active)} trades across {len(symbols)} symbols...")
 
-        bar_cache: dict[str, object] = {}
-        atr_cache = {}
+        # Build per-symbol bar cache (prefer live_data_cache)
+        bar_cache_daily: dict[str, object] = {}   # last daily bar
+        bar_cache_intra: dict[str, list]   = {}   # recent 5-min bars
+        atr_cache:       dict[str, float]  = {}
 
         for symbol in symbols:
+            # ── Try bar store first ───────────────────────────────────────────
+            loaded_from_store = False
             try:
-                bars = fetch_bars(symbol, "1d", 30)
-                if bars.bars:
-                    bar_cache[symbol] = bars.bars[-1]
-                    if len(bars.bars) >= 14:
-                        atr_cache[symbol] = float(np.mean([b.high - b.low for b in bars.bars[-14:]]))
+                from live_data_cache.bar_store import get_bars as store_get
+                # Daily bar for P&L / ATR
+                daily_series = store_get(symbol, "1d")
+                if daily_series and daily_series.bars:
+                    bar_cache_daily[symbol] = daily_series.bars[-1]
+                    if len(daily_series.bars) >= 14:
+                        atr_cache[symbol] = float(
+                            np.mean([b.high - b.low for b in daily_series.bars[-14:]])
+                        )
+                    loaded_from_store = True
+                # 5-min bars for intraday stop / target walk-through
+                intra_series = store_get(symbol, "5min")
+                if intra_series and intra_series.bars:
+                    bar_cache_intra[symbol] = intra_series.bars
             except Exception:
-                continue
+                pass
 
-        # Update each trade — use intrabar low/high for stop detection so a
-        # bar that wicks through the stop then closes back above doesn't slip through.
+            # ── Fallback to API if bar store had nothing ──────────────────────
+            if not loaded_from_store:
+                try:
+                    bars = fetch_bars(symbol, "1d", 30)
+                    if bars.bars:
+                        bar_cache_daily[symbol] = bars.bars[-1]
+                        if len(bars.bars) >= 14:
+                            atr_cache[symbol] = float(
+                                np.mean([b.high - b.low for b in bars.bars[-14:]])
+                            )
+                except Exception:
+                    pass
+
+        # ── Update each trade ─────────────────────────────────────────────────
         for trade in active:
-            bar = bar_cache.get(trade.symbol)
-            if not bar:
-                continue
             atr = atr_cache.get(trade.symbol, 0.0)
-            worst = bar.low if trade.is_long else bar.high
-            if trade.status in ("ACTIVE", "AT_T1") and (
-                (trade.is_long and worst <= trade.stop_loss) or
-                (not trade.is_long and worst >= trade.stop_loss)
-            ):
-                trade.update_with_price(trade.stop_loss, atr)
+
+            if trade.timeframe in ("5min", "15min"):
+                # Walk through recent intraday bars in chronological order
+                # so we catch the correct stop/target sequence intrabar.
+                intra_bars = bar_cache_intra.get(trade.symbol, [])
+                last_ts    = trade.last_updated  # ISO str or ""
+
+                bars_to_check = intra_bars
+                if last_ts:
+                    try:
+                        from datetime import datetime as _dt
+                        last_dt = _dt.fromisoformat(last_ts)
+                        bars_to_check = [
+                            b for b in intra_bars
+                            if b.timestamp > last_dt
+                        ]
+                    except Exception:
+                        pass
+
+                if not bars_to_check and intra_bars:
+                    bars_to_check = intra_bars[-1:]   # at minimum update with latest bar
+
+                for bar in bars_to_check:
+                    if trade.is_closed:
+                        break
+                    worst = bar.low if trade.is_long else bar.high
+                    if trade.status in ("ACTIVE", "AT_T1") and (
+                        (trade.is_long  and worst <= trade.stop_loss) or
+                        (not trade.is_long and worst >= trade.stop_loss)
+                    ):
+                        trade.update_with_price(trade.stop_loss, atr)
+                    else:
+                        trade.update_with_price(bar.close, atr)
             else:
-                trade.update_with_price(bar.close, atr)
+                # Daily / 1-h trade — use last daily bar
+                bar = bar_cache_daily.get(trade.symbol)
+                if not bar:
+                    continue
+                worst = bar.low if trade.is_long else bar.high
+                if trade.status in ("ACTIVE", "AT_T1") and (
+                    (trade.is_long  and worst <= trade.stop_loss) or
+                    (not trade.is_long and worst >= trade.stop_loss)
+                ):
+                    trade.update_with_price(trade.stop_loss, atr)
+                else:
+                    trade.update_with_price(bar.close, atr)
 
         # Archive closed trades
         newly_closed = [t for t in self.trades if t.is_closed and t.closed_at == t.last_updated]

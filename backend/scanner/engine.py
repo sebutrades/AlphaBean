@@ -25,6 +25,22 @@ import numpy as np
 
 from backend.data.massive_client import fetch_bars, SCANNER_TIMEFRAMES
 from backend.data.schemas import BarSeries
+
+
+def _get_bars(symbol: str, tf: str, days_back: int) -> BarSeries:
+    """
+    Prefer the live_data_cache bar store (always up-to-date, no API call).
+    Falls back to a fresh API fetch when the store is empty or too short.
+    """
+    try:
+        from live_data_cache.bar_store import get_bars, needs_backfill
+        if not needs_backfill(symbol, tf):
+            cached = get_bars(symbol, tf)
+            if cached and len(cached.bars) >= 20:
+                return cached
+    except Exception:
+        pass
+    return fetch_bars(symbol, tf, days_back=days_back)
 from backend.patterns.classifier import classify_all
 from backend.patterns.registry import TradeSetup
 from backend.features.engine import compute_features, FeatureResult
@@ -57,7 +73,7 @@ def scan_symbol(
 
     for tf in SCANNER_TIMEFRAMES:
         try:
-            bars = fetch_bars(symbol, timeframe=tf, days_back=days_back)
+            bars = _get_bars(symbol, tf, days_back)
         except Exception as e:
             print(f"  [{symbol}] {tf} FETCH ERROR: {e}")
             continue

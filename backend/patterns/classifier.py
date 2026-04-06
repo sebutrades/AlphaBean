@@ -353,605 +353,8 @@ def _detect_juicer_short(s):
 
 
 # ═══════════════════════════════════════════════════════════════
-# CLASSICAL PATTERNS (16 structural — no candlesticks)
+# SMB SCALP PATTERNS (1 — Tidal Wave kept for edge)
 # ═══════════════════════════════════════════════════════════════
-
-def _detect_head_and_shoulders(s):
-    _p = "Head & Shoulders"
-    if len(s.zz_highs) < 3 or len(s.zz_lows) < 2: return None
-    atr = s.current_atr
-    if atr <= 0: return None
-    for i in range(len(s.zz_highs) - 2):
-        ls, hd, rs = s.zz_highs[i], s.zz_highs[i+1], s.zz_highs[i+2]
-        if not (hd.price > ls.price and hd.price > rs.price): continue
-        sym_tol = max(ls.price * 0.03, atr * 0.5)
-        if abs(ls.price - rs.price) > sym_tol: continue
-        if not _min_span_ok(ls.index, rs.index, s.timeframe): continue
-        lows_between = [l for l in s.zz_lows if ls.index < l.index < rs.index]
-        if not lows_between: continue
-        neckline = min(l.price for l in lows_between)
-        if s.closes[-1] >= neckline: continue
-        if not _volume_confirms_breakout(s, -1, get_param(_p, "vol_mult", 1.3)): continue
-        vol_bonus = _volume_pattern_hs(s, ls.index, hd.index, rs.index)
-        sym_pct = abs(ls.price - rs.price) / ls.price
-        conf = 0.60 + (1 - sym_pct / 0.03) * 0.10 + vol_bonus
-        conf *= _regime_confidence_mult(s, "breakout")
-        buf = get_param(_p, "stop_atr_buffer", 0.10)
-        entry = neckline - _atr_offset(atr, 0.10)
-        stop = rs.price + _atr_offset(atr, buf)
-        mm = hd.price - neckline
-        t1_pct = get_param(_p, "t1_mm_pct", 0.75)
-        t_full = entry - mm; t_partial = entry - mm * t1_pct
-        return _make(s, _p, Bias.SHORT, entry, stop, t_full, conf,
-                     f"H&S: head@{hd.price:.2f}, neckline@{neckline:.2f}",
-                     target_1=round(t_partial, 2), target_2=round(t_full, 2),
-                     key_levels={"head": hd.price, "neckline": neckline})
-    return None
-
-
-def _detect_inverse_hs(s):
-    _p = "Inverse H&S"
-    if len(s.zz_lows) < 3 or len(s.zz_highs) < 2: return None
-    atr = s.current_atr
-    if atr <= 0: return None
-    for i in range(len(s.zz_lows) - 2):
-        ls, hd, rs = s.zz_lows[i], s.zz_lows[i+1], s.zz_lows[i+2]
-        if not (hd.price < ls.price and hd.price < rs.price): continue
-        sym_tol = max(ls.price * 0.03, atr * 0.5)
-        if abs(ls.price - rs.price) > sym_tol: continue
-        if not _min_span_ok(ls.index, rs.index, s.timeframe): continue
-        highs_between = [h for h in s.zz_highs if ls.index < h.index < rs.index]
-        if not highs_between: continue
-        neckline = max(h.price for h in highs_between)
-        if s.closes[-1] <= neckline: continue
-        if not _volume_confirms_breakout(s, -1, get_param(_p, "vol_mult", 1.3)): continue
-        vol_bonus = _volume_pattern_hs(s, ls.index, hd.index, rs.index)
-        sym_pct = abs(ls.price - rs.price) / ls.price
-        conf = 0.62 + (1 - sym_pct / 0.03) * 0.10 + vol_bonus
-        conf *= _regime_confidence_mult(s, "breakout")
-        buf = get_param(_p, "stop_atr_buffer", 0.10)
-        entry = neckline + _atr_offset(atr, 0.10)
-        stop = rs.price - _atr_offset(atr, buf)
-        mm = neckline - hd.price
-        t1_pct = get_param(_p, "t1_mm_pct", 0.75)
-        return _make(s, _p, Bias.LONG, entry, stop, entry + mm, conf,
-                     f"Inv H&S: head@{hd.price:.2f}, neckline@{neckline:.2f}",
-                     target_1=round(entry + mm * t1_pct, 2), target_2=round(entry + mm, 2),
-                     key_levels={"head": hd.price, "neckline": neckline})
-    return None
-
-
-def _detect_double_top(s):
-    _p = "Double Top"
-    if len(s.zz_highs) < 2: return None
-    atr = s.current_atr
-    if atr <= 0: return None
-    h1, h2 = s.zz_highs[-2], s.zz_highs[-1]
-    tol = max(atr * 0.3, h1.price * 0.015)
-    if abs(h1.price - h2.price) > tol: return None
-    if not _min_span_ok(h1.index, h2.index, s.timeframe): return None
-    valley = min(s.lows[h1.index:h2.index+1])
-    if s.closes[-1] > valley: return None
-    vol_bonus = _volume_double_touch(s, h1.index, h2.index)
-    if not _volume_confirms_breakout(s, -1, 1.2): vol_bonus = max(0, vol_bonus - 0.04)
-    peak_bonus = 0.05 if h2.price < h1.price else 0.0
-    top = max(h1.price, h2.price)
-    conf = (0.60 + vol_bonus + peak_bonus) * _regime_confidence_mult(s, "breakout")
-    buf = get_param(_p, "stop_atr_buffer", 0.10)
-    entry = valley - _atr_offset(atr, 0.10); stop = top + _atr_offset(atr, buf)
-    mm = top - valley; t1_pct = get_param(_p, "t1_mm_pct", 0.75)
-    return _make(s, _p, Bias.SHORT, entry, stop, entry - mm, conf,
-                 f"Double Top at {top:.2f}", target_1=round(entry - mm * t1_pct, 2),
-                 target_2=round(entry - mm, 2), key_levels={"top": top, "valley": valley})
-
-
-def _detect_double_bottom(s):
-    _p = "Double Bottom"
-    if len(s.zz_lows) < 2: return None
-    atr = s.current_atr
-    if atr <= 0: return None
-    l1, l2 = s.zz_lows[-2], s.zz_lows[-1]
-    tol = max(atr * 0.3, l1.price * 0.015)
-    if abs(l1.price - l2.price) > tol: return None
-    if not _min_span_ok(l1.index, l2.index, s.timeframe): return None
-    peak = max(s.highs[l1.index:l2.index+1])
-    if s.closes[-1] < peak: return None
-    vol_bonus = _volume_double_touch(s, l1.index, l2.index)
-    if not _volume_confirms_breakout(s, -1, 1.2): vol_bonus = max(0, vol_bonus - 0.04)
-    trough_bonus = 0.05 if l2.price > l1.price else 0.0
-    bot = min(l1.price, l2.price)
-    conf = (0.62 + vol_bonus + trough_bonus) * _regime_confidence_mult(s, "breakout")
-    buf = get_param(_p, "stop_atr_buffer", 0.10)
-    entry = peak + _atr_offset(atr, 0.10); stop = bot - _atr_offset(atr, buf)
-    mm = peak - bot; t1_pct = get_param(_p, "t1_mm_pct", 0.75)
-    return _make(s, _p, Bias.LONG, entry, stop, entry + mm, conf,
-                 f"Double Bottom at {bot:.2f}", target_1=round(entry + mm * t1_pct, 2),
-                 target_2=round(entry + mm, 2), key_levels={"bottom": bot, "peak": peak})
-
-
-def _detect_triple_top(s):
-    _p = "Triple Top"
-    if len(s.zz_highs) < 3: return None
-    atr = s.current_atr
-    if atr <= 0: return None
-    h1, h2, h3 = s.zz_highs[-3], s.zz_highs[-2], s.zz_highs[-1]
-    prices = [h1.price, h2.price, h3.price]; avg = np.mean(prices)
-    tol = max(atr * 0.3, avg * 0.015)
-    if max(abs(p - avg) for p in prices) > tol: return None
-    if not _min_span_ok(h1.index, h3.index, s.timeframe): return None
-    valley = min(s.lows[h1.index:h3.index+1])
-    if s.closes[-1] > valley: return None
-    conf = 0.60 * _regime_confidence_mult(s, "breakout")
-    buf = get_param(_p, "stop_atr_buffer", 0.10)
-    entry = valley - _atr_offset(atr, 0.10); stop = max(prices) + _atr_offset(atr, buf)
-    mm = max(prices) - valley; t1_pct = get_param(_p, "t1_mm_pct", 0.75)
-    return _make(s, _p, Bias.SHORT, entry, stop, entry - mm, conf,
-                 f"Triple Top at {avg:.2f}", target_1=round(entry - mm * t1_pct, 2),
-                 target_2=round(entry - mm, 2))
-
-
-def _detect_triple_bottom(s):
-    _p = "Triple Bottom"
-    if len(s.zz_lows) < 3: return None
-    atr = s.current_atr
-    if atr <= 0: return None
-    l1, l2, l3 = s.zz_lows[-3], s.zz_lows[-2], s.zz_lows[-1]
-    prices = [l1.price, l2.price, l3.price]; avg = np.mean(prices)
-    tol = max(atr * 0.3, avg * 0.015)
-    if max(abs(p - avg) for p in prices) > tol: return None
-    if not _min_span_ok(l1.index, l3.index, s.timeframe): return None
-    peak = max(s.highs[l1.index:l3.index+1])
-    if s.closes[-1] < peak: return None
-    conf = 0.62 * _regime_confidence_mult(s, "breakout")
-    buf = get_param(_p, "stop_atr_buffer", 0.10)
-    entry = peak + _atr_offset(atr, 0.10); stop = min(prices) - _atr_offset(atr, buf)
-    mm = peak - min(prices); t1_pct = get_param(_p, "t1_mm_pct", 0.75)
-    return _make(s, _p, Bias.LONG, entry, stop, entry + mm, conf,
-                 f"Triple Bottom at {avg:.2f}", target_1=round(entry + mm * t1_pct, 2),
-                 target_2=round(entry + mm, 2))
-
-
-def _detect_ascending_triangle(s):
-    _p = "Ascending Triangle"
-    if len(s.zz_highs) < 3 or len(s.zz_lows) < 3: return None
-    atr = s.current_atr
-    if atr <= 0: return None
-    utl = fit_trendline(s.zz_highs[-4:] if len(s.zz_highs) >= 4 else s.zz_highs[-3:])
-    ltl = fit_trendline(s.zz_lows[-4:] if len(s.zz_lows) >= 4 else s.zz_lows[-3:])
-    if utl is None or ltl is None: return None
-    if utl.num_points < 3 or ltl.num_points < 2: return None
-    if not is_flat_line(utl, 0.15) or ltl.slope <= 0: return None
-    res = utl.price_at(utl.end_index)
-    if s.closes[-1] < res: return None
-    vol_bonus = 0.05 if _volume_confirms_breakout(s, -1, 1.3) else 0.0
-    sup = s.zz_lows[-1].price
-    conf = (0.58 + vol_bonus) * _regime_confidence_mult(s, "breakout")
-    buf = get_param(_p, "stop_atr_buffer", 0.10)
-    entry = res + _atr_offset(atr, 0.10); stop = sup - _atr_offset(atr, buf)
-    mm = res - sup; t1_pct = get_param(_p, "t1_mm_pct", 0.75)
-    return _make(s, _p, Bias.LONG, entry, stop, entry + mm, conf,
-                 f"Asc Triangle: flat top {res:.2f}",
-                 target_1=round(entry + mm * t1_pct, 2), target_2=round(entry + mm, 2))
-
-
-def _detect_descending_triangle(s):
-    _p = "Descending Triangle"
-    if len(s.zz_highs) < 3 or len(s.zz_lows) < 3: return None
-    atr = s.current_atr
-    if atr <= 0: return None
-    ltl = fit_trendline(s.zz_lows[-4:] if len(s.zz_lows) >= 4 else s.zz_lows[-3:])
-    utl = fit_trendline(s.zz_highs[-4:] if len(s.zz_highs) >= 4 else s.zz_highs[-3:])
-    if utl is None or ltl is None: return None
-    if ltl.num_points < 3 or utl.num_points < 2: return None
-    if not is_flat_line(ltl, 0.15) or utl.slope >= 0: return None
-    sup = ltl.price_at(ltl.end_index)
-    if s.closes[-1] > sup: return None
-    vol_bonus = 0.05 if _volume_confirms_breakout(s, -1, 1.3) else 0.0
-    res = s.zz_highs[-1].price
-    conf = (0.56 + vol_bonus) * _regime_confidence_mult(s, "breakout")
-    buf = get_param(_p, "stop_atr_buffer", 0.10)
-    entry = sup - _atr_offset(atr, 0.10); stop = res + _atr_offset(atr, buf)
-    mm = res - sup; t1_pct = get_param(_p, "t1_mm_pct", 0.75)
-    return _make(s, _p, Bias.SHORT, entry, stop, entry - mm, conf,
-                 f"Desc Triangle: flat bottom {sup:.2f}",
-                 target_1=round(entry - mm * t1_pct, 2), target_2=round(entry - mm, 2))
-
-
-def _detect_symmetrical_triangle(s):
-    _p = "Symmetrical Triangle"
-    if len(s.zz_highs) < 3 or len(s.zz_lows) < 3: return None
-    atr = s.current_atr
-    if atr <= 0: return None
-    utl = fit_trendline(s.zz_highs[-4:] if len(s.zz_highs) >= 4 else s.zz_highs[-3:])
-    ltl = fit_trendline(s.zz_lows[-4:] if len(s.zz_lows) >= 4 else s.zz_lows[-3:])
-    if utl is None or ltl is None: return None
-    if utl.slope >= 0 or ltl.slope <= 0: return None
-    up = utl.price_at(s.n-1); lo = ltl.price_at(s.n-1)
-    if up <= lo: return None
-    rng = up - lo; cur = s.closes[-1]
-    vol_bonus = 0.05 if _volume_confirms_breakout(s, -1, 1.3) else 0.0
-    conf = (0.50 + vol_bonus) * _regime_confidence_mult(s, "breakout")
-    buf = get_param(_p, "stop_atr_buffer", 0.15)
-    t1_pct = get_param(_p, "t1_mm_pct", 0.50)
-    if cur > up:
-        entry = up + _atr_offset(atr, 0.10); stop = lo - _atr_offset(atr, buf)
-        return _make(s, _p, Bias.LONG, entry, stop, entry + rng, conf,
-                     "Sym Triangle breakout", target_1=round(entry + rng * t1_pct, 2), target_2=round(entry + rng, 2))
-    elif cur < lo:
-        entry = lo - _atr_offset(atr, 0.10); stop = up + _atr_offset(atr, buf)
-        return _make(s, _p, Bias.SHORT, entry, stop, entry - rng, conf,
-                     "Sym Triangle breakdown", target_1=round(entry - rng * t1_pct, 2), target_2=round(entry - rng, 2))
-    return None
-
-
-def _detect_bull_flag(s):
-    _p = "Bull Flag"
-    if len(s.zz_lows) < 1 or len(s.zz_highs) < 1 or s.current_atr <= 0: return None
-    atr = s.current_atr
-    for li in range(len(s.zz_lows)):
-        lo = s.zz_lows[li]
-        post = [h for h in s.zz_highs if h.index > lo.index]
-        if not post: continue
-        hi = post[0]
-        pole_size = hi.price - lo.price
-        if pole_size < atr * 2.0: continue
-        pole_bars = hi.index - lo.index
-        if pole_bars > 15 or pole_bars < 2: continue
-        fs = hi.index
-        if fs >= s.n - 3: continue
-        flag = s.bars[fs:]
-        if len(flag) < 3 or len(flag) > 15: continue
-        fl = min(b.low for b in flag)
-        if (hi.price - fl) / pole_size > 0.50: continue
-        if s.closes[-1] <= hi.price: continue
-        pole_vol = float(np.mean(s.volumes[lo.index:hi.index+1]))
-        flag_vol = float(np.mean([b.volume for b in flag]))
-        vol_bonus = 0.05 if (pole_vol > flag_vol * 1.3) else 0.0
-        vol_bonus += 0.05 if _volume_confirms_breakout(s, -1, 1.3) else 0.0
-        flag_range = max(b.high for b in flag) - fl
-        tightness = flag_range / pole_size if pole_size > 0 else 1.0
-        tight_bonus = 0.10 if tightness < 0.20 else 0.0
-        conf = (0.55 + vol_bonus + tight_bonus) * _regime_confidence_mult(s, "momentum")
-        entry = hi.price + _atr_offset(atr, 0.05); stop = fl - _atr_offset(atr, get_param(_p, "stop_atr_buffer", 0.10))
-        t1_pct = get_param(_p, "t1_mm_pct", 0.75)
-        return _make(s, _p, Bias.LONG, entry, stop, entry + pole_size, conf,
-                     f"Bull Flag: {pole_size/lo.price:.1%} pole",
-                     target_1=round(entry + pole_size * t1_pct, 2), target_2=round(entry + pole_size, 2),
-                     trail_type="ema9", trail_param=9.0)
-    return None
-
-
-def _detect_bear_flag(s):
-    _p = "Bear Flag"
-    if len(s.zz_highs) < 1 or len(s.zz_lows) < 1 or s.current_atr <= 0: return None
-    atr = s.current_atr
-    for hi_idx in range(len(s.zz_highs)):
-        hi = s.zz_highs[hi_idx]
-        post = [l for l in s.zz_lows if l.index > hi.index]
-        if not post: continue
-        lo = post[0]
-        pole_size = hi.price - lo.price
-        if pole_size < atr * 2.0: continue
-        pole_bars = lo.index - hi.index
-        if pole_bars > 15 or pole_bars < 2: continue
-        fs = lo.index
-        if fs >= s.n - 3: continue
-        flag = s.bars[fs:]
-        if len(flag) < 3 or len(flag) > 15: continue
-        fh = max(b.high for b in flag)
-        if (fh - lo.price) / pole_size > 0.50: continue
-        if s.closes[-1] >= lo.price: continue
-        pole_vol = float(np.mean(s.volumes[hi.index:lo.index+1]))
-        flag_vol = float(np.mean([b.volume for b in flag]))
-        vol_bonus = 0.05 if (pole_vol > flag_vol * 1.3) else 0.0
-        vol_bonus += 0.05 if _volume_confirms_breakout(s, -1, 1.3) else 0.0
-        conf = (0.53 + vol_bonus) * _regime_confidence_mult(s, "momentum")
-        entry = lo.price - _atr_offset(atr, 0.05); stop = fh + _atr_offset(atr, get_param(_p, "stop_atr_buffer", 0.10))
-        t1_pct = get_param(_p, "t1_mm_pct", 0.75)
-        return _make(s, _p, Bias.SHORT, entry, stop, entry - pole_size, conf,
-                     f"Bear Flag: {pole_size/hi.price:.1%} pole",
-                     target_1=round(entry - pole_size * t1_pct, 2), target_2=round(entry - pole_size, 2),
-                     trail_type="ema9", trail_param=9.0)
-    return None
-
-
-def _detect_cup_and_handle(s):
-    _p = "Cup & Handle"
-    if len(s.zz_lows) < 1 or s.n < 40: return None
-    atr = s.current_atr
-    if atr <= 0: return None
-    cl = s.zz_lows[-1]
-    lr = max(s.highs[:cl.index]) if cl.index > 5 else None
-    rr = max(s.highs[cl.index:]) if cl.index < s.n - 5 else None
-    if lr is None or rr is None: return None
-    rim = min(lr, rr); depth = rim - cl.price
-    if depth <= 0 or cl.index < 15 or s.n - cl.index < 15: return None
-    handle = s.bars[-min(10, s.n):]
-    hl = min(b.low for b in handle); hh = max(b.high for b in handle)
-    ret = (rim - hl) / depth
-    if ret > 0.50 or ret < 0.10 or s.closes[-1] < rim: return None
-    upper_third = cl.price + depth * (2/3)
-    if hl < upper_third: return None
-    handle_slope = handle[-1].close - handle[0].close
-    if handle_slope > atr * 0.3: return None
-    avg_vol = float(np.mean(s.volumes[-20:]))
-    vol_bonus = 0.05 if (avg_vol > 0 and s.volumes[-1] >= avg_vol * 1.3) else 0.0
-    conf = (0.60 + vol_bonus) * _regime_confidence_mult(s, "breakout")
-    buf = get_param(_p, "stop_atr_buffer", 0.10)
-    entry = rim + _atr_offset(atr, 0.10); stop = hl - _atr_offset(atr, buf)
-    t1_pct = get_param(_p, "t1_mm_pct", 0.75)
-    return _make(s, _p, Bias.LONG, entry, stop, entry + depth, conf,
-                 f"Cup & Handle: rim {rim:.2f}, depth {depth:.2f}",
-                 target_1=round(entry + depth * t1_pct, 2), target_2=round(entry + depth, 2),
-                 trail_type="ema9", trail_param=9.0)
-
-
-def _detect_rectangle(s):
-    _p = "Rectangle"
-    if s.n < 20 or len(s.sr_levels) < 2: return None
-    atr = s.current_atr
-    if atr <= 0: return None
-    res_levels = [l for l in s.sr_levels if l.level_type in ("resistance", "both")]
-    sup_levels = [l for l in s.sr_levels if l.level_type in ("support", "both")]
-    if not res_levels or not sup_levels: return None
-    res = res_levels[0].price; sup = sup_levels[0].price
-    if res <= sup: return None
-    if res_levels[0].touches < 3 or sup_levels[0].touches < 3: return None
-    rng = res - sup; cur = s.closes[-1]
-    vol_bonus = 0.05 if _volume_confirms_breakout(s, -1, 1.3) else 0.0
-    conf = (0.55 + vol_bonus) * _regime_confidence_mult(s, "breakout")
-    buf = get_param(_p, "stop_atr_buffer", 0.15)
-    t1_pct = get_param(_p, "t1_mm_pct", 0.75)
-    if cur > res + rng * 0.01:
-        entry = res + _atr_offset(atr, 0.10); stop = sup - _atr_offset(atr, buf)
-        return _make(s, _p, Bias.LONG, entry, stop, entry + rng, conf,
-                     f"Rectangle breakout above {res:.2f}",
-                     target_1=round(entry + rng * t1_pct, 2), target_2=round(entry + rng, 2))
-    elif cur < sup - rng * 0.01:
-        entry = sup - _atr_offset(atr, 0.10); stop = res + _atr_offset(atr, buf)
-        return _make(s, _p, Bias.SHORT, entry, stop, entry - rng, conf,
-                     f"Rectangle breakdown below {sup:.2f}",
-                     target_1=round(entry - rng * t1_pct, 2), target_2=round(entry - rng, 2))
-    return None
-
-
-def _detect_rising_wedge(s):
-    _p = "Rising Wedge"
-    if len(s.zz_highs) < 3 or len(s.zz_lows) < 3: return None
-    atr = s.current_atr
-    if atr <= 0: return None
-    u = fit_trendline(s.zz_highs[-4:] if len(s.zz_highs) >= 4 else s.zz_highs[-3:])
-    l = fit_trendline(s.zz_lows[-4:] if len(s.zz_lows) >= 4 else s.zz_lows[-3:])
-    if u is None or l is None: return None
-    if not (u.slope > 0 and l.slope > 0 and u.slope < l.slope): return None
-    lp = l.price_at(s.n-1); up = u.price_at(s.n-1)
-    if s.closes[-1] > lp: return None
-    start_idx = min(u.start_index, l.start_index)
-    widest = abs(u.price_at(start_idx) - l.price_at(start_idx))
-    if widest <= 0: widest = abs(up - lp)
-    conf = 0.52 * _regime_confidence_mult(s, "breakout")
-    buf = get_param(_p, "stop_atr_buffer", 0.10)
-    entry = lp - _atr_offset(atr, 0.10); stop = up + _atr_offset(atr, buf)
-    t1_pct = get_param(_p, "t1_mm_pct", 0.75)
-    return _make(s, _p, Bias.SHORT, entry, stop, entry - widest, conf,
-                 "Rising Wedge breakdown",
-                 target_1=round(entry - widest * t1_pct, 2), target_2=round(entry - widest, 2))
-
-
-def _detect_falling_wedge(s):
-    _p = "Falling Wedge"
-    if len(s.zz_highs) < 3 or len(s.zz_lows) < 3: return None
-    atr = s.current_atr
-    if atr <= 0: return None
-    u = fit_trendline(s.zz_highs[-4:] if len(s.zz_highs) >= 4 else s.zz_highs[-3:])
-    l = fit_trendline(s.zz_lows[-4:] if len(s.zz_lows) >= 4 else s.zz_lows[-3:])
-    if u is None or l is None: return None
-    if not (u.slope < 0 and l.slope < 0 and u.slope > l.slope): return None
-    up = u.price_at(s.n-1); lp = l.price_at(s.n-1)
-    if s.closes[-1] < up: return None
-    start_idx = min(u.start_index, l.start_index)
-    widest = abs(u.price_at(start_idx) - l.price_at(start_idx))
-    if widest <= 0: widest = abs(up - lp)
-    conf = 0.52 * _regime_confidence_mult(s, "breakout")
-    buf = get_param(_p, "stop_atr_buffer", 0.10)
-    entry = up + _atr_offset(atr, 0.10); stop = lp - _atr_offset(atr, buf)
-    t1_pct = get_param(_p, "t1_mm_pct", 0.75)
-    return _make(s, _p, Bias.LONG, entry, stop, entry + widest, conf,
-                 "Falling Wedge breakout",
-                 target_1=round(entry + widest * t1_pct, 2), target_2=round(entry + widest, 2))
-
-
-# ═══════════════════════════════════════════════════════════════
-# SMB SCALP PATTERNS (7)
-# ═══════════════════════════════════════════════════════════════
-
-def _detect_rubberband_scalp(s):
-    _p = "RubberBand Scalp"
-    if s.n < 20 or s.timeframe != "5min": return None
-    atr = s.current_atr
-    if atr <= 0: return None
-    cur_time = s.timestamps[-1].time()
-    if not (time(10, 0) <= cur_time <= time(11, 0)): return None
-    today = s.timestamps[-1].date()
-    day_bars = [(i, s.bars[i]) for i in range(s.n) if s.timestamps[i].date() == today]
-    if len(day_bars) < 6: return None
-    open_price = day_bars[0][1].open
-    dli = min(day_bars, key=lambda x: x[1].low)[0]; day_low = s.lows[dli]
-    ext_atr = get_param(_p, "extension_atr", 2.0)
-    if open_price - day_low < atr * ext_atr: return None
-    drop_bars = [i for i, b in day_bars if i <= dli]
-    if len(drop_bars) < 4: return None
-    mid = len(drop_bars) // 2
-    if np.mean([_range(s.bars[i]) for i in drop_bars[mid:]]) <= np.mean([_range(s.bars[i]) for i in drop_bars[:mid]]):
-        return None
-    vwap = _vwap_today(s)
-    if vwap is None or vwap <= 0: return None
-    bounce_vol_mult = get_param(_p, "bounce_vol_mult", 1.3)
-    bounce_found = False; bounce_idx = -1
-    for j in range(dli + 1, min(dli + 20, s.n)):
-        if _is_green(s.bars[j]) and s.bars[j].close > s.bars[j - 1].high:
-            prior_avg_vol = float(np.mean(s.volumes[max(0, j-3):j]))
-            if prior_avg_vol > 0 and s.volumes[j] < prior_avg_vol * bounce_vol_mult: continue
-            bounce_found = True; bounce_idx = j; break
-    if not bounce_found or s.n - 1 - bounce_idx > 5: return None
-    conf = 0.58; entry = s.bars[bounce_idx].close
-    stop = day_low - _atr_offset(atr, get_param(_p, "stop_atr_mult", 0.10))
-    if entry - stop <= 0: return None
-    return _make(s, _p, Bias.LONG, entry, stop, round(vwap, 2), conf,
-                 f"RubberBand: {(open_price-day_low)/atr:.1f} ATR extension",
-                 target_1=round(entry + (entry - stop), 2), target_2=round(vwap, 2),
-                 trail_type="vwap", trail_param=0.0, position_splits=(0.34, 0.33, 0.33))
-
-
-def _detect_orb(s, period_minutes, name="ORB"):
-    if s.n < 20 or s.timeframe != "5min": return None
-    atr = s.current_atr
-    if atr <= 0: return None
-    today = s.timestamps[-1].date()
-    orb_bars = []
-    for i in range(s.n):
-        if s.timestamps[i].date() != today: continue
-        bar_min = (s.timestamps[i].time().hour * 60 + s.timestamps[i].time().minute) - 570
-        if 0 <= bar_min < period_minutes: orb_bars.append(i)
-    if len(orb_bars) < period_minutes // 5: return None
-    orb_high = max(s.highs[i] for i in orb_bars); orb_low = min(s.lows[i] for i in orb_bars)
-    orb_range = orb_high - orb_low
-    if orb_range < atr * 0.3 or orb_range > atr * 3.0: return None
-    cur = s.closes[-1]; prev = s.closes[-2] if s.n >= 2 else cur
-    nr7_bonus = 0.15 if _is_nr7(s) else 0.0
-    tight_bonus = 0.05 if orb_range < atr * 0.8 else 0.0
-    if cur > orb_high and prev <= orb_high:
-        conf = 0.52 + nr7_bonus + tight_bonus
-        entry = orb_high + _atr_offset(atr, 0.05); stop = orb_low - _atr_offset(atr, 0.10)
-        return _make(s, name, Bias.LONG, entry, stop, round(entry + orb_range * 1.5, 2), conf,
-                     f"{name} long: range={orb_range:.2f}",
-                     target_1=round(entry + orb_range, 2), target_2=round(entry + orb_range * 1.5, 2),
-                     trail_type="atr", trail_param=1.5)
-    elif cur < orb_low and prev >= orb_low:
-        conf = 0.52 + nr7_bonus + tight_bonus
-        entry = orb_low - _atr_offset(atr, 0.05); stop = orb_high + _atr_offset(atr, 0.10)
-        return _make(s, name, Bias.SHORT, entry, stop, round(entry - orb_range * 1.5, 2), conf,
-                     f"{name} short: range={orb_range:.2f}",
-                     target_1=round(entry - orb_range, 2), target_2=round(entry - orb_range * 1.5, 2),
-                     trail_type="atr", trail_param=1.5)
-    return None
-
-
-def _detect_second_chance_scalp(s):
-    _p = "Second Chance Scalp"
-    if s.n < 20 or s.timeframe != "5min": return None
-    atr = s.current_atr
-    if atr <= 0: return None
-    res_level = None
-    for level in s.sr_levels:
-        if level.level_type in ("resistance", "both") and level.touches >= 2:
-            level_bars = [i for i in range(s.n) if abs(s.highs[i] - level.price) < atr * 0.2]
-            if level_bars and s.timestamps[level_bars[0]].date() < s.timestamps[-1].date():
-                res_level = level; break
-    if res_level is None: return None
-    lp = res_level.price
-    breakout_idx = None; breakout_high = 0
-    for i in range(max(0, s.n - 40), s.n - 5):
-        if s.closes[i] > lp + atr * 0.1:
-            if breakout_idx is None: breakout_idx = i; breakout_high = s.highs[i]
-            else: breakout_high = max(breakout_high, s.highs[i])
-    if breakout_idx is None: return None
-    tol = get_param(_p, "tolerance_atr", 0.3)
-    pullback_found = False; pullback_low = None
-    for i in range(breakout_idx + 1, s.n):
-        if abs(s.lows[i] - lp) < atr * tol:
-            pullback_found = True; pullback_low = s.lows[i]; break
-    if not pullback_found or pullback_low is None: return None
-    cur = s.bars[-1]
-    if not (_is_green(cur) and cur.close > lp): return None
-    if s.n - 1 - breakout_idx < 5: return None
-    avg_vol = float(np.mean(s.volumes[max(0, breakout_idx-20):breakout_idx]))
-    if avg_vol > 0 and s.volumes[breakout_idx] < avg_vol * get_param(_p, "vol_mult", 1.5): return None
-    conf = 0.53; entry = cur.close
-    stop = pullback_low - _atr_offset(atr, get_param(_p, "stop_atr_mult", 0.10))
-    if entry - stop <= 0: return None
-    ext = breakout_high - lp
-    return _make(s, _p, Bias.LONG, entry, stop, round(breakout_high + ext * 0.5, 2), conf,
-                 f"Second Chance off {lp:.2f}",
-                 target_1=round(entry + (entry - stop), 2), target_2=round(breakout_high + ext * 0.5, 2),
-                 trail_type="atr", trail_param=1.5)
-
-
-def _detect_fashionably_late(s):
-    _p = "Fashionably Late"
-    if s.n < 20 or s.timeframe != "5min": return None
-    atr = s.current_atr
-    if atr <= 0: return None
-    if not (time(10, 0) <= s.timestamps[-1].time() <= time(10, 45)): return None
-    vwap = _vwap_today(s); ema9 = _compute_ema9(s)
-    if vwap is None or ema9 is None or vwap <= 0 or ema9 <= 0: return None
-    cross_idx = None
-    for i in range(max(0, s.n - 3), s.n):
-        if i < 2: continue
-        if s.closes[i - 1] < vwap and s.closes[i] > vwap: cross_idx = i; break
-    if cross_idx is None:
-        if s.n >= 3 and s.closes[-2] < vwap and ema9 > vwap: cross_idx = s.n - 1
-        else: return None
-    ema_slope_min = get_param(_p, "ema_slope_min_atr", 0.1)
-    if s.n >= 5 and (s.closes[-1] - s.closes[-3]) < atr * ema_slope_min: return None
-    today = s.timestamps[-1].date()
-    day_lows = [s.lows[i] for i in range(s.n) if s.timestamps[i].date() == today]
-    if not day_lows: return None
-    day_low = min(day_lows); mm = ema9 - day_low
-    if mm <= atr * 0.5: return None
-    conf = 0.57; entry = ema9
-    stop = day_low - _atr_offset(atr, get_param(_p, "stop_atr_mult", 0.10))
-    if entry - stop <= 0: return None
-    t1_pct = get_param(_p, "t1_mm_pct", 0.75)
-    return _make(s, _p, Bias.LONG, entry, stop, round(entry + mm, 2), conf,
-                 f"Fashionably Late: EMA9 crossed VWAP at {ema9:.2f}",
-                 target_1=round(entry + mm * t1_pct, 2), target_2=round(entry + mm, 2),
-                 trail_type="ema9", trail_param=9.0)
-
-
-def _detect_gap_give_and_go(s):
-    if s.n < 10 or s.timeframe != "5min": return None
-    atr = s.current_atr
-    if atr <= 0: return None
-    if not (time(9, 30) <= s.timestamps[-1].time() <= time(10, 15)): return None
-    today = s.timestamps[-1].date(); yesterday = today - timedelta(days=1)
-    yc = None; to = None
-    for i in range(s.n):
-        if s.timestamps[i].date() == yesterday: yc = s.closes[i]
-        if s.timestamps[i].date() == today and to is None: to = s.opens[i]
-    if yc is None or to is None: return None
-    gap = to - yc; gap_pct = gap / yc
-    if abs(gap_pct) < 0.015: return None
-    day_bars_idx = [i for i in range(s.n) if s.timestamps[i].date() == today]
-    if not day_bars_idx: return None
-    avg_vol = float(np.mean(s.volumes[:max(1, len(day_bars_idx))]))
-    if avg_vol > 0 and s.volumes[day_bars_idx[0]] < avg_vol * 2.0: return None
-    day_bars = [s.bars[i] for i in day_bars_idx]
-    if gap > 0:
-        lowest = min(b.low for b in day_bars)
-        if (to - lowest) / abs(gap) < 0.30: return None
-        consol = day_bars[-min(8, len(day_bars)):]
-        if len(consol) < 3: return None
-        ch = max(b.high for b in consol); cl = min(b.low for b in consol)
-        if s.closes[-1] <= ch: return None
-        entry = ch + _atr_offset(atr, 0.05); stop = cl - _atr_offset(atr, 0.15)
-        if entry - stop <= 0: return None
-        return _make(s, "Gap Give & Go", Bias.LONG, entry, stop, round(to + abs(gap) * 0.5, 2), 0.53,
-                     f"Gap G&G: {gap_pct:.1%} gap up",
-                     target_1=round(entry + (entry - stop), 2), target_2=round(to + abs(gap) * 0.5, 2))
-    else:
-        highest = max(b.high for b in day_bars)
-        if (highest - to) / abs(gap) < 0.30: return None
-        consol = day_bars[-min(8, len(day_bars)):]
-        if len(consol) < 3: return None
-        ch = max(b.high for b in consol); cl = min(b.low for b in consol)
-        if s.closes[-1] >= cl: return None
-        entry = cl - _atr_offset(atr, 0.05); stop = ch + _atr_offset(atr, 0.15)
-        if stop - entry <= 0: return None
-        return _make(s, "Gap Give & Go", Bias.SHORT, entry, stop, round(to - abs(gap) * 0.5, 2), 0.53,
-                     f"Gap G&G: {gap_pct:.1%} gap down",
-                     target_1=round(entry - (stop - entry), 2), target_2=round(to - abs(gap) * 0.5, 2))
-
 
 def _detect_tidal_wave(s):
     _p = "Tidal Wave"
@@ -1154,10 +557,13 @@ def _detect_overnight_gap_reversal(s):
         if s.timestamps[i].date() == today and to is None: to = s.opens[i]
     if yc is None or to is None or yc <= 0: return None
     gap_pct = (to - yc) / yc
-    if abs(gap_pct) < 0.005 or abs(gap_pct) > 0.03: return None
+    min_gap = get_param("Gap Reversal Long", "min_gap_pct", 0.005)
+    max_gap = get_param("Gap Reversal Long", "max_gap_pct", 0.03)
+    if abs(gap_pct) < min_gap or abs(gap_pct) > max_gap: return None
     cur = s.closes[-1]; gap_size = to - yc
     if gap_pct > 0:
-        if to - cur < abs(gap_size) * 0.30: return None
+        retrace = get_param("Gap Reversal Short", "retrace_pct", 0.30)
+        if to - cur < abs(gap_size) * retrace: return None
         day_bars = [i for i in range(s.n) if s.timestamps[i].date() == today]
         if day_bars:
             if float(np.mean(s.volumes[max(0, day_bars[0]-20):day_bars[0]])) > 0 and s.volumes[day_bars[0]] > float(np.mean(s.volumes[max(0, day_bars[0]-20):day_bars[0]])) * 3.0:
@@ -1168,7 +574,8 @@ def _detect_overnight_gap_reversal(s):
                      f"Gap Reversal Short: {gap_pct:+.1%}",
                      target_1=round((entry + yc) / 2, 2), target_2=round(yc, 2))
     else:
-        if cur - to < abs(gap_size) * 0.30: return None
+        retrace = get_param("Gap Reversal Long", "retrace_pct", 0.30)
+        if cur - to < abs(gap_size) * retrace: return None
         entry = cur; stop = to - _atr_offset(atr, 0.10)
         if entry - stop <= 0: return None
         return _make(s, "Gap Reversal Long", Bias.LONG, entry, stop, round(yc, 2), 0.55,
@@ -1200,6 +607,10 @@ def _detect_opening_drive(s):
                      f"Opening Drive Long: +${drive:.2f}",
                      target_1=round(entry + atr, 2), target_2=round(entry + atr * 2, 2))
     else:
+        _min_s = get_param("Opening Drive Short", "min_drive_atr", 0.5)
+        if abs(drive) < atr * _min_s: return None
+        _vol_s = get_param("Opening Drive Short", "vol_mult", 1.3)
+        if avg_bar_vol > 0 and f30_vol < avg_bar_vol * 6 * _vol_s: return None
         entry = cur; stop = max(s.highs[i] for i in first_6) + _atr_offset(atr, _stop_m)
         if stop - entry <= 0: return None
         return _make(s, "Opening Drive Short", Bias.SHORT, entry, stop, round(entry - atr * 2, 2), conf,
@@ -1254,15 +665,20 @@ def _detect_volume_climax(s):
     high_20 = max(s.highs[-20:]); low_20 = min(s.lows[-20:])
     at_high = s.highs[-1] >= high_20 * 0.998; at_low = s.lows[-1] <= low_20 * 1.002
     if not at_high and not at_low: return None
-    conf = 0.56 + min(0.10, (vol_ratio - 3.0) * 0.02)
     _stop_m = get_param(_p, "stop_atr_mult", 0.10)
     if at_high and s.closes[-1] < s.opens[-1]:
+        vol_thresh_s = get_param("Volume Climax Short", "vol_threshold", 4.0)
+        if vol_ratio < vol_thresh_s: return None
+        conf = 0.56 + min(0.10, (vol_ratio - 3.0) * 0.02)
         entry = cur; stop = s.highs[-1] + _atr_offset(atr, _stop_m)
         if stop - entry <= 0: return None
         return _make(s, "Volume Climax Short", Bias.SHORT, entry, stop, round(entry - atr * 2, 2), conf,
                      f"Vol Climax Short: {vol_ratio:.1f}x",
                      target_1=round(entry - atr, 2), target_2=round(entry - atr * 2, 2))
     elif at_low and s.closes[-1] > s.opens[-1]:
+        vol_thresh_l = get_param("Volume Climax Long", "vol_threshold", 4.0)
+        if vol_ratio < vol_thresh_l: return None
+        conf = 0.56 + min(0.10, (vol_ratio - 3.0) * 0.02)
         entry = cur; stop = s.lows[-1] - _atr_offset(atr, _stop_m)
         if entry - stop <= 0: return None
         return _make(s, "Volume Climax Long", Bias.LONG, entry, stop, round(entry + atr * 2, 2), conf,
@@ -1357,16 +773,17 @@ def _detect_midday_reversal(s):
     op = s.opens[morning[0]]; mc = s.closes[morning[-1]]; mm = mc - op; cur = s.closes[-1]
     min_atr = get_param(_p, "min_morning_atr", 1.0)
     if abs(mm) < atr * min_atr: return None
-    retrace_pct = get_param(_p, "retrace_pct", 0.30)
+    retrace_short = get_param("Midday Reversal Short", "retrace_pct", 0.30)
+    retrace_long  = get_param("Midday Reversal Long",  "retrace_pct", 0.30)
     if mm > 0:
-        if (mc - cur) < mm * retrace_pct: return None
+        if (mc - cur) < mm * retrace_short: return None
         entry = cur; stop = max(s.highs[i] for i in morning) + _atr_offset(atr, 0.05)
         if stop - entry <= 0: return None
         return _make(s, "Midday Reversal Short", Bias.SHORT, entry, stop, round(entry - atr * 2, 2), 0.55,
                      f"Midday Rev Short: morning +${mm:.2f}",
                      target_1=round(entry - atr, 2), target_2=round(entry - atr * 2, 2))
     else:
-        if (cur - mc) < abs(mm) * retrace_pct: return None
+        if (cur - mc) < abs(mm) * retrace_long: return None
         entry = cur; stop = min(s.lows[i] for i in morning) - _atr_offset(atr, 0.05)
         if entry - stop <= 0: return None
         return _make(s, "Midday Reversal Long", Bias.LONG, entry, stop, round(entry + atr * 2, 2), 0.55,
@@ -1623,23 +1040,31 @@ def _detect_time_series_momentum(s):
     _lb = get_param(_p, "lookback_days", 165); _skip = get_param(_p, "skip_days", 5)  # was 126/21
     if s.n < _lb: return None
     mom_ret = (s.closes[-_skip] - s.closes[-_lb]) / s.closes[-_lb]
-    _thresh = get_param(_p, "mom_threshold", 0.10)  # was 0.05
-    if abs(mom_ret) < _thresh: return None
+    _thresh_l = get_param(_p, "mom_threshold", 0.10)
+    _thresh_s = get_param("TS Momentum Short", "mom_threshold", 0.10)
     rets = np.diff(s.closes[-61:]) / s.closes[-61:-1]
     vol_60 = float(np.std(rets)) * np.sqrt(252)
     if vol_60 <= 0: return None
     conf = 0.55 + min(abs(mom_ret) / 0.30, 1.0) * 0.10
-    _sm = get_param(_p, "stop_atr_mult", 0.5)  # was 2.5
-    if mom_ret > _thresh:
+    if mom_ret > _thresh_l:
+        _sm = get_param(_p, "stop_atr_mult", 0.5)
         entry = cur; stop = cur - atr * _sm
         if entry - stop <= 0: return None
-        return _make(s, "TS Momentum Long", Bias.LONG, entry, stop, round(entry + atr * get_param(_p, "t2_atr_mult", 5.0), 2), conf,  # t2 was 4.0
+        return _make(s, "TS Momentum Long", Bias.LONG, entry, stop, round(entry + atr * get_param(_p, "t2_atr_mult", 5.0), 2), conf,
                      f"TS Mom Long: ret={mom_ret:+.1%}",
-                     target_1=round(entry + atr * get_param(_p, "t1_atr_mult", 3.5), 2), target_2=round(entry + atr * get_param(_p, "t2_atr_mult", 5.0), 2),  # t1 was 2.0
-                     trail_type="atr", trail_param=get_param(_p, "trail_atr_mult", 2.0),  # was 2.5
-                     position_splits=(0.40, 0.40, 0.20))  # was (0.30, 0.30, 0.40)
-    elif mom_ret < -_thresh:
-        return None  # ❌ CUT — TS Momentum Short: +0.020R, 19% WR after optimization
+                     target_1=round(entry + atr * get_param(_p, "t1_atr_mult", 3.5), 2), target_2=round(entry + atr * get_param(_p, "t2_atr_mult", 5.0), 2),
+                     trail_type="atr", trail_param=get_param(_p, "trail_atr_mult", 2.0),
+                     position_splits=(0.40, 0.40, 0.20))
+    elif mom_ret < -_thresh_s:
+        _p_s = "TS Momentum Short"
+        _sm_s = get_param(_p_s, "stop_atr_mult", 0.5)
+        entry = cur; stop = cur + atr * _sm_s
+        if stop - entry <= 0: return None
+        return _make(s, "TS Momentum Short", Bias.SHORT, entry, stop, round(entry - atr * get_param(_p_s, "t2_atr_mult", 5.0), 2), conf,
+                     f"TS Mom Short: ret={mom_ret:+.1%}",
+                     target_1=round(entry - atr * get_param(_p_s, "t1_atr_mult", 3.5), 2), target_2=round(entry - atr * get_param(_p_s, "t2_atr_mult", 5.0), 2),
+                     trail_type="atr", trail_param=get_param(_p_s, "trail_atr_mult", 2.0),
+                     position_splits=(0.40, 0.40, 0.20))
     return None
 
 
@@ -1693,19 +1118,20 @@ def _detect_short_term_reversal(s):
     std_ret = float(np.std(monthly_returns))
     if std_ret <= 0: return None
     z = (ret - float(np.mean(monthly_returns))) / std_ret
-    _zt = get_param(_p, "z_threshold", 2.0)
-    if abs(z) < _zt: return None
+    _zt_l = get_param("ST Reversal Long",  "z_threshold", 2.0)
+    _zt_s = get_param("ST Reversal Short", "z_threshold", 2.0)
+    if z >= -_zt_l and z <= _zt_s: return None
     vol_bonus = 0.05 if _volume_exhaustion(s, -1) else 0.0
     conf = 0.55 + vol_bonus + min(0.10, (abs(z) - _zt) * 0.05)
     _sm = get_param(_p, "stop_atr_mult", 1.5)
-    if z < -_zt:
+    if z < -_zt_l:
         entry = cur; stop = cur - atr * _sm
         if entry - stop <= 0: return None
         return _make(s, "ST Reversal Long", Bias.LONG, entry, stop, round(p21, 2), conf,
                      f"ST Rev Long: z={z:.1f}",
                      target_1=round(entry + abs(cur-p21)*0.5, 2), target_2=round(p21, 2),
                      position_splits=(0.50, 0.30, 0.20))
-    elif z > _zt:
+    elif z > _zt_s:
         entry = cur; stop = cur + atr * _sm
         if stop - entry <= 0: return None
         return _make(s, "ST Reversal Short", Bias.SHORT, entry, stop, round(p21, 2), conf,
@@ -1764,7 +1190,17 @@ def _detect_turtle_breakout(s):
                      trail_type="atr", trail_param=get_param(_p, "trail_atr_mult", 3.0),  # was 2.0
                      position_splits=(0.20, 0.10, 0.70))  # was (0.25, 0.25, 0.50)
     elif cur < l20:
-        return None  # ❌ CUT — Turtle Breakout Short: -0.238R after optimization
+        _p_s = "Turtle Breakout Short"
+        conf_s = 0.55 if vol_ok else 0.50
+        entry = cur; stop = entry + atr * get_param(_p_s, "stop_atr_mult", 1.0)
+        if stop - entry <= 0: return None
+        return _make(s, "Turtle Breakout Short", Bias.SHORT, entry, stop,
+                     round(entry - atr * get_param(_p_s, "t2_atr_mult", 5.5), 2), conf_s,
+                     f"Turtle BO Short",
+                     target_1=round(entry - atr * get_param(_p_s, "t1_atr_mult", 2.5), 2),
+                     target_2=round(entry - atr * get_param(_p_s, "t2_atr_mult", 5.5), 2),
+                     trail_type="atr", trail_param=get_param(_p_s, "trail_atr_mult", 3.0),
+                     position_splits=(0.20, 0.10, 0.70))
     return None
 
 
@@ -1849,17 +1285,19 @@ def _detect_consecutive_reversal(s):
             if up_count > 0: break
             dn_count += 1
         else: break
-    cur = s.closes[-1]; _ms = get_param(_p, "min_streak", 5)
+    cur = s.closes[-1]
+    _ms_s = get_param("Streak Reversal Short", "min_streak", 5)
+    _ms_l = get_param("Streak Reversal Long",  "min_streak", 5)
     _sm = get_param(_p, "stop_atr_mult", 0.10)
-    if up_count >= _ms:
-        conf = 0.55 + min(0.10, (up_count - _ms) * 0.03)
+    if up_count >= _ms_s:
+        conf = 0.55 + min(0.10, (up_count - _ms_s) * 0.03)
         entry = cur; stop = max(s.highs[-up_count:]) + _atr_offset(atr, _sm)
         if stop - entry <= 0: return None
         return _make(s, "Streak Reversal Short", Bias.SHORT, entry, stop, round(entry - atr * 2, 2), conf,
                      f"Streak Rev Short: {up_count} up days",
                      target_1=round(entry - atr, 2), target_2=round(entry - atr * 2, 2))
-    elif dn_count >= _ms:
-        conf = 0.55 + min(0.10, (dn_count - _ms) * 0.03)
+    elif dn_count >= _ms_l:
+        conf = 0.55 + min(0.10, (dn_count - _ms_l) * 0.03)
         entry = cur; stop = min(s.lows[-dn_count:]) - _atr_offset(atr, _sm)
         if entry - stop <= 0: return None
         return _make(s, "Streak Reversal Long", Bias.LONG, entry, stop, round(entry + atr * 2, 2), conf,
@@ -1876,24 +1314,30 @@ def _detect_atr_expansion(s):
     tr = s.highs[-1] - s.lows[-1]
     ar = float(np.mean([s.highs[i]-s.lows[i] for i in range(s.n-20, s.n-1)]))
     if ar <= 0: return None
-    exp_thresh = get_param(_p, "expansion_threshold", 1.8)
     exp = tr / ar
-    if exp < exp_thresh: return None
-    vm = get_param(_p, "vol_mult", 1.3)
     avg_vol = float(np.mean(s.volumes[-20:]))
-    if avg_vol > 0 and s.volumes[-1] < avg_vol * vm: return None
-    cur = s.closes[-1]; conf = 0.56 + min(0.10, (exp - exp_thresh) * 0.05)
+    cur = s.closes[-1]
     dp = (cur - s.lows[-1]) / tr if tr > 0 else 0.5
     _sm = get_param(_p, "stop_atr_mult", 0.10)
-    cp_long = get_param(_p, "close_position", 0.65)
-    cp_short = get_param("ATR Expansion Short", "close_position", 0.35)
+    cp_long  = get_param(_p,                  "close_position",      0.65)
+    cp_short = get_param("ATR Expansion Short","close_position",      0.35)
     if dp > cp_long:
+        exp_thresh = get_param(_p, "expansion_threshold", 1.8)
+        if exp < exp_thresh: return None
+        vm = get_param(_p, "vol_mult", 1.3)
+        if avg_vol > 0 and s.volumes[-1] < avg_vol * vm: return None
+        conf = 0.56 + min(0.10, (exp - exp_thresh) * 0.05)
         entry = cur; stop = s.lows[-1] - _atr_offset(atr, _sm)
         if entry - stop <= 0: return None
         return _make(s, "ATR Expansion Long", Bias.LONG, entry, stop, round(entry + atr * 3, 2), conf,
                      f"ATR Exp Long: {exp:.1f}x",
                      target_1=round(entry + atr * 1.5, 2), target_2=round(entry + atr * 3, 2))
     elif dp < cp_short:
+        exp_thresh = get_param("ATR Expansion Short", "expansion_threshold", 1.8)
+        if exp < exp_thresh: return None
+        vm = get_param("ATR Expansion Short", "vol_mult", 1.3)
+        if avg_vol > 0 and s.volumes[-1] < avg_vol * vm: return None
+        conf = 0.56 + min(0.10, (exp - exp_thresh) * 0.05)
         entry = cur; stop = s.highs[-1] + _atr_offset(atr, _sm)
         if stop - entry <= 0: return None
         return _make(s, "ATR Expansion Short", Bias.SHORT, entry, stop, round(entry - atr * 3, 2), conf,
@@ -1916,24 +1360,26 @@ def _detect_bollinger_squeeze(s):
         idx = s.n - j; m = float(np.mean(s.closes[idx-_bp:idx])); sd = float(np.std(s.closes[idx-_bp:idx]))
         if m > 0 and sd > 0: bws.append((m + _bs*sd - (m - _bs*sd)) / m)
     if len(bws) < 20: return None
-    bw_pct_thresh = get_param(_p, "bw_percentile", 0.19)  # was 0.10
     bw_pct = sum(1 for b in bws if b > bw) / len(bws)
-    if bw_pct > bw_pct_thresh: return None
     cur = s.closes[-1]
     if cur > upper:
-        entry = cur; stop = entry - atr * get_param(_p, "stop_atr_mult", 1.0)  # was sma-based 0.10
+        if bw_pct > get_param(_p, "bw_percentile", 0.19): return None
+        entry = cur; stop = entry - atr * get_param(_p, "stop_atr_mult", 1.0)
         if entry - stop <= 0: return None
-        return _make(s, "BB Squeeze Long", Bias.LONG, entry, stop, round(entry + atr * get_param(_p, "t2_atr_mult", 8.0), 2), 0.58,  # t2 was 4.0
+        return _make(s, "BB Squeeze Long", Bias.LONG, entry, stop, round(entry + atr * get_param(_p, "t2_atr_mult", 8.0), 2), 0.58,
                      f"BB Squeeze Long: bw at {bw_pct:.0%} pctl",
-                     target_1=round(entry + atr * get_param(_p, "t1_atr_mult", 3.0), 2), target_2=round(entry + atr * get_param(_p, "t2_atr_mult", 8.0), 2),  # t1 was 2.0
+                     target_1=round(entry + atr * get_param(_p, "t1_atr_mult", 3.0), 2), target_2=round(entry + atr * get_param(_p, "t2_atr_mult", 8.0), 2),
                      trail_type="atr", trail_param=get_param(_p, "trail_atr_mult", 2.5),
-                     position_splits=(0.50, 0.45, 0.05))  # was default
+                     position_splits=(0.50, 0.45, 0.05))
     elif cur < lower:
-        entry = cur; stop = entry + atr * 1.0
+        _p_s = "BB Squeeze Short"
+        if bw_pct > get_param(_p_s, "bw_percentile", 0.19): return None
+        entry = cur; stop = entry + atr * get_param(_p_s, "stop_atr_mult", 1.0)
         if stop - entry <= 0: return None
-        return _make(s, "BB Squeeze Short", Bias.SHORT, entry, stop, round(entry - atr * 4, 2), 0.56,
+        return _make(s, "BB Squeeze Short", Bias.SHORT, entry, stop, round(entry - atr * get_param(_p_s, "t2_atr_mult", 4.0), 2), 0.56,
                      f"BB Squeeze Short: bw at {bw_pct:.0%} pctl",
-                     target_1=round(entry - atr * 2, 2), target_2=round(entry - atr * 4, 2))
+                     target_1=round(entry - atr * get_param(_p_s, "t1_atr_mult", 2.0), 2), target_2=round(entry - atr * get_param(_p_s, "t2_atr_mult", 4.0), 2),
+                     trail_type="atr", trail_param=get_param(_p_s, "trail_atr_mult", 2.0))
     return None
 
 
@@ -1963,9 +1409,28 @@ def _detect_accumulation_day(s):
                      target_1=round(entry + atr * get_param(_p, "t1_atr_mult", 3.75), 2), target_2=round(entry + atr * get_param(_p, "t2_atr_mult", 7.0), 2),  # t1 was 2.0
                      trail_type="atr", trail_param=get_param(_p, "trail_atr_mult", 1.0),
                      position_splits=(0.20, 0.10, 0.70))  # was default
-    _ddm = get_param("Distribution Short", "dist_days_min", 3)
-    # ❌ CUT — Distribution Short: -0.101R after optimization
-    return None
+    _p_s = "Distribution Short"
+    _lw_s = get_param(_p_s, "lookback_window", 10)
+    _ddm  = get_param(_p_s, "dist_days_min",   3)
+    dist_s = 0; acc_s = 0
+    for i in range(max(0, s.n - _lw_s), s.n):
+        if i == 0: continue
+        up_d = s.closes[i] > s.closes[i-1]; va_d = s.volumes[i] > avg_vol
+        if up_d and va_d: acc_s += 1
+        elif not up_d and va_d: dist_s += 1
+    if dist_s >= _ddm and acc_s <= 1:
+        sma50 = float(np.mean(s.closes[-50:])) if s.n >= 50 else cur
+        if cur > sma50: return None  # only short stocks already in downtrend
+        conf_s = 0.52 + min(0.08, (dist_s - _ddm) * 0.02)
+        entry = cur; stop = entry + atr * get_param(_p_s, "stop_atr_mult", 3.25)
+        if stop - entry <= 0: return None
+        return _make(s, "Distribution Short", Bias.SHORT, entry, stop,
+                     round(entry - atr * get_param(_p_s, "t2_atr_mult", 7.0), 2), conf_s,
+                     f"Distribution: {dist_s} dist days",
+                     target_1=round(entry - atr * get_param(_p_s, "t1_atr_mult", 3.75), 2),
+                     target_2=round(entry - atr * get_param(_p_s, "t2_atr_mult", 7.0), 2),
+                     trail_type="atr", trail_param=get_param(_p_s, "trail_atr_mult", 1.0),
+                     position_splits=(0.20, 0.10, 0.70))
     return None
 
 
@@ -1976,37 +1441,94 @@ def _detect_accumulation_day(s):
 # Intraday strategies running with defaults pending optimization
 # ═══════════════════════════════════════════════════════════════
 
+# ─────────────────────────────────────────────────────────────────────────────
+# BIDIRECTIONAL WRAPPERS
+# Parent detector functions emit both Long and Short setups via if/elif branches.
+# Each wrapper filters to its own pattern_name so classify_all can route cooldowns,
+# timeframes, and PATTERN_META entries independently per direction.
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _detect_gap_reversal_short(s):
+    r = _detect_overnight_gap_reversal(s)
+    return r if r is not None and r.pattern_name == "Gap Reversal Short" else None
+
+def _detect_opening_drive_short(s):
+    r = _detect_opening_drive(s)
+    return r if r is not None and r.pattern_name == "Opening Drive Short" else None
+
+def _detect_volume_climax_short(s):
+    r = _detect_volume_climax(s)
+    return r if r is not None and r.pattern_name == "Volume Climax Short" else None
+
+def _detect_vwap_trend_short(s):
+    r = _detect_vwap_trend(s)
+    return r if r is not None and r.pattern_name == "VWAP Trend Short" else None
+
+def _detect_rsi_divergence_short(s):
+    r = _detect_rsi_divergence(s)
+    return r if r is not None and r.pattern_name == "RSI Divergence Short" else None
+
+def _detect_midday_reversal_short(s):
+    r = _detect_midday_reversal(s)
+    return r if r is not None and r.pattern_name == "Midday Reversal Short" else None
+
+def _detect_power_hour_long(s):
+    r = _detect_power_hour(s)
+    return r if r is not None and r.pattern_name == "Power Hour Long" else None
+
+def _detect_power_hour_short(s):
+    r = _detect_power_hour(s)
+    return r if r is not None and r.pattern_name == "Power Hour Short" else None
+
+def _detect_keltner_breakout_short(s):
+    r = _detect_keltner_breakout(s)
+    return r if r is not None and r.pattern_name == "Keltner Breakout Short" else None
+
+def _detect_macd_turn_short(s):
+    r = _detect_macd_reversal(s)
+    return r if r is not None and r.pattern_name == "MACD Turn Short" else None
+
+def _detect_multi_tf_trend_short(s):
+    r = _detect_multi_tf_trend(s)
+    return r if r is not None and r.pattern_name == "Multi-TF Trend Short" else None
+
+def _detect_st_reversal_short(s):
+    r = _detect_short_term_reversal(s)
+    return r if r is not None and r.pattern_name == "ST Reversal Short" else None
+
+def _detect_streak_reversal_short(s):
+    r = _detect_consecutive_reversal(s)
+    return r if r is not None and r.pattern_name == "Streak Reversal Short" else None
+
+def _detect_atr_expansion_short(s):
+    r = _detect_atr_expansion(s)
+    return r if r is not None and r.pattern_name == "ATR Expansion Short" else None
+
+def _detect_bb_squeeze_short(s):
+    r = _detect_bollinger_squeeze(s)
+    return r if r is not None and r.pattern_name == "BB Squeeze Short" else None
+
+def _detect_ts_momentum_short(s):
+    r = _detect_time_series_momentum(s)
+    return r if r is not None and r.pattern_name == "TS Momentum Short" else None
+
+def _detect_turtle_breakout_short(s):
+    r = _detect_turtle_breakout(s)
+    return r if r is not None and r.pattern_name == "Turtle Breakout Short" else None
+
+def _detect_distribution_short(s):
+    r = _detect_accumulation_day(s)
+    return r if r is not None and r.pattern_name == "Distribution Short" else None
+
 def _detect_vp_divergence_short(s):
     """Wrapper — only returns the Short result from _detect_vol_price_divergence."""
     r = _detect_vol_price_divergence(s)
     return r if (r is not None and r.pattern_name == "VP Divergence Short") else None
 
 _DETECTOR_MAP: dict[str, callable] = {
-    # Classical structural (14 re-enabled)
-    "Head & Shoulders":     _detect_head_and_shoulders,
-    "Inverse H&S":          _detect_inverse_hs,
-    "Double Top":           _detect_double_top,
-    "Double Bottom":        _detect_double_bottom,
-    "Triple Top":           _detect_triple_top,
-    "Triple Bottom":        _detect_triple_bottom,
-    "Ascending Triangle":   _detect_ascending_triangle,
-    "Descending Triangle":  _detect_descending_triangle,
-    "Symmetrical Triangle": _detect_symmetrical_triangle,
-    "Bull Flag":            _detect_bull_flag,
-    "Bear Flag":            _detect_bear_flag,
-    "Cup & Handle":         _detect_cup_and_handle,
-    "Rectangle":            _detect_rectangle,
-    "Rising Wedge":         _detect_rising_wedge,
-    "Falling Wedge":        _detect_falling_wedge,
-    # SMB Scalps (7)
-    "RubberBand Scalp":     _detect_rubberband_scalp,
-    "ORB 15min":            lambda s: _detect_orb(s, 15, "ORB 15min"),
-    "ORB 30min":            lambda s: _detect_orb(s, 30, "ORB 30min"),
-    "Second Chance Scalp":  _detect_second_chance_scalp,
-    "Fashionably Late":     _detect_fashionably_late,
-    "Gap Give & Go":        _detect_gap_give_and_go,
+    # SMB Scalps (1) — kept for edge
     "Tidal Wave":           _detect_tidal_wave,
-    # Quant Intraday 5min
+    # Quant Intraday 5min — Long
     "Mean Reversion":       _detect_mean_reversion,
     "Trend Pullback":       _detect_trend_pullback,
     "Gap Fade":             _detect_gap_fade,
@@ -2017,35 +1539,50 @@ _DETECTOR_MAP: dict[str, callable] = {
     "VWAP Trend Long":      _detect_vwap_trend,
     "RSI Divergence Long":  _detect_rsi_divergence,
     "Midday Reversal Long": _detect_midday_reversal,
-    # Quant 15min/1h
+    "Power Hour Long":      _detect_power_hour_long,
+    # Quant Intraday 5min — Short
+    "Gap Reversal Short":   _detect_gap_reversal_short,
+    "Opening Drive Short":  _detect_opening_drive_short,
+    "Volume Climax Short":  _detect_volume_climax_short,
+    "VWAP Trend Short":     _detect_vwap_trend_short,
+    "RSI Divergence Short": _detect_rsi_divergence_short,
+    "Midday Reversal Short":_detect_midday_reversal_short,
+    "Power Hour Short":     _detect_power_hour_short,
+    # Quant 15min/1h — Long + Short
     "Keltner Breakout Long":  _detect_keltner_breakout,
     "MACD Turn Long":         _detect_macd_reversal,
     "VP Divergence Long":     _detect_vol_price_divergence,
     "VP Divergence Short":    _detect_vp_divergence_short,
-    # ✅ Quant Daily — OPTIMIZED (8 strategies with tuned params)
-    "Juicer Long":             _detect_juicer_long,           # +2.440R optimized
-    "Momentum Breakout":       _detect_momentum_breakout,     # +0.079R optimized
+    "Keltner Breakout Short": _detect_keltner_breakout_short,
+    "MACD Turn Short":        _detect_macd_turn_short,
+    # Quant Daily — Long
+    "Juicer Long":              _detect_juicer_long,
+    "Momentum Breakout":        _detect_momentum_breakout,
     "Vol Compression Breakout": _detect_vol_compression_breakout,
-    "Range Expansion":         _detect_range_expansion,
-    "Volume Breakout":         _detect_volume_breakout,
-    "Donchian Breakout":       _detect_donchian_breakout,
-    "TS Momentum Long":        _detect_time_series_momentum,  # +0.496R optimized (short disabled)
-    "Multi-TF Trend Long":     _detect_multi_tf_trend,
-    "ST Reversal Long":        _detect_short_term_reversal,
-    "Low Vol Long":            _detect_low_vol_anomaly,
-    "Turtle Breakout Long":    _detect_turtle_breakout,       # +0.558R optimized (short disabled)
-    "BAB Long":                _detect_bab,                   # +0.201R optimized
-    "52W High Momentum":       _detect_52w_high_momentum,
-    "RS Persistence Long":     _detect_relative_strength,     # +0.645R optimized
-    "Streak Reversal Long":    _detect_consecutive_reversal,
-    "ATR Expansion Long":      _detect_atr_expansion,
-    "BB Squeeze Long":         _detect_bollinger_squeeze,     # +0.251R optimized
-    "Accumulation Long":       _detect_accumulation_day,      # +0.645R optimized (Distribution disabled)
-    # ❌ CUT — negative edge after optimization
-    # "Juicer Short":          _detect_juicer_short,          # negative in every backtest
-    # "TS Momentum Short":     disabled inside function        # +0.020R = zero edge
-    # "Distribution Short":    disabled inside function        # -0.101R
-    # "Turtle Breakout Short": disabled inside function        # -0.238R
+    "Range Expansion":          _detect_range_expansion,
+    "Volume Breakout":          _detect_volume_breakout,
+    "Donchian Breakout":        _detect_donchian_breakout,
+    "TS Momentum Long":         _detect_time_series_momentum,
+    "Multi-TF Trend Long":      _detect_multi_tf_trend,
+    "ST Reversal Long":         _detect_short_term_reversal,
+    "Low Vol Long":             _detect_low_vol_anomaly,
+    "Turtle Breakout Long":     _detect_turtle_breakout,
+    "BAB Long":                 _detect_bab,
+    "52W High Momentum":        _detect_52w_high_momentum,
+    "RS Persistence Long":      _detect_relative_strength,
+    "Streak Reversal Long":     _detect_consecutive_reversal,
+    "ATR Expansion Long":       _detect_atr_expansion,
+    "BB Squeeze Long":          _detect_bollinger_squeeze,
+    "Accumulation Long":        _detect_accumulation_day,
+    # Quant Daily — Short
+    "Multi-TF Trend Short": _detect_multi_tf_trend_short,
+    "ST Reversal Short":    _detect_st_reversal_short,
+    "Streak Reversal Short":_detect_streak_reversal_short,
+    "ATR Expansion Short":  _detect_atr_expansion_short,
+    "BB Squeeze Short":     _detect_bb_squeeze_short,
+    "TS Momentum Short":    _detect_ts_momentum_short,
+    "Turtle Breakout Short":_detect_turtle_breakout_short,
+    "Distribution Short":   _detect_distribution_short,
 }
 
 

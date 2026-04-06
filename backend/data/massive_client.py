@@ -78,6 +78,30 @@ def fetch_bars(symbol: str, timeframe: str = "15min", days_back: int = 10) -> Ba
     return BarSeries(symbol=symbol.upper(), timeframe=timeframe, bars=bars)
 
 
+def fetch_bars_since(symbol: str, timeframe: str, since: datetime) -> list:
+    """
+    Incremental fetch: return only bars that arrived after `since`.
+
+    Uses date-level granularity for the API call (fetches from the day of
+    `since` to today), then filters out bars that are not strictly newer.
+    This keeps the API payload small while guaranteeing correctness.
+
+    Returns list[Bar] — may be empty if no new bars exist.
+    """
+    if timeframe not in ALL_TIMEFRAMES:
+        raise ValueError(f"Invalid timeframe: '{timeframe}'")
+
+    delta = (datetime.now().date() - since.date()).days
+    days_back = max(delta + 1, 1)   # at least 1 day
+
+    result = fetch_bars(symbol, timeframe, days_back=days_back)
+    if not result:
+        return []
+
+    # Strip any bar at or before `since` (they are already stored)
+    return [b for b in result.bars if b.timestamp > since]
+
+
 def fetch_chart_bars(symbol: str, timeframe: str = "5min", days_back: int = 5) -> list[dict]:
     """Fetch bars formatted for TradingView Lightweight Charts."""
     bars_series = fetch_bars(symbol, timeframe, days_back)

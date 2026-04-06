@@ -326,4 +326,93 @@ async def feed_refresh():
     """Manually trigger an immediate feed cycle."""
     msg = _feed.trigger_now()
     return {"status": msg}
- 
+
+
+# ── Live Data Cache endpoints ─────────────────────────────────────────────────
+
+@app.get("/api/cache/status")
+async def cache_status():
+    """Bar store health — symbols cached, bar counts, oldest/newest per timeframe."""
+    try:
+        from live_data_cache.bar_store import get_store_stats
+        return get_store_stats()
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/api/intraday/open")
+async def intraday_open(symbol: str = None, tf: str = None):
+    """
+    Currently open intraday setups (5-min and 15-min).
+    Optional filters: ?symbol=NVDA  and/or  ?tf=5min
+    """
+    try:
+        from live_data_cache.intraday_setup_tracker import get_open_setups
+        setups = get_open_setups(symbol=symbol, tf=tf)
+        setups.sort(key=lambda s: s.get("confidence", 0), reverse=True)
+        return {"count": len(setups), "setups": setups}
+    except Exception as e:
+        return {"error": str(e), "count": 0, "setups": []}
+
+
+@app.get("/api/intraday/closed")
+async def intraday_closed(date: str = None):
+    """
+    Closed intraday setups for a given date (ISO: 2026-04-06) or today.
+    """
+    try:
+        from live_data_cache.intraday_setup_tracker import get_closed_setups
+        setups = get_closed_setups(date)
+        setups.sort(key=lambda s: s.get("closed_at", ""), reverse=True)
+        return {"date": date, "count": len(setups), "setups": setups}
+    except Exception as e:
+        return {"error": str(e), "count": 0, "setups": []}
+
+
+@app.get("/api/intraday/summary")
+async def intraday_summary():
+    """Today's intraday performance summary (wins, losses, R-multiples)."""
+    try:
+        from live_data_cache.intraday_setup_tracker import generate_daily_summary
+        return generate_daily_summary()
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/api/intraday/daily-perf")
+async def intraday_daily_perf():
+    """Rolling daily performance log (all days stored in daily_perf.json)."""
+    from pathlib import Path
+    import json
+    p = Path("live_data_cache/daily_perf.json")
+    if p.exists():
+        try:
+            return json.loads(p.read_text())
+        except Exception as e:
+            return {"error": str(e)}
+    return {"days": {}}
+
+
+@app.get("/api/cache/bars/{symbol}")
+async def cache_bars(symbol: str, tf: str = "5min"):
+    """
+    Return the stored bars for a symbol/timeframe from the live_data_cache.
+    Useful for debugging or feeding custom chart views.
+    """
+    try:
+        from live_data_cache.bar_store import get_bars, get_bar_count
+        bs = get_bars(symbol.upper(), tf)
+        if bs is None:
+            return {"symbol": symbol, "tf": tf, "count": 0, "bars": []}
+        bars_out = [
+            {
+                "time": int(b.timestamp.timestamp()),
+                "open": b.open, "high": b.high, "low": b.low, "close": b.close,
+                "volume": b.volume,
+            }
+            for b in bs.bars
+        ]
+        return {"symbol": symbol.upper(), "tf": tf, "count": len(bars_out), "bars": bars_out}
+    except Exception as e:
+        return {"error": str(e)}
+

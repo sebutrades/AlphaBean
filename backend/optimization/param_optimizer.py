@@ -1,39 +1,57 @@
 """
-backend/optimization/param_optimizer.py — Strategy Parameter Optimizer v2
+backend/optimization/param_optimizer.py — Strategy Parameter Optimizer v3
 
-Uses Optuna (Bayesian optimization) to find optimal parameters for each
-strategy including: detection thresholds, stop/target multiples, hold time,
-cooldown, position splits, and minimum R:R gate.
+Uses Optuna (Bayesian) + 6-core parallel execution to tune all strategies.
 
-EVERY strategy gets these UNIVERSAL params tuned automatically:
-  - stop_atr_mult:  How wide the stop is (ATR multiplier)
-  - t1_atr_mult:    First target distance
-  - t2_atr_mult:    Second target distance
-  - max_hold_min:   How long to hold before timeout (minutes)
-  - cooldown_min:   Minimum time between signals (minutes)
-  - split_t1:       Position % exited at T1
-  - split_t2:       Position % exited at T2
-  - split_trail:    Position % that trails (1 - t1 - t2)
+PARALLELISM
+  - 30 patterns distributed round-robin across N_CORES=6 workers
+  - Each worker runs its ~5 patterns sequentially
+  - All data is 100% cache-only — no API calls during optimization
 
-Plus STRATEGY-SPECIFIC params (ADX threshold, EMA periods, z-scores, etc.)
+TRAIN / VALIDATION SPLIT
+  - Symbol-based (NOT time-based): 500 symbols split 250 train / 250 val
+  - Even/odd interleaving by volume-rank: avoids correlation between halves
+  - Same time window for both sets
+  - Proves cross-sectional generalization: params that work on 250 unseen
+    stocks in identical market conditions are genuinely robust
+  - Better than 90/90 time-split which leaves daily strategies with <10
+    signals per symbol in the training window
+
+OBJECTIVE
+  - Maximize expectancy (EXP/R) on train symbols
+  - After Optuna completes, run one evaluation pass on val symbols
+  - Flag overfit when val_exp < 0 or val_exp < train_exp * 0.4
 
 USAGE:
-  pip install optuna
   python -m backend.optimization.param_optimizer --strategy "Juicer Long" --trials 30
-  python -m backend.optimization.param_optimizer --trials 50           # All strategies
+  python -m backend.optimization.param_optimizer --trials 50           # All, 6 cores
   python -m backend.optimization.param_optimizer --list                # Show all
+  python -m backend.optimization.param_optimizer --cores 4             # Override cores
 
 DEPENDENCIES:
   pip install optuna
 """
 import argparse
 import json
+import random
 import time
 import sys
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
 
 import numpy as np
+
+# ==============================================================================
+# PARALLELISM CONFIG
+# ==============================================================================
+
+N_CORES = 6
+
+# Relative slowness by timeframe — used to sort strategies before submission
+# so each core gets a mix of fast (1d) and slow (5min) work rather than all
+# slow strategies piling up on some cores while others idle.
+TF_WEIGHT = {"5min": 4, "15min": 3, "1h": 2, "1d": 1}
 
 try:
     import optuna
@@ -53,7 +71,7 @@ UNIVERSAL_PARAMS = {
     "t2_atr_mult":    {"type": "float", "low": 1.0,  "high": 8.0,  "step": 0.5},
     "trail_atr_mult": {"type": "float", "low": 1.0,  "high": 4.0,  "step": 0.5},
     "max_hold_bars":  {"type": "int",   "low": 5,    "high": 200,  "step": 5},
-    "cooldown_bars":  {"type": "int",   "low": 1,    "high": 50,   "step": 2},
+    "cooldown_bars":  {"type": "int",   "low": 1,    "high": 51,   "step": 2},
     "split_t1":       {"type": "float", "low": 0.20, "high": 0.70, "step": 0.10},
     "split_t2":       {"type": "float", "low": 0.10, "high": 0.50, "step": 0.10},
 }
@@ -207,18 +225,6 @@ STRATEGY_SPECIFIC_PARAMS = {
         "min_vwap_tests":      {"type": "int",   "low": 1,  "high": 4,  "step": 1},
         "proximity_atr":       {"type": "float", "low": 0.2, "high": 0.8, "step": 0.1},
     },
-    "Second Chance Scalp": {
-        "tolerance_atr":     {"type": "float", "low": 0.15, "high": 0.60, "step": 0.05},
-        "vol_mult":          {"type": "float", "low": 1.0, "high": 2.5, "step": 0.25},
-    },
-    "Fashionably Late": {
-        "ema_slope_min_atr": {"type": "float", "low": 0.03, "high": 0.25, "step": 0.02},
-        "t1_mm_pct":         {"type": "float", "low": 0.40, "high": 1.00, "step": 0.10},
-    },
-    "RubberBand Scalp": {
-        "extension_atr":     {"type": "float", "low": 1.5, "high": 3.5, "step": 0.25},
-        "bounce_vol_mult":   {"type": "float", "low": 1.0, "high": 2.5, "step": 0.25},
-    },
     "Keltner Breakout Long": {
         "ema_period":        {"type": "int",   "low": 10, "high": 30, "step": 5},
         "atr_mult":          {"type": "float", "low": 1.5, "high": 3.0, "step": 0.25},
@@ -247,32 +253,6 @@ STRATEGY_SPECIFIC_PARAMS = {
         "vol_decline_pct":   {"type": "float", "low": 0.40, "high": 0.80, "step": 0.05},
         "price_trend_min":   {"type": "float", "low": 0.005, "high": 0.04, "step": 0.005},
     },
-    "Head & Shoulders": {
-        "stop_atr_buffer":   {"type": "float", "low": 0.03, "high": 0.25, "step": 0.02},
-        "t1_mm_pct":         {"type": "float", "low": 0.40, "high": 1.00, "step": 0.10},
-        "vol_mult":          {"type": "float", "low": 1.0, "high": 2.0, "step": 0.1},
-    },
-    "Rising Wedge": {
-        "stop_atr_buffer":   {"type": "float", "low": 0.03, "high": 0.25, "step": 0.02},
-        "t1_mm_pct":         {"type": "float", "low": 0.40, "high": 1.00, "step": 0.10},
-    },
-    "Descending Triangle": {
-        "stop_atr_buffer":   {"type": "float", "low": 0.03, "high": 0.25, "step": 0.02},
-        "t1_mm_pct":         {"type": "float", "low": 0.40, "high": 1.00, "step": 0.10},
-        "vol_mult":          {"type": "float", "low": 1.0, "high": 2.0, "step": 0.1},
-    },
-    "Double Bottom": {
-        "stop_atr_buffer":   {"type": "float", "low": 0.03, "high": 0.25, "step": 0.02},
-        "t1_mm_pct":         {"type": "float", "low": 0.40, "high": 1.00, "step": 0.10},
-    },
-    "Cup & Handle": {
-        "stop_atr_buffer":   {"type": "float", "low": 0.03, "high": 0.25, "step": 0.02},
-        "t1_mm_pct":         {"type": "float", "low": 0.40, "high": 1.00, "step": 0.10},
-    },
-    "Falling Wedge": {
-        "stop_atr_buffer":   {"type": "float", "low": 0.03, "high": 0.25, "step": 0.02},
-        "t1_mm_pct":         {"type": "float", "low": 0.40, "high": 1.00, "step": 0.10},
-    },
     "Donchian Breakout": {
         "channel_period":    {"type": "int",   "low": 10, "high": 30, "step": 5},
         "squeeze_threshold": {"type": "float", "low": 0.65, "high": 0.95, "step": 0.05},
@@ -289,7 +269,7 @@ STRATEGY_SPECIFIC_PARAMS = {
     },
     "Distribution Short": {
         "dist_days_min":     {"type": "int",   "low": 2,  "high": 6,  "step": 1},
-        "lookback_window":   {"type": "int",   "low": 7,  "high": 20, "step": 2},
+        "lookback_window":   {"type": "int",   "low": 7,  "high": 21, "step": 2},
     },
     "Turtle Breakout Short": {
         "channel_period":    {"type": "int",   "low": 10, "high": 30, "step": 5},
@@ -318,24 +298,82 @@ def get_all_params(strategy_name: str) -> dict:
 # ==============================================================================
 
 SYMBOLS_CACHE = Path("cache/top_symbols.json")
-RESULTS_DIR = Path("cache/optimization")
+BAR_DATA_DIR  = Path("cache/bar_data")
+RESULTS_DIR   = Path("cache/optimization")
 GLOBAL_PARAMS = Path("cache/optimized_params.json")
-BAR_MINUTES = {"5min": 5, "15min": 15, "1h": 60, "1d": 390}
+BAR_MINUTES   = {"5min": 5, "15min": 15, "1h": 60, "1d": 390}
 
 
-def load_symbols(count: int = 100) -> list[str]:
+def load_symbols(count: int = 500, timeframe: str = "1d", min_bars: int = 0) -> list[str]:
+    """
+    Load symbols that have sufficient cached bar data.
+
+    Filters out symbols with partial history (late IPOs, delistings, etc.) by
+    checking actual bar count in cache. Only symbols meeting min_bars are returned.
+
+    Defaults:
+      timeframe="1d", min_bars=0 → returns all symbols with any 1d data
+      Call with min_bars=200 to ensure ~1 year of daily history
+    """
     if SYMBOLS_CACHE.exists():
-        data = json.loads(SYMBOLS_CACHE.read_text())
-        return data.get("symbols", [])[:count]
-    return ["AAPL", "NVDA", "TSLA", "MSFT", "META", "AMZN", "GOOGL", "AMD", "SPY", "QQQ"]
+        all_syms = json.loads(SYMBOLS_CACHE.read_text()).get("symbols", [])
+    else:
+        all_syms = ["AAPL", "NVDA", "TSLA", "MSFT", "META", "AMZN", "GOOGL", "AMD", "SPY", "QQQ"]
+
+    if min_bars <= 0:
+        return all_syms[:count]
+
+    # Filter by actual cached bar count
+    valid = []
+    for sym in all_syms:
+        fp = BAR_DATA_DIR / f"{sym}_{timeframe}.json"
+        if not fp.exists():
+            continue
+        try:
+            data = json.loads(fp.read_text(encoding="utf-8"))
+            bars = data.get("bars", data) if isinstance(data, dict) else data
+            if len(bars) >= min_bars:
+                valid.append(sym)
+        except Exception:
+            continue
+        if len(valid) >= count:
+            break
+    return valid
+
+
+def split_symbols(
+    symbols: list[str],
+    train_fraction: float = 0.5,
+    seed: int = 42,
+) -> tuple[list[str], list[str]]:
+    """
+    Split symbols into train and validation sets using even/odd interleaving.
+
+    Symbol list is sorted by volume-rank (position in the list), so slicing
+    first/last half would put the highest-volume stocks in train and lowest
+    in val — correlated sets. Even/odd interleaving breaks that correlation:
+    every consecutive pair (rank 0 vs 1, rank 2 vs 3, ...) is split across
+    train and val, so both sets have similar volume distributions.
+
+    Example: [AAPL, MSFT, NVDA, TSLA, META, AMZN]
+      train (even): [AAPL, NVDA, META]   indices 0, 2, 4
+      val   (odd):  [MSFT, TSLA, AMZN]  indices 1, 3, 5
+    """
+    train = [s for i, s in enumerate(symbols) if i % 2 == 0]
+    val   = [s for i, s in enumerate(symbols) if i % 2 == 1]
+    return train, val
 
 
 def run_single_strategy_backtest(
     strategy_name: str,
     symbols: list[str],
     params: dict,
-    days_back: int = 90,
 ) -> dict:
+    """
+    Mini-backtest for one strategy on given symbols using ONLY cached bar data.
+    No API calls are ever made — symbols without cached data are silently skipped.
+    Uses all available cached history (full 180-day window).
+    """
     """Run a mini-backtest with injected params. This is Optuna's objective."""
     from backend.data.schemas import BarSeries
     from backend.patterns.classifier import classify_all
@@ -481,14 +519,26 @@ def run_single_strategy_backtest(
 def optimize_strategy(
     strategy_name: str,
     n_trials: int = 50,
-    n_symbols: int = 50,
-    days_back: int = 90,
+    train_symbols: list[str] = None,
+    val_symbols: list[str] = None,
+    worker_id: int = 0,
 ) -> dict:
+    """
+    Optimize one strategy on train_symbols, then validate on val_symbols.
+
+    train_symbols: symbols used for Optuna parameter search
+    val_symbols:   held-out symbols evaluated once with the best params found
+    worker_id:     used to offset Optuna seed so parallel workers explore differently
+    """
     if not HAS_OPTUNA:
         return {"error": "Install optuna: pip install optuna"}
 
+    # Fallback if called standalone (not via optimize_all)
+    if train_symbols is None or val_symbols is None:
+        all_syms = load_symbols(500)
+        train_symbols, val_symbols = split_symbols(all_syms)
+
     all_params = get_all_params(strategy_name)
-    symbols = load_symbols(n_symbols)
 
     total_combos = 1
     for spec in all_params.values():
@@ -497,76 +547,86 @@ def optimize_strategy(
         else:
             total_combos *= max(1, int((spec["high"] - spec["low"]) / spec["step"]) + 1)
 
-    print(f"\n  ═══════════════════════════════════════════════════")
-    print(f"  Optimizing: {strategy_name}")
-    print(f"  Universal params: {len(UNIVERSAL_PARAMS)}")
-    print(f"  Specific params:  {len(STRATEGY_SPECIFIC_PARAMS.get(strategy_name, {}))}")
-    print(f"  Total params:     {len(all_params)}")
-    print(f"  Search space:     ~{total_combos:,} combinations")
-    print(f"  Optuna trials:    {n_trials} (Bayesian, not grid)")
-    print(f"  Symbols: {len(symbols)} | Days: {days_back}")
-    print(f"  ═══════════════════════════════════════════════════")
+    prefix = f"[W{worker_id}] {strategy_name}"
+    print(f"\n  ┌── {prefix}")
+    print(f"  │   Params: {len(all_params)} ({len(UNIVERSAL_PARAMS)} universal + "
+          f"{len(STRATEGY_SPECIFIC_PARAMS.get(strategy_name, {}))} specific) | "
+          f"~{total_combos:,} combos | {n_trials} trials")
+    print(f"  │   Train: {len(train_symbols)} syms | Val: {len(val_symbols)} syms | "
+          f"Cache-only")
 
     best_exp = -999
 
     def objective(trial):
         nonlocal best_exp
-
         params = {}
-        for name, spec in all_params.items():
+        for pname, spec in all_params.items():
             if spec["type"] == "int":
-                params[name] = trial.suggest_int(name, spec["low"], spec["high"], step=spec["step"])
+                params[pname] = trial.suggest_int(pname, spec["low"], spec["high"], step=spec["step"])
             elif spec["type"] == "float":
-                params[name] = trial.suggest_float(name, spec["low"], spec["high"], step=spec["step"])
+                params[pname] = trial.suggest_float(pname, spec["low"], spec["high"], step=spec["step"])
             elif spec["type"] == "cat":
-                params[name] = trial.suggest_categorical(name, spec["choices"])
+                params[pname] = trial.suggest_categorical(pname, spec["choices"])
 
-        result = run_single_strategy_backtest(
-            strategy_name, symbols, params, days_back,
-        )
+        result = run_single_strategy_backtest(strategy_name, train_symbols, params)
 
-        # Penalize too few signals
         if result["signals"] < 10:
             return -10.0
 
         score = result["expectancy"]
-
-        # Small bonus for reasonable signal count
         if result["signals"] > 30:
-            score += 0.005
+            score += 0.005  # tiny bonus for generating enough signals
 
-        is_best = result["expectancy"] > best_exp
-        if is_best:
+        if result["expectancy"] > best_exp:
             best_exp = result["expectancy"]
-
-        marker = "★ BEST" if is_best else ""
-        print(f"    #{trial.number:>3}: Exp={result['expectancy']:+.3f}R "
-              f"WR={result['win_rate']:.0%} PF={result['pf']:.2f} "
-              f"N={result['signals']:>4} {marker}")
+            print(f"  │   #{trial.number:>3} ★ Exp={result['expectancy']:+.3f}R "
+                  f"WR={result['win_rate']:.0%} PF={result['pf']:.2f} N={result['signals']}")
 
         return score
 
-    study = optuna.create_study(direction="maximize",
-                                sampler=optuna.samplers.TPESampler(seed=42))
+    # Each worker uses a different seed so parallel searches explore different regions
+    sampler = optuna.samplers.TPESampler(seed=42 + worker_id * 137)
+    study = optuna.create_study(direction="maximize", sampler=sampler)
     t0 = time.time()
     study.optimize(objective, n_trials=n_trials)
     elapsed = time.time() - t0
 
     best = study.best_trial
+    best_params = best.params
+    train_exp = round(best.value, 4)
 
-    # Categorize params
-    best_universal = {k: v for k, v in best.params.items() if k in UNIVERSAL_PARAMS}
-    best_specific = {k: v for k, v in best.params.items() if k not in UNIVERSAL_PARAMS}
+    # ── VALIDATION PASS ─────────────────────────────────────────────────────
+    # Run best params once on the held-out 250 symbols — no optimization here
+    val_result = run_single_strategy_backtest(strategy_name, val_symbols, best_params)
+    val_exp = round(val_result["expectancy"], 4) if val_result["signals"] >= 5 else None
+
+    # Overfit flag: val drops below zero or is less than 40% of train
+    overfit = False
+    if val_exp is not None:
+        if val_exp < 0 or (train_exp > 0 and val_exp < train_exp * 0.4):
+            overfit = True
+
+    best_universal = {k: v for k, v in best_params.items() if k in UNIVERSAL_PARAMS}
+    best_specific = {k: v for k, v in best_params.items() if k not in UNIVERSAL_PARAMS}
+
+    # Status line
+    val_str = f"{val_exp:+.3f}R" if val_exp is not None else "n/a (too few)"
+    flag = " ⚠ OVERFIT" if overfit else (" ✓" if not overfit else "")
+    print(f"  └── {strategy_name}: train={train_exp:+.3f}R  val={val_str}{flag}  ({elapsed:.0f}s)")
 
     result = {
         "strategy": strategy_name,
-        "best_params": best.params,
+        "best_params": best_params,
         "best_universal": best_universal,
         "best_specific": best_specific,
-        "best_expectancy": round(best.value, 4),
+        "train_expectancy": train_exp,
+        "val_expectancy": val_exp,
+        "val_signals": val_result["signals"],
+        "overfit_flag": overfit,
+        "best_expectancy": train_exp,  # kept for run_weekend_optimization.py compat
         "n_trials": n_trials,
-        "n_symbols": n_symbols,
-        "days_back": days_back,
+        "n_train_symbols": len(train_symbols),
+        "n_val_symbols": len(val_symbols),
         "elapsed_seconds": round(elapsed, 1),
         "timestamp": datetime.now().isoformat(),
     }
@@ -575,66 +635,226 @@ def optimize_strategy(
     safe = strategy_name.replace(" ", "_").replace("/", "_")
     (RESULTS_DIR / f"{safe}.json").write_text(json.dumps(result, indent=2))
 
-    print(f"\n  ── Results: {strategy_name} ──")
-    print(f"  Best expectancy: {best.value:+.4f}R")
-    print(f"  Time: {elapsed:.0f}s ({elapsed/60:.1f}m)")
-    print(f"  Universal params:")
-    for k, v in sorted(best_universal.items()):
-        print(f"    {k:<20} = {v}")
-    if best_specific:
-        print(f"  Strategy-specific params:")
-        for k, v in sorted(best_specific.items()):
-            print(f"    {k:<20} = {v}")
-
     return result
 
 
+# ==============================================================================
+# PARALLEL WORKER — must be top-level (picklable) for ProcessPoolExecutor
+# ==============================================================================
+
+def _worker_optimize_single(args: tuple) -> tuple[str, dict]:
+    """
+    Runs optimization for a single strategy.
+    Called by ProcessPoolExecutor — must be module-level (picklable).
+    Returns (name, result) so the main process can save checkpoints after each.
+    """
+    import warnings
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
+
+    name, n_trials, train_syms, val_syms, seed = args
+    try:
+        result = optimize_strategy(name, n_trials, train_syms, val_syms, seed)
+    except Exception as e:
+        result = {"error": str(e), "strategy": name}
+    return name, result
+
+
+def _save_opt_checkpoint(path: Path, results: dict) -> None:
+    """Atomic checkpoint write — safe against crashes mid-write."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    data = {
+        "completed": list(results.keys()),
+        "results": results,
+        "saved_at": datetime.now().isoformat(),
+    }
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps(data, indent=2))
+    tmp.replace(path)
+
+
 def optimize_all(
-    n_trials: int = 50,
-    n_symbols: int = 50,
-    days_back: int = 90,
+    n_trials: int = 60,
+    n_total_symbols: int = 500,
     strategies: list[str] = None,
+    n_cores: int = N_CORES,
+    checkpoint_path: Path = None,
 ) -> dict:
+    """
+    Optimize all strategies in parallel across n_cores workers.
+
+    Each strategy is submitted as an individual job. With max_workers=6 and
+    30 strategies, Python keeps 6 in flight at all times — no manual chunking.
+
+    Strategies are sorted slowest-first (5min before 1d) so that when a fast
+    daily strategy finishes early, the next queued job is another slow one,
+    keeping all cores busy instead of stalling at the end.
+
+    Checkpoint: if checkpoint_path is given, results are saved after every
+    completed strategy. Re-run with the same checkpoint_path to resume.
+
+    Only optimizes strategies that are EXPLICITLY OPTED IN via either:
+      1. Being passed in the `strategies` argument
+      2. Having an entry in STRATEGY_SPECIFIC_PARAMS (when called directly)
+
+    New patterns added to classifier/registry are NOT automatically optimized.
+    """
     if strategies is None:
-        strategies = sorted(set(list(STRATEGY_SPECIFIC_PARAMS.keys())))
+        strategies = sorted(STRATEGY_SPECIFIC_PARAMS.keys())
 
-    print(f"\n{'═' * 70}")
-    print(f"  Strategy Parameter Optimizer v2")
-    print(f"  {len(strategies)} strategies × {n_trials} trials each")
-    print(f"  {len(UNIVERSAL_PARAMS)} universal + strategy-specific params")
-    print(f"  {n_symbols} symbols × {days_back} days")
-    print(f"{'═' * 70}")
+    from backend.patterns.registry import PATTERN_META
 
-    all_results = {}
-    t_start = time.time()
+    # ── Guard: skip strategies not registered in PATTERN_META ───────────────
+    # Strategies in STRATEGY_SPECIFIC_PARAMS but not in PATTERN_META are
+    # planned/future patterns — the classifier won't detect them, so every
+    # trial produces 0 signals. Skip them and warn.
+    unregistered = [s for s in strategies if s not in PATTERN_META]
+    if unregistered:
+        print(f"\n  WARNING: {len(unregistered)} strategies not in PATTERN_META (no detector) — skipping:")
+        for s in unregistered:
+            print(f"    - {s}")
+    strategies = [s for s in strategies if s in PATTERN_META]
 
-    for i, name in enumerate(strategies):
-        print(f"\n  [{i+1}/{len(strategies)}] {name}")
+    if not strategies:
+        print("  No optimizable strategies found in PATTERN_META.")
+        return {}
+
+    # ── Resume from checkpoint ───────────────────────────────────────────────
+    already_done: dict = {}
+    if checkpoint_path and checkpoint_path.exists():
         try:
-            result = optimize_strategy(name, n_trials, n_symbols, days_back)
-            all_results[name] = result
+            ckpt = json.loads(checkpoint_path.read_text())
+            already_done = ckpt.get("results", {})
+            done_names = set(ckpt.get("completed", []))
+            before = len(strategies)
+            strategies = [s for s in strategies if s not in done_names]
+            print(f"  Checkpoint loaded: {len(done_names)} done, "
+                  f"{len(strategies)}/{before} remaining")
         except Exception as e:
-            print(f"    ERROR: {e}")
-            all_results[name] = {"error": str(e)}
+            print(f"  Checkpoint read failed ({e}) — starting fresh")
 
-    GLOBAL_PARAMS.write_text(json.dumps(all_results, indent=2))
+    if not strategies:
+        print("  All strategies already completed. Use --fresh to re-run.")
+        return already_done
+
+    # ── Symbol pools, one per timeframe ─────────────────────────────────────
+    sym_pools = {
+        "1d":    load_symbols(n_total_symbols, timeframe="1d",    min_bars=200),
+        "1h":    load_symbols(n_total_symbols, timeframe="1h",    min_bars=500),
+        "15min": load_symbols(n_total_symbols, timeframe="15min", min_bars=2000),
+        "5min":  load_symbols(n_total_symbols, timeframe="5min",  min_bars=5000),
+    }
+    split_pools = {tf: split_symbols(syms) for tf, syms in sym_pools.items()}
+
+    def train_val_for(name: str) -> tuple[list[str], list[str]]:
+        primary_tf = PATTERN_META.get(name, {}).get("tf", ["5min"])[0]
+        return split_pools.get(primary_tf, split_pools["5min"])
+
+    # ── Sort slowest-first (LPT scheduling) ──────────────────────────────────
+    # 5min strategies take ~10x longer than 1d. Submitting slowest first means
+    # a freed core always picks up a slow job rather than stalling at the end
+    # with one slow strategy left while 5 cores idle.
+    def tf_weight(name: str) -> int:
+        primary_tf = PATTERN_META.get(name, {}).get("tf", ["5min"])[0]
+        return TF_WEIGHT.get(primary_tf, 4)
+
+    strategies = sorted(strategies, key=tf_weight, reverse=True)
+
+    n_remaining = len(strategies)
+    n_workers = min(n_cores, n_remaining)
+
+    print(f"\n{'=' * 70}")
+    print(f"  Strategy Parameter Optimizer v3 -- Parallel")
+    print(f"  Strategies:      {n_remaining} remaining  ({len(already_done)} already done)")
+    print(f"  Cores:           {n_workers}")
+    print(f"  Trials/strategy: {n_trials}")
+    for tf, syms in sym_pools.items():
+        tr, va = split_pools[tf]
+        print(f"  {tf:<6} symbols:  {len(syms)} usable -> {len(tr)} train / {len(va)} val")
+    print(f"  Data source:     cache-only (no API calls)")
+    print(f"  Checkpoint:      {'auto-save per strategy' if checkpoint_path else 'disabled'}")
+    print(f"  Submission order (slowest first):")
+    for name in strategies:
+        tf = PATTERN_META.get(name, {}).get("tf", ["?"])[0]
+        print(f"    {name:<32} [{tf}]")
+    print(f"{'=' * 70}\n")
+
+    t_start = time.time()
+    all_results: dict = dict(already_done)
+    completed_count = 0
+
+    with ProcessPoolExecutor(max_workers=n_workers) as executor:
+        futures = {}
+        for i, name in enumerate(strategies):
+            train_syms, val_syms = train_val_for(name)
+            seed = 42 + i * 137
+            fut = executor.submit(
+                _worker_optimize_single,
+                (name, n_trials, train_syms, val_syms, seed),
+            )
+            futures[fut] = name
+
+        for future in as_completed(futures):
+            name = futures[future]
+            try:
+                _, result = future.result()
+            except Exception as e:
+                result = {"error": str(e), "strategy": name}
+
+            all_results[name] = result
+            completed_count += 1
+
+            # Save checkpoint after every strategy — crash-safe
+            if checkpoint_path:
+                _save_opt_checkpoint(checkpoint_path, all_results)
+
+            tf = PATTERN_META.get(name, {}).get("tf", ["?"])[0]
+            if "error" in result:
+                print(f"  [{completed_count}/{n_remaining}] {name:<32} ERROR: {result['error'][:40]}")
+            else:
+                t_exp = result.get("train_expectancy", result.get("expectancy", 0))
+                v_exp = result.get("val_expectancy")
+                v_str = f"{v_exp:+.3f}R" if v_exp is not None else "n/a"
+                overfit = " OVERFIT" if result.get("overfit_flag") else ""
+                print(f"  [{completed_count}/{n_remaining}] {name:<32} "
+                      f"train:{t_exp:+.3f}R  val:{v_str:>8}  [{tf}]{overfit}")
 
     elapsed = time.time() - t_start
+
+    # Save combined results
+    GLOBAL_PARAMS.parent.mkdir(parents=True, exist_ok=True)
+    GLOBAL_PARAMS.write_text(json.dumps(all_results, indent=2))
+
+    # ── SUMMARY TABLE ─────────────────────────────────────────────────────────
     print(f"\n{'═' * 70}")
-    print(f"  OPTIMIZATION COMPLETE")
-    print(f"  Strategies: {len(strategies)}")
-    print(f"  Time: {elapsed/60:.0f}m ({elapsed/3600:.1f}h)")
+    print(f"  OPTIMIZATION COMPLETE — {elapsed/60:.0f}m ({elapsed/3600:.1f}h)")
+    print(f"{'═' * 70}")
+    print(f"\n  {'Strategy':<32} {'TF':<6} {'Train EXP':>10} {'Val EXP':>10}  Status")
+    print(f"  {'─' * 66}")
+
+    sorted_results = sorted(
+        all_results.items(),
+        key=lambda x: x[1].get("train_expectancy", -999),
+        reverse=True,
+    )
+
+    n_positive_val = 0
+    for name, res in sorted_results:
+        tf = PATTERN_META.get(name, {}).get("tf", ["?"])[0]
+        if "error" in res:
+            print(f"  {name:<32} {tf:<6} {'ERROR':>10} {'':>10}  {res['error'][:20]}")
+            continue
+        t_exp = res.get("train_expectancy", 0)
+        v_exp = res.get("val_expectancy")
+        overfit = res.get("overfit_flag", False)
+        v_str = f"{v_exp:+.3f}R" if v_exp is not None else "  n/a  "
+        status = "OVERFIT" if overfit else ("ok" if v_exp and v_exp >= 0 else "neg val")
+        if v_exp is not None and v_exp >= 0:
+            n_positive_val += 1
+        print(f"  {name:<32} {tf:<6} {t_exp:>+9.3f}R {v_str:>10}  {status}")
+
+    print(f"\n  Strategies with positive val EXP: {n_positive_val}/{len(sorted_results)}")
     print(f"  Results: {GLOBAL_PARAMS}")
     print(f"{'═' * 70}")
-
-    # Summary table
-    print(f"\n  {'Strategy':<30} {'Before':>8} {'After':>8} {'Change':>8}")
-    print(f"  {'─' * 56}")
-    for name, res in sorted(all_results.items(), key=lambda x: x[1].get("best_expectancy", -999), reverse=True):
-        if "error" in res:
-            continue
-        exp = res.get("best_expectancy", 0)
-        print(f"  {name:<30} {'?':>8} {exp:>+7.3f}R {'':>8}")
 
     return all_results
 
@@ -644,18 +864,20 @@ def optimize_all(
 # ==============================================================================
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Strategy Parameter Optimizer v2")
-    parser.add_argument("--strategy", type=str, default=None)
-    parser.add_argument("--trials", type=int, default=50)
-    parser.add_argument("--symbols", type=int, default=50)
-    parser.add_argument("--days", type=int, default=90)
-    parser.add_argument("--list", action="store_true")
+    parser = argparse.ArgumentParser(description="Strategy Parameter Optimizer v3")
+    parser.add_argument("--strategy", type=str, default=None, help="Single strategy name")
+    parser.add_argument("--trials", type=int, default=60, help="Optuna trials per strategy")
+    parser.add_argument("--symbols", type=int, default=500, help="Total symbol pool size (split 50/50)")
+    parser.add_argument("--cores", type=int, default=N_CORES, help="Parallel worker processes")
+    parser.add_argument("--list", action="store_true", help="List all strategies and params")
     args = parser.parse_args()
 
     if args.list:
-        print(f"\n  Optimizable strategies ({len(STRATEGY_SPECIFIC_PARAMS)}):")
-        for name in sorted(STRATEGY_SPECIFIC_PARAMS.keys()):
-            specific = STRATEGY_SPECIFIC_PARAMS[name]
+        from backend.patterns.registry import PATTERN_META
+        all_strats = sorted(PATTERN_META.keys())
+        print(f"\n  Strategies ({len(all_strats)}):")
+        for name in all_strats:
+            specific = STRATEGY_SPECIFIC_PARAMS.get(name, {})
             total = len(UNIVERSAL_PARAMS) + len(specific)
             print(f"    {name:<30} [{total} params: {len(UNIVERSAL_PARAMS)} universal + {len(specific)} specific]")
         sys.exit(0)
@@ -665,6 +887,14 @@ if __name__ == "__main__":
         sys.exit(1)
 
     if args.strategy:
-        optimize_strategy(args.strategy, args.trials, args.symbols, args.days)
+        from backend.patterns.registry import PATTERN_META
+        primary_tf = PATTERN_META.get(args.strategy, {}).get("tf", ["5min"])[0]
+        min_bars_map = {"1d": 200, "1h": 500, "15min": 2000, "5min": 5000}
+        mb = min_bars_map.get(primary_tf, 5000)
+        all_syms = load_symbols(args.symbols, timeframe=primary_tf, min_bars=mb)
+        train_syms, val_syms = split_symbols(all_syms)
+        print(f"  {args.strategy} [{primary_tf}]: "
+              f"{len(train_syms)} train / {len(val_syms)} val symbols ({len(all_syms)} usable)")
+        optimize_strategy(args.strategy, args.trials, train_syms, val_syms)
     else:
-        optimize_all(args.trials, args.symbols, args.days)
+        optimize_all(args.trials, args.symbols, strategies=None, n_cores=args.cores)

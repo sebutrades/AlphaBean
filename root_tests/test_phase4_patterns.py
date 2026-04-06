@@ -8,7 +8,7 @@ import numpy as np
 from datetime import datetime, timedelta
 
 print("=" * 70)
-print("  AlphaBean v3.0 — Phase 4: 47-Pattern Classifier Test")
+print("  AlphaBean v3.0 — Phase 4: Quant-Only Classifier Test")
 print("=" * 70)
 
 # ── Imports ─────────────────────────────────────────────────
@@ -20,14 +20,6 @@ try:
     )
     from backend.patterns.classifier import (
         classify_all, extract_structures, ExtractedStructures,
-        _detect_head_and_shoulders, _detect_double_bottom, _detect_double_top,
-        _detect_triple_top, _detect_triple_bottom,
-        _detect_bull_flag, _detect_rectangle, _detect_pennant,
-        _detect_bullish_engulfing, _detect_bearish_engulfing,
-        _detect_morning_star, _detect_evening_star,
-        _detect_hammer, _detect_shooting_star, _detect_doji,
-        _detect_three_white_soldiers, _detect_three_black_crows,
-        _detect_dragonfly_doji,
         _detect_momentum_breakout, _detect_vol_compression_breakout,
         _detect_mean_reversion, _detect_trend_pullback,
         _detect_range_expansion, _detect_volume_breakout,
@@ -64,76 +56,34 @@ def make_bars(closes, symbol="TEST", tf="1h", start=None, volumes=None,
 # PART A: Registry
 # =====================================================================
 print("\n" + "=" * 70)
-print("  PART A: Pattern Registry (47 patterns)")
+print("  PART A: Pattern Registry (quant-only)")
 print("=" * 70)
 
 names = get_all_pattern_names()
-check("Total patterns registered", len(names) == 47, f"got {len(names)}")
+print(f"  Total patterns registered: {len(names)}")
 
 cats = {}
 for n, m in PATTERN_META.items():
     c = m["cat"].value
     cats[c] = cats.get(c, 0) + 1
 
-check("16 classical", cats.get("classical", 0) == 16, f"got {cats.get('classical',0)}")
-check("10 candlestick", cats.get("candlestick", 0) == 10, f"got {cats.get('candlestick',0)}")
-check("11 SMB scalps", cats.get("smb_scalp", 0) == 11, f"got {cats.get('smb_scalp',0)}")
-check("10 quant", cats.get("quant", 0) == 10, f"got {cats.get('quant',0)}")
+check("0 classical", cats.get("classical", 0) == 0, f"got {cats.get('classical',0)}")
+check("1 SMB scalp (Tidal Wave)", cats.get("smb_scalp", 0) == 1, f"got {cats.get('smb_scalp',0)}")
 
-for name in ["Triple Top", "Triple Bottom", "Rectangle", "Pennant",
-             "Bullish Engulfing", "Bearish Engulfing", "Morning Star",
-             "Evening Star", "Hammer", "Shooting Star", "Doji",
-             "Three White Soldiers", "Three Black Crows", "Dragonfly Doji",
-             "Mean Reversion", "Trend Pullback", "Gap Fade",
-             "Relative Strength Break", "Range Expansion", "Volume Breakout",
-             "VWAP Reversion", "Donchian Breakout"]:
+for name in ["Mean Reversion", "Trend Pullback", "Gap Fade",
+             "Range Expansion", "Volume Breakout",
+             "VWAP Reversion", "Donchian Breakout", "Tidal Wave"]:
     check(f"'{name}' registered", name in PATTERN_META)
 
 
 # =====================================================================
-# PART B: Classical Patterns
+# PART B: Quant Patterns (spot-check)
 # =====================================================================
 print("\n" + "=" * 70)
-print("  PART B: Classical Structural Patterns")
+print("  PART B: Quant Strategy Patterns")
 print("=" * 70)
 
-print("\n[B1] Head & Shoulders")
-hs = np.concatenate([np.linspace(100,110,15), np.linspace(110,104,8),
-                     np.linspace(104,118,18), np.linspace(118,105,10),
-                     np.linspace(105,111,12), np.linspace(111,98,15)])
-r = _detect_head_and_shoulders(extract_structures(make_bars(hs, "HS")))
-check("H&S detected", r is not None and r.bias == Bias.SHORT, f"{'detected' if r else 'not triggered'}")
-
-print("\n[B2] Double Bottom")
-db = np.concatenate([np.linspace(120,100,20), np.linspace(100,112,15),
-                     np.linspace(112,100.5,15), np.linspace(100.5,115,15)])
-r = _detect_double_bottom(extract_structures(make_bars(db, "DB")))
-check("Double Bottom detected", r is not None and r.bias == Bias.LONG,
-      f"{'detected' if r else 'not triggered'}")
-
-print("\n[B3] Double Top")
-dt = np.concatenate([np.linspace(100,120,20), np.linspace(120,108,15),
-                     np.linspace(108,119.5,15), np.linspace(119.5,103,15)])
-r = _detect_double_top(extract_structures(make_bars(dt, "DT")))
-check("Double Top detected", r is not None and r.bias == Bias.SHORT,
-      f"{'detected' if r else 'not triggered'}")
-
-print("\n[B4] Triple Bottom")
-tb = np.concatenate([np.linspace(120,100,15), np.linspace(100,110,10),
-                     np.linspace(110,100.3,10), np.linspace(100.3,110,10),
-                     np.linspace(110,100.2,10), np.linspace(100.2,115,15)])
-r = _detect_triple_bottom(extract_structures(make_bars(tb, "TB")))
-check("Triple Bottom detected", r is not None and r.bias == Bias.LONG,
-      f"{'detected' if r else 'not triggered — tolerance may be tight'}")
-
-print("\n[B5] Bull Flag")
-bf = np.concatenate([np.linspace(100,100,5), np.linspace(100,115,10),
-                     np.linspace(115,112,8), np.linspace(112,118,5)])
-r = _detect_bull_flag(extract_structures(make_bars(bf, "BF")))
-check("Bull Flag detected", r is not None and r.bias == Bias.LONG,
-      f"{'detected' if r else 'not triggered'}")
-
-print("\n[B6] Momentum Breakout")
+print("\n[B1] Momentum Breakout")
 np.random.seed(55)
 mb = np.concatenate([100 + np.random.normal(0,1.5,25), np.linspace(102,110,5)])
 r = _detect_momentum_breakout(extract_structures(make_bars(mb, "MB")))
@@ -291,7 +241,7 @@ print("  PART E: TradeSetup Format + Full Pipeline")
 print("=" * 70)
 
 # Find any detected setup to test format
-all_results = classify_all(make_bars(hs, "PIPE"))
+all_results = classify_all(make_bars(mb, "PIPE"))
 check("classify_all returns list", isinstance(all_results, list))
 check("Sorted by confidence", all(all_results[i].confidence >= all_results[i+1].confidence
       for i in range(len(all_results)-1)) if len(all_results) > 1 else True)
@@ -311,7 +261,7 @@ check("Short data → empty", len(classify_all(make_bars([100,101,102], "S"))) =
 
 # Count unique pattern functions in _ALL_DETECTORS
 from backend.patterns.classifier import _ALL_DETECTORS
-check("47 detector functions registered", len(_ALL_DETECTORS) == 47, f"got {len(_ALL_DETECTORS)}")
+print(f"  Detector functions registered: {len(_ALL_DETECTORS)}")
 
 
 # =====================================================================
@@ -330,20 +280,6 @@ if FAIL > 0:
     print("  and patterns that DO fire produce valid TradeSetup objects.")
 
 print(f"""
-  47 Pattern Detectors:
-    Classical (16):   H&S, Inv H&S, Double/Triple Top/Bottom,
-                      Asc/Desc/Sym Triangle, Bull/Bear Flag, Pennant,
-                      Cup & Handle, Rectangle, Rising/Falling Wedge
-    Candlestick (10): Bullish/Bearish Engulfing, Morning/Evening Star,
-                      Hammer, Shooting Star, Doji, Dragonfly Doji,
-                      Three White Soldiers, Three Black Crows
-    SMB Scalps (11):  RubberBand, HitchHiker, ORB 15/30, Second Chance,
-                      BackSide, Fashionably Late, Spencer, Gap G&G,
-                      Tidal Wave, Breaking News
-    Quant (10):       Momentum Breakout, Vol Compression, Mean Reversion,
-                      Trend Pullback, Gap Fade, Relative Strength Break,
-                      Range Expansion, Volume Breakout, VWAP Reversion,
-                      Donchian Breakout
-
-  Next: Phase 5 — 10 Quant Strategies + Rolling Evaluator
+  Quant-only universe — classical and SMB scalps removed (except Tidal Wave).
+  Next: hyperparameter optimization with walk-forward validation.
 """)

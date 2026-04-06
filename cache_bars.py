@@ -198,7 +198,7 @@ def cache_all(
     print(f"  Time:     {elapsed/60:.1f} min")
     print(f"{'═' * 60}")
     print(f"\n  Now run optimization (reads from cache):")
-    print(f"    python run_weekend_optimization.py --symbols {n_symbols} --days {days_back}")
+    print(f"    python run_weekend_optimization.py --symbols {n_symbols} --cores 6")
 
 
 if __name__ == "__main__":

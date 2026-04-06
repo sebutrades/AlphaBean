@@ -199,14 +199,10 @@ expected_candle = [
     "Hammer", "Shooting Star", "Doji", "Dragonfly Doji",
     "Three White Soldiers", "Three Black Crows",
 ]
-expected_smb = [
-    "RubberBand Scalp", "ORB 15min", "ORB 30min",
-    "Second Chance Scalp", "Fashionably Late",
-    "Gap Give & Go", "Tidal Wave",
-]
-
-for name in expected_candle + expected_smb:
+for name in expected_candle:
     check(f"'{name}' in PATTERN_META", name in PATTERN_META)
+
+check("'Tidal Wave' in PATTERN_META", "Tidal Wave" in PATTERN_META)
 
 
 # ══════════════════════════════════════════════════════════════
