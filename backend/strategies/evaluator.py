@@ -226,15 +226,18 @@ class StrategyEvaluator:
         """
         Get a 0-100 score for a pattern's recent performance.
         Used by the multi-factor scorer (Phase 6).
-        Returns 40.0 (below-neutral) if no live outcome data exists, so that
-        patterns must earn their score rather than getting a free pass.
+
+        Returns 50.0 (neutral) when no live outcome data exists — the system
+        should not penalise a pattern just because outcomes haven't been
+        recorded yet.  As outcomes accumulate the score will drift toward the
+        true hot_score (interpolated by sample-size confidence).
         """
         m = self.compute_metrics(pattern_name)
         if m is None:
-            return 40.0
-        # Scale confidence by sample size: fewer than 10 trades = partial credit
+            return 50.0   # neutral, not below-neutral
+        # Scale toward true hot_score as sample grows; full weight at 10+ trades
         confidence = min(1.0, m.total_signals / 10.0)
-        return round(confidence * m.hot_score + (1 - confidence) * 40.0, 1)
+        return round(confidence * m.hot_score + (1 - confidence) * 50.0, 1)
 
     def get_pattern_summary(self, pattern_name: str) -> dict:
         """Get a summary dict for a pattern (for API/UI)."""

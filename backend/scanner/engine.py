@@ -109,8 +109,9 @@ def scan_symbol(
 
         # --- Phase 6: Score ---
         for setup in setups:
-            # Default 30: no-evidence patterns are penalized until backtest validates them
-            bt = bt_scores.get(setup.pattern_name, 30.0)
+            # Default 50 (neutral): no information about a pattern ≠ bad pattern.
+            # Patterns with a known negative edge will have their cached entry < 50.
+            bt = bt_scores.get(setup.pattern_name, 50.0)
             scored = score_setup(setup, features, regime, evaluator, bt)
             scored.setup.timeframe_detected = _tf_label(tf)
 

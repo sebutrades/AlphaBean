@@ -229,28 +229,31 @@ def _job_scan(feed_ref: dict) -> None:
 
         setups = scan_multiple(symbols, mode="active", evaluator=evaluator)
 
-        # Keep top 2 per symbol, minimum score 45
+        # Keep top 2 per symbol — score threshold raised to 50 to match the
+        # recalibrated neutral baseline (v2 defaults give ~55 average vs ~46 before).
         by_sym: dict = {}
         for s in setups:
             by_sym.setdefault(s.get("symbol", ""), []).append(s)
         capped = []
         for sym, ss in by_sym.items():
             ss.sort(key=lambda x: x.get("composite_score", 0), reverse=True)
-            capped.extend([s for s in ss[:2] if s.get("composite_score", 0) >= 45])
+            capped.extend([s for s in ss[:2] if s.get("composite_score", 0) >= 50])
         capped.sort(key=lambda x: x.get("composite_score", 0), reverse=True)
 
-        # AI-evaluate top half
+        # AI-evaluate ALL setups that cleared the threshold.
+        # Previously: top-half only — meant genuinely good setups ranked below
+        # the median never received a verdict, even if the AI would confirm them.
+        # Now: every setup in `capped` gets evaluated; the AI delta re-ranks them.
+        # The per-day cache (symbol × pattern) keeps this cheap after the first hit.
         if capped:
-            top_half = capped[:max(len(capped) // 2, 1)]
-            regime   = feed_ref.get("regime", "unknown")
+            regime = feed_ref.get("regime", "unknown")
             try:
-                syms_ai = list({s.get("symbol", "") for s in top_half})
+                syms_ai = list({s.get("symbol", "") for s in capped})
                 nb      = fetch_news_batch(syms_ai)
                 ns      = {sym: format_headlines_for_llm(items) for sym, items in nb.items()}
-                top_half = evaluate_setups_batch(top_half, ns, regime, top_n=2)
+                capped  = evaluate_setups_batch(capped, ns, regime, top_n=3)
             except Exception as ai_err:
                 print(f"  [Feed] scan  AI error: {ai_err}")
-            capped = top_half + capped[max(len(capped) // 2, 1):]
 
         elapsed = time.time() - t
         feed_ref["opportunities"] = capped

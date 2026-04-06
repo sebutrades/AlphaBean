@@ -168,26 +168,20 @@ async def top_opportunities(ai:bool=Query(True),per_symbol:int=Query(2),max_symb
         ss.sort(key=lambda x: x.get("composite_score",0), reverse=True)
         capped.extend(ss[:per_symbol])
     capped.sort(key=lambda x: x.get("composite_score",0), reverse=True)
-    # Remove anything below 45
-    capped = [s for s in capped if s.get("composite_score", 0) >= 45]
+    # Score threshold raised to 50 (matches recalibrated v2 neutral baseline)
+    capped = [s for s in capped if s.get("composite_score", 0) >= 50]
     # Only filter market hours when market is open
     if _mkt_open(): capped = _mkt_hours_filter(capped)
-    # Only AI-evaluate top 50% by composite score — cuts Ollama calls in half
-    cutoff = max(len(capped) // 2, 1)
-    ai_batch = capped[:cutoff]
-    skip_batch = capped[cutoff:]
-    print(f"  Top 50% filter: {len(ai_batch)} for AI, {len(skip_batch)} skipped")
 
-    # AI evaluate only the top half
-    if ai and ai_batch:
+    # AI-evaluate ALL setups — per-day cache means first call is expensive but
+    # subsequent calls for the same setup cost nothing.  The AI delta re-ranks.
+    print(f"  AI evaluating {len(capped)} setups (per-day cache active)")
+    if ai and capped:
         try:
-            syms = list(set(s.get("symbol","") for s in ai_batch))
+            syms = list(set(s.get("symbol","") for s in capped))
             nb = fetch_news_batch(syms); ns = {sym:format_headlines_for_llm(items) for sym,items in nb.items()}
-            ai_batch = evaluate_setups_batch(ai_batch,ns,_regime_str(),top_n=per_symbol)
+            capped = evaluate_setups_batch(capped, ns, _regime_str(), top_n=per_symbol)
         except Exception as e: print(f"  AI error: {e}")
-
-    # Only return AI-evaluated setups (top 50%)
-    capped = ai_batch
 
     # Live correlation per symbol
     corr_map: dict[str, dict] = {}
