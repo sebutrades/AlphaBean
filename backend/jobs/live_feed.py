@@ -237,7 +237,7 @@ def _job_scan(feed_ref: dict) -> None:
         capped = []
         for sym, ss in by_sym.items():
             ss.sort(key=lambda x: x.get("composite_score", 0), reverse=True)
-            capped.extend([s for s in ss[:2] if s.get("composite_score", 0) >= 50])
+            capped.extend([s for s in ss[:2] if s.get("composite_score", 0) >= 45])
         capped.sort(key=lambda x: x.get("composite_score", 0), reverse=True)
 
         # AI-evaluate ALL setups that cleared the threshold.

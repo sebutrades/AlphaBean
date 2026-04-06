@@ -430,6 +430,21 @@ function TradeChart({ setup, onClose, t }: { setup: any; onClose: () => void; t:
         let s: any; if ((lc as any).CandlestickSeries) s = ch.addSeries((lc as any).CandlestickSeries, { upColor: t.long, downColor: t.short, borderUpColor: t.long, borderDownColor: t.short, wickUpColor: t.long, wickDownColor: t.short }); else s = ch.addCandlestickSeries({ upColor: t.long, downColor: t.short, borderUpColor: t.long, borderDownColor: t.short, wickUpColor: t.long, wickDownColor: t.short });
         s.setData(d.bars);
 
+        // Signal arrow — snap to nearest bar for LWC marker rendering
+        const detRaw = setup.detected_at || setup.entered_at;
+        if (detRaw && d.bars?.length) {
+          try {
+            const sigTs = Math.floor(new Date(detRaw).getTime() / 1000);
+            const nearest = d.bars.reduce((a: any, b: any) =>
+              Math.abs(b.time - sigTs) < Math.abs(a.time - sigTs) ? b : a
+            );
+            const isLong = setup.bias === "long";
+            const mk = { time: nearest.time, position: isLong ? "belowBar" : "aboveBar", color: isLong ? t.long : t.short, shape: isLong ? "arrowUp" : "arrowDown", text: "Signal", size: 2 };
+            if (typeof (lc as any).createSeriesMarkers === "function") (lc as any).createSeriesMarkers(s, [mk]);
+            else s.setMarkers([mk]);
+          } catch {}
+        }
+
         // Helper: add price line safely (works on v3 + v4)
         const addLine = (price: number, color: string, title: string, style: number, width: number) => {
           try { s.createPriceLine({ price, color, lineWidth: width, lineStyle: style, axisLabelVisible: true, title }); } catch {}
@@ -649,7 +664,8 @@ function TrackerChart({ tradeId, t, onClose }: { tradeId: string; t: T; onClose:
         const al = (price: number, color: string, title: string) => { if (price) try { s.createPriceLine({ price, color, lineWidth: 1.5, lineStyle: 2, axisLabelVisible: true, title }); } catch {} };
         const lv = d.levels || {};
         al(lv.entry, t.accent, `ENTRY $${lv.entry?.toFixed(2)}`);
-        al(lv.stop, t.short, `STOP $${lv.stop?.toFixed(2)}`);
+        const isBreakeven = lv.t1_hit && lv.stop && lv.entry && Math.abs(lv.stop - lv.entry) < 0.01;
+        al(lv.stop, isBreakeven ? t.long : t.short, isBreakeven ? `B/E $${lv.stop?.toFixed(2)}` : `STOP $${lv.stop?.toFixed(2)}`);
         al(lv.target_1, t.long, `T1 $${lv.target_1?.toFixed(2)}`);
         if (lv.target_2 && lv.target_2 !== lv.target_1) al(lv.target_2, t.long, `T2 $${lv.target_2?.toFixed(2)}`);
         if (lv.trailing_stop > 0) al(lv.trailing_stop, t.gold, `TRAIL $${lv.trailing_stop?.toFixed(2)}`);
@@ -761,7 +777,7 @@ function TrackerRow({ trade, onClose, onRemove, t }: { trade: any; onClose: () =
             </div>
           </div>
           <div style={{ display: "flex", gap: 16, fontFamily: "'JetBrains Mono',monospace", fontSize: 12 }}>
-            {[{ l: "ENTRY", v: trade.entry_price, c: t.accent }, { l: "STOP", v: trade.stop_loss, c: t.short }, { l: "T1", v: trade.target_1, c: t.long }, { l: "NOW", v: trade.current_price, c: t.text }].map(({ l, v, c }) => (
+            {[{ l: "ENTRY", v: trade.entry_price, c: t.accent }, { l: trade.t1_hit && Math.abs(trade.stop_loss - trade.entry_price) < 0.01 ? "B/E STOP" : "STOP", v: trade.stop_loss, c: t.t1_hit && Math.abs(trade.stop_loss - trade.entry_price) < 0.01 ? t.long : t.short }, { l: "T1", v: trade.target_1, c: t.long }, { l: "NOW", v: trade.current_price, c: t.text }].map(({ l, v, c }) => (
               <div key={l} style={{ textAlign: "right" }}>
                 <div style={{ fontSize: 9, color: t.textMuted, fontWeight: 700 }}>{l}</div>
                 <div style={{ fontWeight: 700, color: c }}>{v ? `$${v.toFixed(2)}` : "—"}</div>
@@ -992,11 +1008,199 @@ function TradeTrackerView({ t }: { t: T }) {
 }
 
 // ═══════════════════════════════════════════════
+// ANALYZE VIEW — on-demand symbol deep-dive
+// ═══════════════════════════════════════════════
+function AnalyzeChart({ bars, setups, t }: { bars: any[]; setups: any[]; t: T }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!ref.current || !bars.length) return;
+    let ch: any = null;
+    (async () => {
+      try {
+        const lc = await import("lightweight-charts");
+        if (ref.current) ref.current.innerHTML = "";
+        ch = lc.createChart(ref.current!, {
+          width: ref.current!.clientWidth, height: 380,
+          layout: { background: { color: t.chartBg } as any, textColor: t.chartText, fontFamily: "JetBrains Mono,monospace" },
+          grid: { vertLines: { color: t.chartGrid }, horzLines: { color: t.chartGrid } },
+          crosshair: { mode: lc.CrosshairMode.Normal },
+          rightPriceScale: { borderColor: t.border }, timeScale: { borderColor: t.border, timeVisible: true },
+        });
+        let s: any;
+        if ((lc as any).CandlestickSeries) s = ch.addSeries((lc as any).CandlestickSeries, { upColor: t.long, downColor: t.short, borderUpColor: t.long, borderDownColor: t.short, wickUpColor: t.long, wickDownColor: t.short });
+        else s = ch.addCandlestickSeries({ upColor: t.long, downColor: t.short, borderUpColor: t.long, borderDownColor: t.short, wickUpColor: t.long, wickDownColor: t.short });
+        s.setData(bars);
+        // Draw setup levels for each detected setup
+        const addLine = (price: number, color: string, title: string) => {
+          if (!price) return;
+          try { s.createPriceLine({ price, color, lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title }); } catch {}
+        };
+        setups.forEach((su: any) => {
+          addLine(su.entry_price, t.accent, `${su.pattern_name} ENTRY`);
+          addLine(su.stop_loss, t.short, "STOP");
+          addLine(su.target_1 || su.target_price, t.long, "T1");
+          if (su.target_2 && su.target_2 !== su.target_1) addLine(su.target_2, t.long, "T2");
+        });
+        // Arrow markers for each setup
+        if (setups.length && bars.length) {
+          const lastBar = bars[bars.length - 1];
+          const markers = setups.map((su: any) => {
+            const isLong = su.bias === "long";
+            return { time: lastBar.time, position: isLong ? "belowBar" : "aboveBar", color: isLong ? t.long : t.short, shape: isLong ? "arrowUp" : "arrowDown", text: su.pattern_name, size: 1 };
+          });
+          try {
+            if (typeof (lc as any).createSeriesMarkers === "function") (lc as any).createSeriesMarkers(s, markers);
+            else s.setMarkers(markers);
+          } catch {}
+        }
+        ch.timeScale().fitContent();
+        const ro = new ResizeObserver(() => { if (ref.current && ch) ch.applyOptions({ width: ref.current.clientWidth }) });
+        ro.observe(ref.current!);
+      } catch {}
+    })();
+    return () => { if (ch) ch.remove(); };
+  }, [bars, setups, t]);
+  return <div ref={ref} style={{ width: "100%", minHeight: 380 }} />;
+}
+
+function AnalyzeView({ t, onTrack }: { t: T; onTrack: (s: any) => void }) {
+  const [sym, setSym] = useState("");
+  const [tf, setTf] = useState("1d");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<any>(null);
+  const [err, setErr] = useState("");
+  const [openIdx, setOpenIdx] = useState<number | null>(null);
+
+  const run = async (s?: string, f?: string) => {
+    const symbol = (s || sym).trim().toUpperCase();
+    const timeframe = f || tf;
+    if (!symbol) return;
+    setLoading(true); setErr(""); setResult(null); setOpenIdx(null);
+    try {
+      const r = await fetch(`${API}/api/analyze/${symbol}?timeframe=${timeframe}&days=365`);
+      const d = await r.json();
+      if (d.error) throw new Error(d.error);
+      setResult(d);
+    } catch (e: any) { setErr(e.message); }
+    finally { setLoading(false); }
+  };
+
+  const chg = result?.change_pct ?? 0;
+  const chgColor = chg >= 0 ? t.long : t.short;
+
+  return (
+    <motion.div initial="hidden" animate="visible" variants={fadeUp}>
+      {/* Search bar */}
+      <div style={{ display: "flex", gap: 8, alignItems: "flex-end", marginBottom: 16, flexWrap: "wrap" }}>
+        <div>
+          <label style={{ fontSize: 10, color: t.textMuted, display: "block", marginBottom: 3, fontWeight: 700 }}>SYMBOL</label>
+          <input
+            type="text" value={sym}
+            onChange={e => setSym(e.target.value.toUpperCase())}
+            onKeyDown={e => e.key === "Enter" && run()}
+            placeholder="AAPL, NVDA, TSLA..."
+            style={{ fontSize: 17, fontWeight: 800, padding: "8px 14px", borderRadius: 10, width: 160, border: `1.5px solid ${t.border}`, background: t.bgCard, color: t.text, fontFamily: "'Outfit',sans-serif" }}
+          />
+        </div>
+        <div style={{ display: "flex", gap: 2, background: t.border, borderRadius: 8, padding: 3 }}>
+          {(["1d", "5min", "15min"] as const).map(f => (
+            <Pill key={f} active={tf === f} onClick={() => setTf(f)} t={t} s>{f}</Pill>
+          ))}
+        </div>
+        <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
+          onClick={() => run()} disabled={loading || !sym}
+          style={{ fontSize: 14, fontWeight: 700, padding: "9px 24px", borderRadius: 10, border: "none", background: loading ? t.border : `linear-gradient(135deg, ${t.accent}, ${t.accentLight})`, color: "#fff", cursor: loading ? "wait" : "pointer" }}>
+          {loading ? "Analyzing..." : "Analyze 🔬"}
+        </motion.button>
+        <span style={{ fontSize: 12, color: t.textMuted, alignSelf: "center" }}>Any ticker on the market — fetched on demand</span>
+      </div>
+
+      {err && <div style={{ padding: "10px 14px", borderRadius: 10, background: t.shortBg, color: t.short, fontSize: 13, marginBottom: 12 }}>{err}</div>}
+      {loading && <JuicerLoader t={t} msg={`Fetching and analyzing ${sym}...`} />}
+
+      {result && (
+        <motion.div initial="hidden" animate="visible" variants={stagger}>
+          {/* Price header */}
+          <motion.div variants={fadeUp} style={{ background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: 14, padding: "16px 20px", marginBottom: 12 }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 28, fontWeight: 900, color: t.text }}>{result.symbol}</span>
+              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 24, fontWeight: 800, color: t.text }}>${result.last_price}</span>
+              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 16, fontWeight: 700, color: chgColor }}>{chg >= 0 ? "+" : ""}{chg}%</span>
+              <span style={{ fontSize: 12, color: t.textMuted }}>{result.timeframe} • {result.bars_count} bars</span>
+            </div>
+            {/* Stat grid */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 8, marginTop: 14 }}>
+              {[
+                { l: "ATR", v: `$${result.atr} (${result.atr_pct}%)`, c: t.text },
+                { l: "RSI 14", v: result.rsi14 != null ? String(result.rsi14) : "—", c: result.rsi14 > 70 ? t.short : result.rsi14 < 30 ? t.long : t.text },
+                { l: "52W HIGH", v: `$${result.high_52w}`, c: t.text },
+                { l: "52W LOW", v: `$${result.low_52w}`, c: t.text },
+                { l: "FROM HIGH", v: `${result.pct_from_high}%`, c: result.pct_from_high < -20 ? t.short : t.text },
+                { l: "FROM LOW", v: `+${result.pct_from_low}%`, c: result.pct_from_low > 50 ? t.long : t.text },
+                { l: "20D SMA", v: result.sma20 ? `$${result.sma20}` : "—", c: result.sma20 && result.last_price > result.sma20 ? t.long : t.short },
+                { l: "50D SMA", v: result.sma50 ? `$${result.sma50}` : "—", c: result.sma50 && result.last_price > result.sma50 ? t.long : t.short },
+                { l: "200D SMA", v: result.sma200 ? `$${result.sma200}` : "—", c: result.sma200 && result.last_price > result.sma200 ? t.long : t.short },
+              ].map(({ l, v, c }) => (
+                <div key={l} style={{ background: t.bg, borderRadius: 8, padding: "8px 12px" }}>
+                  <div style={{ fontSize: 9, color: t.textMuted, fontWeight: 700, marginBottom: 2 }}>{l}</div>
+                  <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 700, color: c }}>{v}</div>
+                </div>
+              ))}
+            </div>
+            {/* Trend narrative */}
+            <div style={{ marginTop: 12, fontSize: 13, color: t.textDim, borderTop: `1px solid ${t.border}`, paddingTop: 10 }}>
+              <span style={{ fontWeight: 700, color: t.text }}>Trend: </span>{result.trend_line}
+            </div>
+          </motion.div>
+
+          {/* Chart */}
+          <motion.div variants={fadeUp} style={{ background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: 14, padding: 14, marginBottom: 12 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: t.accent, marginBottom: 10 }}>
+              {result.symbol} — {result.timeframe.toUpperCase()} Chart
+              {result.setups_count > 0 && <span style={{ marginLeft: 10, fontSize: 11, color: t.textMuted }}>• {result.setups_count} setup{result.setups_count !== 1 ? "s" : ""} detected (levels shown)</span>}
+            </div>
+            <AnalyzeChart bars={result.chart_bars} setups={result.setups} t={t} />
+          </motion.div>
+
+          {/* Detected setups */}
+          {result.setups_count > 0 ? (
+            <motion.div variants={fadeUp} style={{ background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: 14, overflow: "hidden", marginBottom: 12 }}>
+              <div style={{ padding: "10px 16px", borderBottom: `1px solid ${t.border}`, fontSize: 13, fontWeight: 700, color: t.text }}>
+                Detected Setups ({result.setups_count})
+              </div>
+              <AnimatePresence>
+                {result.setups.map((s: any, i: number) => (
+                  <SetupRow key={`${s.pattern_name}-${i}`} s={s} open={openIdx === i} toggle={() => setOpenIdx(openIdx === i ? null : i)} t={t} onTrack={onTrack} />
+                ))}
+              </AnimatePresence>
+            </motion.div>
+          ) : (
+            <motion.div variants={fadeUp} style={{ textAlign: "center", padding: 30, color: t.textDim, fontSize: 14, background: t.bgCard, borderRadius: 14, border: `1px solid ${t.border}` }}>
+              No setups detected at current {result.timeframe} structure for {result.symbol}
+            </motion.div>
+          )}
+        </motion.div>
+      )}
+
+      {!loading && !result && !err && (
+        <motion.div initial="hidden" animate="visible" variants={fadeUp} style={{ textAlign: "center", padding: 60 }}>
+          <Logo size={60} />
+          <div style={{ fontSize: 20, fontWeight: 700, marginTop: 16, color: t.text }}>Analyze any stock</div>
+          <div style={{ fontSize: 14, color: t.textDim, marginTop: 6, maxWidth: 420, margin: "8px auto 0" }}>
+            Enter any ticker — daily bars are fetched live, setups are detected, and full price structure is analyzed. Results cached for the day.
+          </div>
+        </motion.div>
+      )}
+    </motion.div>
+  );
+}
+
+// ═══════════════════════════════════════════════
 // MAIN APP
 // ═══════════════════════════════════════════════
 export default function App() {
   const [dark, setDark] = useState(true); const t = dark ? DARK : LIGHT;
-  const [view, setView] = useState<"opp" | "scan" | "tracker">("opp");
+  const [view, setView] = useState<"opp" | "scan" | "tracker" | "analyze">("opp");
   const [symbol, setSymbol] = useState("AAPL"); const [scanSetups, setScanSetups] = useState<any[]>([]);
   const [topSetups, setTopSetups] = useState<any[]>([]); const [inPlay, setInPlay] = useState<any[]>([]);
   const [mktSummary, setMktSummary] = useState("");
@@ -1060,6 +1264,7 @@ export default function App() {
             <Pill active={view === "opp"} onClick={() => setView("opp")} t={t}>Opportunities</Pill>
             <Pill active={view === "scan"} onClick={() => setView("scan")} t={t}>Scan</Pill>
             <Pill active={view === "tracker"} onClick={() => setView("tracker")} t={t}>Tracker</Pill>
+            <Pill active={view === "analyze"} onClick={() => setView("analyze")} t={t}>Analyze</Pill>
           </div>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
@@ -1110,6 +1315,15 @@ export default function App() {
           {view === "tracker" && (
             <motion.div key="tracker" initial="hidden" animate="visible" exit="exit" variants={fadeUp}>
               <TradeTrackerView t={t} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ANALYZE */}
+        <AnimatePresence mode="wait">
+          {view === "analyze" && (
+            <motion.div key="analyze" initial="hidden" animate="visible" exit="exit" variants={fadeUp}>
+              <AnalyzeView t={t} onTrack={addTrack} />
             </motion.div>
           )}
         </AnimatePresence>

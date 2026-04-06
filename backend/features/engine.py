@@ -219,7 +219,9 @@ def _compute_volume_expansion(volumes: np.ndarray, n: int) -> FeatureScore:
         return FeatureScore("volume_expansion", 50.0, 0.0, "Zero average volume")
 
     rvol = recent_vol / avg_vol
-    score = np.clip(np.log2(max(rvol, 0.1)) / np.log2(5) * 100, 0, 100)
+    # sqrt(rvol) * 50 → RVOL 1.0x = 50 (neutral), 4x = 100, 0.25x = 25
+    # Old log2 formula mapped 1x→0 (penalised every normal-volume setup unfairly)
+    score = np.clip(np.sqrt(rvol) * 50, 0, 100)
 
     desc = f"{'High activity' if rvol > 2 else 'Below avg' if rvol < 0.7 else 'Normal'} " \
            f"({rvol:.1f}x avg volume)"

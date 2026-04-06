@@ -220,6 +220,7 @@ def get_trade_chart_data(trade_id: str, bars: int = 60):
                 "target_1": trade["target_1"],
                 "target_2": trade["target_2"],
                 "trailing_stop": trade.get("trailing_stop", 0),
+                "t1_hit": trade.get("t1_hit", False),
             },
             "trade": trade,
             "current_atr": round(current_atr, 2),

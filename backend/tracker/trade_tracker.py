@@ -84,6 +84,18 @@ class TrackedTrade:
         self.timeframe = data.get("timeframe", "1d")
         self.entry_price = data.get("entry_price", 0.0)
         self.stop_loss = data.get("stop_loss", 0.0)
+        # initial_risk is fixed at entry — never changes even after breakeven move.
+        # For old AT_T1 trades (stop already moved to entry_price, so abs(e-s)=0),
+        # reconstruct from target_1 assuming the original R:R was ~2:1:
+        #   original_stop ≈ entry - (T1 - entry) / 2
+        _raw_ir = data.get("initial_risk", 0.0)
+        if _raw_ir <= 0:
+            _raw_ir = abs(self.entry_price - self.stop_loss)
+        if _raw_ir <= 0:
+            _t1 = data.get("target_1", 0.0)
+            if _t1 and self.entry_price:
+                _raw_ir = abs(_t1 - self.entry_price) / 2.0  # assume ~2:1 R:R
+        self.initial_risk: float = round(_raw_ir, 4)
         self.target_1 = data.get("target_1", 0.0)
         self.target_2 = data.get("target_2", 0.0)
         self.trail_type = data.get("trail_type", "atr")
@@ -147,6 +159,7 @@ class TrackedTrade:
             "entered_at": self.entered_at,
             "closed_at": self.closed_at,
             "realized_r": self.realized_r,
+            "initial_risk": self.initial_risk,
             "notes": self.notes,
         }
 
@@ -172,34 +185,18 @@ class TrackedTrade:
         self.current_atr = atr
         self.last_updated = datetime.now().isoformat()
 
-        if self.risk <= 0:
-            return
+        # Use initial_risk for all R calcs so breakeven move (stop→entry, risk→0)
+        # doesn't break division. initial_risk is fixed at trade creation.
+        ir = self.initial_risk
 
-        # Compute current R
-        if self.is_long:
-            self.unrealized_r = round((price - self.entry_price) / self.risk, 3)
-        else:
-            self.unrealized_r = round((self.entry_price - price) / self.risk, 3)
-
-        self.unrealized_pnl_pct = round(
-            (price - self.entry_price) / self.entry_price * 100
-            * (1 if self.is_long else -1), 2
-        )
-
-        # Track peak and trough
-        self.peak_r = max(self.peak_r, self.unrealized_r)
-        self.trough_r = min(self.trough_r, self.unrealized_r)
-
-        # Status transitions
+        # ── Status transitions (always run, even when ir=0) ──────────────────
         if self.status == "PENDING":
-            # Check if entry price reached
             if self.is_long and price >= self.entry_price:
                 self.status = "ACTIVE"
                 self.entered_at = self.last_updated
             elif not self.is_long and price <= self.entry_price:
                 self.status = "ACTIVE"
                 self.entered_at = self.last_updated
-            # Check if stop hit before entry (invalidated)
             elif self.is_long and price <= self.stop_loss:
                 self.status = "EXPIRED"
                 self.closed_at = self.last_updated
@@ -208,16 +205,14 @@ class TrackedTrade:
                 self.closed_at = self.last_updated
 
         elif self.status == "ACTIVE":
-            # Check stop
             if self.is_long and price <= self.stop_loss:
                 self.status = "STOPPED"
-                self.realized_r = round((self.stop_loss - self.entry_price) / self.risk, 3)
+                self.realized_r = round((self.stop_loss - self.entry_price) / ir, 3) if ir > 0 else -1.0
                 self.closed_at = self.last_updated
             elif not self.is_long and price >= self.stop_loss:
                 self.status = "STOPPED"
-                self.realized_r = round((self.entry_price - self.stop_loss) / self.risk, 3)
+                self.realized_r = round((self.entry_price - self.stop_loss) / ir, 3) if ir > 0 else -1.0
                 self.closed_at = self.last_updated
-            # Check T1
             elif self.is_long and price >= self.target_1:
                 self.status = "AT_T1"
                 self.t1_hit = True
@@ -228,7 +223,6 @@ class TrackedTrade:
                 self.stop_loss = self.entry_price
 
         elif self.status == "AT_T1":
-            # Check breakeven stop
             if self.is_long and price <= self.stop_loss:
                 self.status = "STOPPED"
                 self.realized_r = 0.0  # Breakeven
@@ -237,11 +231,9 @@ class TrackedTrade:
                 self.status = "STOPPED"
                 self.realized_r = 0.0
                 self.closed_at = self.last_updated
-            # Check T2
             elif self.is_long and price >= self.target_2:
                 self.status = "AT_T2"
                 self.t2_hit = True
-                # Set trailing stop
                 if atr > 0:
                     self.trailing_stop = price - atr * self.trail_param
                 else:
@@ -256,22 +248,38 @@ class TrackedTrade:
 
         elif self.status in ("AT_T2", "TRAILING"):
             self.status = "TRAILING"
-            # Update trailing stop
             if atr > 0:
                 if self.is_long:
                     new_trail = price - atr * self.trail_param
                     self.trailing_stop = max(self.trailing_stop, new_trail)
                     if price <= self.trailing_stop:
                         self.status = "CLOSED"
-                        self.realized_r = round((self.trailing_stop - self.entry_price) / self.risk, 3)
+                        self.realized_r = round((self.trailing_stop - self.entry_price) / ir, 3) if ir > 0 else 0.0
                         self.closed_at = self.last_updated
                 else:
                     new_trail = price + atr * self.trail_param
                     self.trailing_stop = min(self.trailing_stop, new_trail) if self.trailing_stop > 0 else new_trail
                     if price >= self.trailing_stop:
                         self.status = "CLOSED"
-                        self.realized_r = round((self.entry_price - self.trailing_stop) / self.risk, 3)
+                        self.realized_r = round((self.entry_price - self.trailing_stop) / ir, 3) if ir > 0 else 0.0
                         self.closed_at = self.last_updated
+
+        # ── R calculations (require initial_risk > 0) ─────────────────────────
+        if ir <= 0:
+            return
+
+        if self.is_long:
+            self.unrealized_r = round((price - self.entry_price) / ir, 3)
+        else:
+            self.unrealized_r = round((self.entry_price - price) / ir, 3)
+
+        self.unrealized_pnl_pct = round(
+            (price - self.entry_price) / self.entry_price * 100
+            * (1 if self.is_long else -1), 2
+        )
+
+        self.peak_r = max(self.peak_r, self.unrealized_r)
+        self.trough_r = min(self.trough_r, self.unrealized_r)
 
 
 class TradeTracker:
@@ -483,9 +491,17 @@ class TradeTracker:
                 "source": "auto",
                 "key_levels": getattr(setup, 'key_levels', {}),
                 "status": "ACTIVE",
-                "entered_at": det_str,
+                # entered_at = day after detection (next bar's open = our fill)
+                "entered_at": (
+                    forward_bars[1].timestamp.isoformat()
+                    if len(forward_bars) > 1 and hasattr(forward_bars[1].timestamp, 'isoformat')
+                    else str(forward_bars[1].timestamp) if len(forward_bars) > 1
+                    else det_str
+                ),
                 "current_price": item["today_close"],
                 "current_atr": atr,
+                # initial_risk fixed at creation — survives breakeven stop move
+                "initial_risk": round(abs(actual_entry - orig_stop), 4),
             }
 
             trade = TrackedTrade(trade_data)
@@ -631,7 +647,7 @@ class TradeTracker:
                     else:
                         trade.update_with_price(bar.close, atr)
             else:
-                # Daily / 1-h trade — use last daily bar
+                # Daily / 1-h trade — use last daily bar for stop/target logic
                 bar = bar_cache_daily.get(trade.symbol)
                 if not bar:
                     continue
@@ -643,6 +659,13 @@ class TradeTracker:
                     trade.update_with_price(trade.stop_loss, atr)
                 else:
                     trade.update_with_price(bar.close, atr)
+                # For still-open daily trades, use latest intraday bar as
+                # current_price display so it reflects the live price, not
+                # yesterday's close.
+                if trade.is_active:
+                    intra = bar_cache_intra.get(trade.symbol, [])
+                    if intra:
+                        trade.current_price = round(intra[-1].close, 2)
 
         # Archive closed trades
         newly_closed = [t for t in self.trades if t.is_closed and t.closed_at == t.last_updated]
@@ -724,11 +747,11 @@ class TradeTracker:
                 t.status = "CLOSED"
                 t.closed_at = datetime.now().isoformat()
                 t.notes = f"Manually closed: {reason}"
-                if t.current_price > 0 and t.risk > 0:
+                if t.current_price > 0 and t.initial_risk > 0:
                     if t.is_long:
-                        t.realized_r = round((t.current_price - t.entry_price) / t.risk, 3)
+                        t.realized_r = round((t.current_price - t.entry_price) / t.initial_risk, 3)
                     else:
-                        t.realized_r = round((t.entry_price - t.current_price) / t.risk, 3)
+                        t.realized_r = round((t.entry_price - t.current_price) / t.initial_risk, 3)
                 self.save()
                 return True
         return False

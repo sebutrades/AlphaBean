@@ -712,6 +712,117 @@ def get_strategy_hot_context(pattern_name: str) -> str:
 
 
 # ==============================================================================
+# 11. STOCK STRUCTURAL BEHAVIOR (new)
+# ==============================================================================
+
+def get_structural_behavior_context(symbol: str, bars) -> str:
+    """
+    Summarize the stock's overall structural behavior across multiple timeframes.
+    Gives the AI understanding of: trend phase, momentum character, volatility
+    profile, relative strength, and how the stock has been behaving overall.
+    """
+    if bars is None or len(bars.bars) < 30:
+        return ""
+
+    import numpy as np
+    b = bars.bars
+    n = len(b)
+    closes  = np.array([x.close  for x in b], dtype=np.float64)
+    highs   = np.array([x.high   for x in b], dtype=np.float64)
+    lows    = np.array([x.low    for x in b], dtype=np.float64)
+    volumes = np.array([x.volume for x in b], dtype=np.float64)
+    cur = float(closes[-1])
+
+    lines = [f"[STOCK BEHAVIOR — {symbol}]"]
+
+    # Trend phase classification
+    smas = {}
+    for p in [20, 50, 200]:
+        if n >= p:
+            smas[p] = float(np.mean(closes[-p:]))
+
+    if smas:
+        above = [p for p, s in smas.items() if cur > s]
+        below = [p for p, s in smas.items() if cur <= s]
+        if len(above) == len(smas):
+            lines.append(f"Trend phase: BULLISH — price above all SMAs ({', '.join(str(p)+'d' for p in sorted(smas))})")
+        elif len(below) == len(smas):
+            lines.append(f"Trend phase: BEARISH — price below all SMAs ({', '.join(str(p)+'d' for p in sorted(smas))})")
+        else:
+            above_str = "/".join(str(p)+"d" for p in sorted(above)) if above else "none"
+            below_str = "/".join(str(p)+"d" for p in sorted(below)) if below else "none"
+            lines.append(f"Trend phase: MIXED — above {above_str}, below {below_str} SMAs")
+
+    # Multi-period returns (momentum character)
+    periods = [(5, "1wk"), (20, "1mo"), (60, "3mo"), (120, "6mo"), (252, "1yr")]
+    returns = []
+    for p, label in periods:
+        if n >= p + 1:
+            r = (cur - closes[-p-1]) / closes[-p-1] * 100
+            returns.append(f"{label}: {r:+.1f}%")
+    if returns:
+        lines.append("Returns: " + " | ".join(returns))
+
+    # 52-week range position
+    lookback = b[-252:] if n >= 252 else b
+    hi52 = float(max(x.high for x in lookback))
+    lo52 = float(min(x.low  for x in lookback))
+    rng = hi52 - lo52
+    pct_in_range = (cur - lo52) / rng * 100 if rng > 0 else 50
+    if pct_in_range >= 80:
+        lines.append(f"52W position: NEAR HIGH — {pct_in_range:.0f}% of annual range (hi=${hi52:.2f} / lo=${lo52:.2f})")
+    elif pct_in_range <= 20:
+        lines.append(f"52W position: NEAR LOW — {pct_in_range:.0f}% of annual range (hi=${hi52:.2f} / lo=${lo52:.2f})")
+    else:
+        lines.append(f"52W position: mid-range — {pct_in_range:.0f}% (hi=${hi52:.2f} / lo=${lo52:.2f})")
+
+    # Momentum character: recent vs longer-term performance
+    if n >= 21:
+        ret_1mo = (cur - closes[-21]) / closes[-21] * 100
+        ret_3mo = (cur - closes[min(-61, -n+1)]) / closes[min(-61, -n+1)] * 100 if n >= 61 else None
+        if ret_3mo is not None:
+            if ret_1mo > 0 and ret_3mo > 0 and ret_1mo > ret_3mo * 0.5:
+                lines.append("Momentum: ACCELERATING — recent month outperforming 3-month pace")
+            elif ret_1mo < 0 and ret_3mo > 0:
+                lines.append("Momentum: DECELERATING — pulling back after longer-term uptrend")
+            elif ret_1mo < 0 and ret_3mo < 0:
+                lines.append("Momentum: DECLINING — weakness across both 1-month and 3-month windows")
+
+    # Volatility vs history
+    if n >= 60:
+        recent_rets = np.diff(closes[-21:]) / closes[-21:-1]
+        hist_rets   = np.diff(closes[-61:-21]) / closes[-61:-22]
+        vol_rec  = float(np.std(recent_rets)) * np.sqrt(252) * 100
+        vol_hist = float(np.std(hist_rets))   * np.sqrt(252) * 100
+        ratio = vol_rec / vol_hist if vol_hist > 0 else 1.0
+        lines.append(f"Volatility: recent {vol_rec:.0f}% ann. | 60-bar hist {vol_hist:.0f}% ann. | ratio {ratio:.2f}x {'(EXPANDING)' if ratio > 1.3 else '(COMPRESSING)' if ratio < 0.7 else '(stable)'}")
+
+    # Volume trend (accumulation vs distribution)
+    if n >= 20:
+        up_vol   = float(np.mean([volumes[i] for i in range(-20, 0) if closes[i] > closes[i-1]]) or 0)
+        down_vol = float(np.mean([volumes[i] for i in range(-20, 0) if closes[i] <= closes[i-1]]) or 0)
+        if up_vol > 0 and down_vol > 0:
+            vol_bias = up_vol / down_vol
+            if vol_bias > 1.3:
+                lines.append(f"Volume bias: ACCUMULATION — up-day avg vol {vol_bias:.1f}x > down-day avg (20-bar)")
+            elif vol_bias < 0.7:
+                lines.append(f"Volume bias: DISTRIBUTION — down-day avg vol {1/vol_bias:.1f}x > up-day avg (20-bar)")
+            else:
+                lines.append(f"Volume bias: Neutral (up/down vol ratio {vol_bias:.2f})")
+
+    # RSI-14 context
+    if n >= 15:
+        deltas = np.diff(closes[-15:])
+        ag = float(np.mean([d for d in deltas if d > 0]) or 0)
+        al = float(np.mean([-d for d in deltas if d < 0]) or 0)
+        rsi = 100 - 100 / (1 + ag/al) if al > 0 else 100.0
+        context = "OVERBOUGHT" if rsi > 70 else "OVERSOLD" if rsi < 30 else "neutral"
+        lines.append(f"RSI(14): {rsi:.1f} — {context}")
+
+    return "\n".join(lines) + "\n"
+
+
+# ==============================================================================
 # FULL CONTEXT BUILDER
 # ==============================================================================
 
@@ -746,6 +857,11 @@ def build_full_context(
     # 4. Price action narrative
     if bars is not None:
         sections.append(_safe(get_price_action_narrative, symbol, timeframe, bars))
+    # 4b. Stock structural behavior (full trend/momentum/vol profile)
+    if bars is not None:
+        ctx = _safe(get_structural_behavior_context, symbol, bars)
+        if ctx.strip():
+            sections.append(ctx)
     # 5. Technical structure
     if structures is not None:
         sections.append(_safe(get_technical_context, structures))

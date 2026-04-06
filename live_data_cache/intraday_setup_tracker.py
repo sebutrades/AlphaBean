@@ -42,16 +42,47 @@ from datetime import datetime, date
 from pathlib import Path
 from typing import Optional
 
-STORE_ROOT = Path("live_data_cache")
-OPEN_FILE  = STORE_ROOT / "open_setups.json"
-DAILY_PERF = STORE_ROOT / "daily_perf.json"
+STORE_ROOT  = Path("live_data_cache")
+OPEN_FILE   = STORE_ROOT / "open_setups.json"
+DAILY_PERF  = STORE_ROOT / "daily_perf.json"
+SCAN_STATE  = STORE_ROOT / "scan_state.json"   # tracks last scanned bar idx per symbol/tf
 
 INTRADAY_TFS = {"5min", "15min"}
 
-# Setups whose entry is more than this far from current price are stale
-ENTRY_PROXIMITY_PCT = 0.025   # 2.5 %
+# Match the backtest's scan intervals exactly so we find the same setups
+SCAN_INTERVAL = {"5min": 6, "15min": 4}   # bars between classify_all calls
+MIN_BARS      = {"5min": 60, "15min": 40}  # bars needed before first scan
+
+# Per-pattern cooldown (minutes) mapped from PATTERN_META; fallback 120 min
+_DEFAULT_COOLDOWN_MIN = 120
+_BAR_MINUTES = {"5min": 5, "15min": 15}
 
 _lock = threading.Lock()
+_state_lock = threading.Lock()
+
+
+# ── Scan state (last scanned bar index per symbol/tf) ─────────────────────────
+
+def _load_scan_state() -> dict:
+    if SCAN_STATE.exists():
+        try:
+            return json.loads(SCAN_STATE.read_text())
+        except Exception:
+            pass
+    return {}
+
+def _save_scan_state(state: dict) -> None:
+    STORE_ROOT.mkdir(parents=True, exist_ok=True)
+    # Direct write — scan_state is protected by _state_lock so no concurrent writes
+    SCAN_STATE.write_text(json.dumps(state))
+
+def _cooldown_bars(pattern_name: str, tf: str) -> int:
+    try:
+        from backend.patterns.registry import PATTERN_META
+        cd_min = PATTERN_META.get(pattern_name, {}).get("cd", _DEFAULT_COOLDOWN_MIN)
+    except Exception:
+        cd_min = _DEFAULT_COOLDOWN_MIN
+    return max(1, int(cd_min / _BAR_MINUTES.get(tf, 5)))
 
 
 # ── Persistence helpers ───────────────────────────────────────────────────────
@@ -257,48 +288,97 @@ def process_new_bars(symbol: str, tf: str, new_bars: list) -> list[dict]:
     """
     Main entry point — called by the live feed after a bar update.
 
-    1. Loads full bar history from bar_store.
-    2. Runs pattern classifiers on the full history.
-    3. Filters to actionable setups (entry ≤ 2.5 % from current price).
-    4. Adds genuinely new setups (dedup by symbol × pattern × bias × price bucket).
-    5. Advances every existing open setup for this symbol/tf through new_bars.
-    6. Archives setups that resolved (stopped, target hit, expired).
-    7. Persists state and returns the list of newly detected setups.
+    Mirrors the backtest scan loop exactly:
+      1. Load full bar history from bar_store.
+      2. Starting from last_scanned_idx+scan_interval, scan forward at SCAN_INTERVAL
+         steps: for each position i call classify_all(bars[:i+1]).
+      3. Apply per-pattern cooldown (same key as backtest) to deduplicate.
+      4. Add each genuinely new setup to open_setups.
+      5. Advance ALL open setups for this symbol/tf through the new bars bar-by-bar.
+      6. Archive closed setups.
+      7. Persist state.
     """
     if tf not in INTRADAY_TFS or not new_bars:
         return []
 
     from live_data_cache.bar_store import get_bars
     from backend.patterns.classifier import classify_all
+    from backend.data.schemas import BarSeries
 
-    bars = get_bars(symbol, tf)
-    if bars is None or len(bars.bars) < 20:
+    bars_series = get_bars(symbol, tf)
+    if bars_series is None:
+        return []
+    all_bars = bars_series.bars
+    n = len(all_bars)
+    min_bars   = MIN_BARS.get(tf, 60)
+    interval   = SCAN_INTERVAL.get(tf, 6)
+
+    if n < min_bars:
         return []
 
-    current_close = bars.bars[-1].close
+    state_key = f"{symbol}_{tf}"
 
-    # ── Run classifiers ───────────────────────────────────────────────────────
-    try:
-        detected = classify_all(bars)
-    except Exception as e:
-        print(f"  [IntradayTracker] classify error {symbol} {tf}: {e}")
-        detected = []
+    with _state_lock:
+        scan_state = _load_scan_state()
+        last_idx   = scan_state.get(state_key, min_bars - 1)
 
-    # Filter to setups with entry near current price (actionable right now)
-    actionable = [
-        s for s in detected
-        if current_close > 0 and
-           abs(s.entry_price - current_close) / current_close <= ENTRY_PROXIMITY_PCT
-    ]
+    # Clamp: if bars were cleared/reset, restart from min_bars
+    if last_idx >= n:
+        last_idx = min_bars - 1
+
+    # Determine scan positions: first position after last_idx that aligns to interval
+    first_scan = last_idx + interval - ((last_idx - min_bars) % interval if (last_idx - min_bars) % interval != 0 else interval)
+    # Simpler: just start at last_idx + 1, scan every interval steps
+    scan_positions = range(
+        last_idx + interval,
+        n,
+        interval,
+    )
+
+    # ── Per-pattern cooldown state (load from scan_state) ─────────────────────
+    cooldown_state: dict[str, int] = scan_state.get(f"{state_key}_cd", {})
+
+    newly_detected_setups: list = []
+
+    for i in scan_positions:
+        window = BarSeries(
+            symbol=bars_series.symbol,
+            timeframe=bars_series.timeframe,
+            bars=all_bars[:i + 1],
+        )
+        try:
+            detected = classify_all(window)
+        except Exception:
+            detected = []
+
+        for setup in detected:
+            bias = setup.bias.value if hasattr(setup.bias, "value") else str(setup.bias)
+            price_bucket_val = round(setup.entry_price, 0)
+            cd_key = f"{setup.pattern_name}_{bias}_{price_bucket_val}"
+            last_fired = cooldown_state.get(cd_key, -9999)
+            cd_bars    = _cooldown_bars(setup.pattern_name, tf)
+            if i - last_fired < cd_bars:
+                continue
+            cooldown_state[cd_key] = i
+            newly_detected_setups.append((i, setup))
+
+    # Save updated scan state
+    with _state_lock:
+        scan_state = _load_scan_state()
+        scan_state[state_key]          = n - 1
+        scan_state[f"{state_key}_cd"]  = cooldown_state
+        _save_scan_state(scan_state)
+
+    if not newly_detected_setups and not any(True for _ in [1]):
+        # Still need to advance existing setups even if no new ones found
+        pass
 
     with _lock:
-        all_open = _load_open()
-
-        # Split into this-symbol-tf vs everything else
+        all_open   = _load_open()
         sym_open   = [s for s in all_open if s["symbol"] == symbol and s["timeframe"] == tf]
         other_open = [s for s in all_open if not (s["symbol"] == symbol and s["timeframe"] == tf)]
 
-        # ── 1. Advance existing setups ────────────────────────────────────────
+        # ── 1. Advance existing open setups bar-by-bar ────────────────────────
         newly_closed: list[dict] = []
         still_open:   list[dict] = []
 
@@ -320,37 +400,42 @@ def process_new_bars(symbol: str, tf: str, new_bars: list) -> list[dict]:
             else:
                 still_open.append(setup)
 
-        # ── 2. Detect new setups ──────────────────────────────────────────────
+        # ── 2. Add newly detected setups (dedup against still-open + other) ───
         existing_keys = {
             (s["symbol"], s["pattern_name"], s["bias"], _price_bucket(s["entry_price"]))
             for s in still_open + other_open
         }
 
-        new_detected: list[dict] = []
-        for setup in actionable:
+        new_result: list[dict] = []
+        for (bar_idx, setup) in newly_detected_setups:
             bias = setup.bias.value if hasattr(setup.bias, "value") else str(setup.bias)
             key  = (symbol, setup.pattern_name, bias, _price_bucket(setup.entry_price))
-            if key not in existing_keys:
-                d = _setup_to_dict(setup, symbol, tf)
-                # Store original stop for R-multiple calculations after T1 moves stop
-                d["original_stop"] = d["stop_loss"]
-                # Run through current new bars immediately so entry hit can be detected
-                for bar in new_bars:
-                    if _update_setup_with_bar(d, bar):
-                        newly_closed.append(d)
-                        d = None
-                        break
-                if d is not None:
-                    still_open.append(d)
-                    existing_keys.add(key)
-                    new_detected.append(d)
+            if key in existing_keys:
+                continue
+            d = _setup_to_dict(setup, symbol, tf)
+            d["original_stop"] = d["stop_loss"]
+            d["detected_bar_idx"] = bar_idx
+            # Advance through bars that occurred AFTER this setup's detection bar
+            detection_ts = all_bars[bar_idx].timestamp.isoformat() if bar_idx < n else ""
+            bars_after = [b for b in all_bars[bar_idx + 1:] if b.timestamp.isoformat() > detection_ts]
+            closed = False
+            for bar in bars_after:
+                closed = _update_setup_with_bar(d, bar)
+                if closed:
+                    newly_closed.append(d)
+                    d = None
+                    break
+            if d is not None:
+                still_open.append(d)
+                existing_keys.add(key)
+                new_result.append(d)
 
         # ── 3. Persist ────────────────────────────────────────────────────────
         _save_open(other_open + still_open)
         if newly_closed:
             _archive_closed(newly_closed)
 
-        return new_detected
+        return new_result
 
 
 # ── Queries ───────────────────────────────────────────────────────────────────
