@@ -24,6 +24,7 @@ USAGE:
   tracker.add_manual(setup_dict)         # Manual add from UI
 """
 import json
+import threading
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -288,6 +289,7 @@ class TradeTracker:
     """Manages the active trade store."""
 
     def __init__(self):
+        self._lock = threading.Lock()
         self.trades: list[TrackedTrade] = []
         self.load()
 
@@ -325,6 +327,7 @@ class TradeTracker:
     def scan_and_add(self, top_n: int = 50, symbols: list[str] = None,
                      min_confidence: float = 0.50, lookback_days: int = 20):
         """Scan top symbols looking back N trading days for historical setups.
+        Thread-safe: concurrent calls block until the first completes.
 
         For each symbol:
         1. Fetch 365d of daily bars
@@ -333,6 +336,10 @@ class TradeTracker:
         4. Record when the setup FIRST fired (oldest detection wins)
         5. Walk price forward to today to compute current status
         """
+        with self._lock:
+            return self._scan_and_add_locked(top_n, symbols, min_confidence, lookback_days)
+
+    def _scan_and_add_locked(self, top_n, symbols, min_confidence, lookback_days):
         from backend.data.massive_client import fetch_bars
         from backend.patterns.classifier import classify_all
         import numpy as np
