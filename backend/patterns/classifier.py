@@ -130,7 +130,37 @@ def _compute_vwap(s, start_idx):
     return ctv / cv if cv > 0 else s.closes[-1]
 
 def _vwap_today(s):
-    today = s.timestamps[-1].date()
+    """Compute VWAP anchored to today's regular session open (9:30 ET).
+
+    For intraday bars: finds the first bar at or after 9:30 ET today.
+    For daily bars: uses a simple rolling VWAP over the last 20 bars
+    (true intraday VWAP is not meaningful on daily candles).
+    """
+    last_ts = s.timestamps[-1]
+    today = last_ts.date()
+
+    # Daily bars: rolling VWAP over last 20 bars (intraday reset N/A)
+    is_daily = False
+    if s.n >= 2:
+        delta = (s.timestamps[-1] - s.timestamps[-2]).total_seconds()
+        is_daily = delta > 3600 * 4  # gap > 4 hours = daily bars
+    if is_daily:
+        start = max(0, s.n - 20)
+        return _compute_vwap(s, start)
+
+    # Intraday bars: anchor at 9:30 ET today
+    session_open = time(9, 30)
+    anchor_idx = None
+    for i in range(s.n):
+        ts = s.timestamps[i]
+        if ts.date() == today and ts.time() >= session_open:
+            anchor_idx = i
+            break
+
+    if anchor_idx is not None:
+        return _compute_vwap(s, anchor_idx)
+
+    # Fallback: same date but no bar at/after 9:30 (pre-market only?)
     for i in range(s.n):
         if s.timestamps[i].date() == today:
             return _compute_vwap(s, i)

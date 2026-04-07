@@ -296,7 +296,7 @@ def get_market_context(regime_str: str = "unknown") -> str:
 # 6. NEWS CONTEXT
 # ==============================================================================
 
-def get_headline_context(symbol: str, max_headlines: int = 8) -> str:
+def get_headline_context(symbol: str, max_headlines: int = 12) -> str:
     """
     Fetch headlines using Polygon news client (richer — has AI sentiment per ticker).
     Falls back to Finnhub/RSS if Polygon fails.

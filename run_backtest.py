@@ -59,6 +59,15 @@ SCAN_INTERVAL = {
     "1d":    1,    # every day
 }
 
+# ── R-Multiple Cap & Transaction Costs ──────────────────────────────────────
+# Cap individual trade R-multiples to prevent outlier contamination.
+# A single 190R trade should not dominate aggregate statistics.
+MAX_R_PER_TRADE = 10.0
+
+# Transaction cost per trade in R-multiples (covers commission + spread).
+# ~$5-10 per trade on a $500 risk = ~0.01-0.02R.  0.02R is conservative.
+TRANSACTION_COST_R = 0.02
+
 # Wider scan intervals for long lookbacks (60+ days)
 SCAN_INTERVAL_LONG = {
     "5min":  12,   # every 1 hr
@@ -244,7 +253,12 @@ class PendingTrade:
         return self._finalize()
 
     def _finalize(self) -> tuple[str, float]:
-        """Calculate final weighted-average R and determine outcome string."""
+        """Calculate final weighted-average R and determine outcome string.
+
+        Applies:
+          - R-cap (MAX_R_PER_TRADE) to prevent outlier contamination
+          - Transaction cost (TRANSACTION_COST_R) for realistic P&L
+        """
         if not self.partial_rs:
             return ("loss", -1.0)
 
@@ -253,6 +267,13 @@ class PendingTrade:
             return ("loss", -1.0)
 
         weighted_r = sum(w * r for w, r in self.partial_rs) / total_weight
+
+        # Cap R-multiple to prevent outlier contamination
+        weighted_r = max(-MAX_R_PER_TRADE, min(MAX_R_PER_TRADE, weighted_r))
+
+        # Deduct transaction costs (commission + spread)
+        weighted_r -= TRANSACTION_COST_R
+
         weighted_r = round(weighted_r, 3)
 
         if self.t1_hit and self.t2_hit:
@@ -611,6 +632,8 @@ def run_full_backtest(
             "timeframes": timeframes,
             "exit_model": "scaled_T1_T2_trail",
             "slippage_model": "0.05_ATR_adverse",
+            "max_r_per_trade": MAX_R_PER_TRADE,
+            "transaction_cost_r": TRANSACTION_COST_R,
         },
         "summary": {
             "total_symbols": len(completed_symbols),

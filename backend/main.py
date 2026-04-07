@@ -8,7 +8,7 @@ from collections import defaultdict
 from contextlib import asynccontextmanager
 from datetime import datetime, time as dt_time
 from pathlib import Path
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from backend.scanner.engine import scan_symbol, scan_multiple
 from backend.patterns.registry import get_all_pattern_names, PATTERN_META
@@ -36,7 +36,7 @@ async def lifespan(app: FastAPI):
     _feed.stop()
 
 app = FastAPI(title="Juicer API", version="1.0.0", lifespan=lifespan)
-app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173","http://localhost:3000","http://127.0.0.1:5173"], allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 from backend.tracker.routes import router as tracker_router
 app.include_router(tracker_router, prefix="/api/tracker")
 
@@ -578,4 +578,216 @@ async def analyze_symbol(
 
     except Exception as e:
         return {"error": str(e), "symbol": sym}
+
+
+# ═══ PERFORMANCE DASHBOARD ═══════════════════════════════════════════════════
+
+@app.get("/api/performance/summary")
+async def performance_summary():
+    """Full performance dashboard: equity curve, drawdown, attribution, streaks."""
+    try:
+        from backend.analytics.performance import get_performance_summary
+        return get_performance_summary()
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/api/performance/equity")
+async def performance_equity():
+    try:
+        from backend.analytics.performance import get_equity_curve
+        return {"equity_curve": get_equity_curve()}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/api/performance/patterns")
+async def performance_patterns():
+    try:
+        from backend.analytics.performance import get_pattern_attribution
+        return {"pattern_attribution": get_pattern_attribution()}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/api/performance/daily")
+async def performance_daily(days: int = Query(30)):
+    try:
+        from backend.analytics.performance import get_daily_pnl
+        return {"daily_pnl": get_daily_pnl(days)}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+# ═══ ALERTS / WEBHOOKS ═══════════════════════════════════════════════════════
+
+@app.get("/api/alerts/config")
+async def alerts_config_get():
+    try:
+        from backend.alerts.webhook import get_alert_config
+        return get_alert_config()
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/api/alerts/config")
+async def alerts_config_set(request: Request):
+    try:
+        from backend.alerts.webhook import save_alert_config
+        body = await request.json()
+        save_alert_config(body)
+        return {"status": "saved"}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/api/alerts/test")
+async def alerts_test():
+    try:
+        from backend.alerts.webhook import test_alerts
+        return test_alerts()
+    except Exception as e:
+        return {"error": str(e), "success": False}
+
+
+# ═══ POSITION SIZING ═══════════════════════════════════════════════════════
+
+@app.get("/api/sizing/config")
+async def sizing_config_get():
+    try:
+        from backend.sizing.engine import get_sizing_config
+        return get_sizing_config()
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/api/sizing/config")
+async def sizing_config_set(request: Request):
+    try:
+        from backend.sizing.engine import save_sizing_config
+        body = await request.json()
+        save_sizing_config(body)
+        return {"status": "saved"}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/api/sizing/calculate")
+async def sizing_calculate(entry: float = Query(...), stop: float = Query(...), bias: str = Query("long"), modifier: float = Query(1.0)):
+    try:
+        from backend.sizing.engine import calculate_position
+        return calculate_position(entry, stop, bias, modifier)
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/api/sizing/summary")
+async def sizing_summary():
+    try:
+        from backend.sizing.engine import get_position_summary
+        return get_position_summary()
+    except Exception as e:
+        return {"error": str(e)}
+
+
+# ═══ AGENT TRADING SIMULATION ═══
+
+@app.get("/api/agent-trading/dates")
+async def agent_trading_dates():
+    """Return available dates for intraday simulation."""
+    try:
+        from simulation.intraday import get_available_dates
+        return {"dates": get_available_dates()}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+# Active simulation instance (one at a time)
+_active_sim = {"instance": None, "task": None}
+
+
+@app.websocket("/ws/agent-trading")
+async def agent_trading_ws(websocket: WebSocket):
+    """WebSocket endpoint for live agent trading simulation.
+
+    Client sends JSON commands:
+      {"action": "start", "date": "2026-04-01", "speed": 2.0, "use_agents": false}
+      {"action": "pause"}
+      {"action": "resume"}
+      {"action": "stop"}
+      {"action": "set_speed", "speed": 5.0}
+
+    Server streams SimEvent JSON objects continuously.
+    """
+    await websocket.accept()
+
+    import asyncio
+    from simulation.intraday import IntradaySimulation, SimEvent
+
+    sim: IntradaySimulation | None = None
+    sim_task: asyncio.Task | None = None
+    send_queue: asyncio.Queue = asyncio.Queue()
+
+    async def sender():
+        """Drain the send queue to the WebSocket."""
+        try:
+            while True:
+                event_dict = await send_queue.get()
+                try:
+                    await websocket.send_json(event_dict)
+                except Exception:
+                    break
+        except asyncio.CancelledError:
+            pass
+
+    def emit(event: SimEvent):
+        """Queue event for sending (sync-safe)."""
+        try:
+            send_queue.put_nowait(event.to_dict())
+        except Exception:
+            pass
+
+    sender_task = asyncio.create_task(sender())
+
+    try:
+        while True:
+            data = await websocket.receive_json()
+            action = data.get("action", "")
+
+            if action == "start":
+                # Stop any existing simulation
+                if sim is not None:
+                    sim.stop()
+                if sim_task is not None and not sim_task.done():
+                    sim_task.cancel()
+                    try:
+                        await sim_task
+                    except (asyncio.CancelledError, Exception):
+                        pass
+
+                date = data.get("date", "")
+                speed = data.get("speed", 2.0)
+                use_agents = data.get("use_agents", False)
+                capital = data.get("capital", 100_000)
+                min_score = data.get("min_score", 50.0)
+
+                sim = IntradaySimulation(
+                    emit=emit,
+                    starting_capital=capital,
+                    playback_speed=speed,
+                    use_agents=use_agents,
+                    min_score=min_score,
+                )
+
+                sim_task = asyncio.create_task(sim.run_day(date))
+
+            elif action == "pause" and sim:
+                sim.pause()
+            elif action == "resume" and sim:
+                sim.resume()
+            elif action == "stop" and sim:
+                sim.stop()
+            elif action == "set_speed" and sim:
+                sim.set_speed(data.get("speed", 2.0))
+
+    except WebSocketDisconnect:
+        pass
+    except Exception:
+        pass
+    finally:
+        if sim:
+            sim.stop()
+        sender_task.cancel()
 

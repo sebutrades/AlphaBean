@@ -53,44 +53,52 @@ BACKTEST_CACHE = Path("cache/backtest_results.json")
 # ==============================================================================
 
 SYSTEM_PROMPT = """\
-You are a senior quantitative trader at a prop firm evaluating trade setups for live deployment.
-Capital preservation is paramount. CAUTION and DENIED are valuable verdicts — use them freely.
+You are a senior quantitative trader at a prop firm evaluating trade setups.
+Your job is to give a thorough, balanced assessment — not to be cautious by default.
+Good setups should be CONFIRMED. Bad setups should be DENIED. CAUTION is for genuinely mixed cases only.
 
 EVALUATION PROCESS — follow in order:
-Step 1 — BEAR CASE FIRST: Identify 3 concrete reasons this trade could fail.
+Step 1 — BULL CASE: Identify 2-3 concrete reasons this trade succeeds.
+  Consider: positive symbol stats, confirming price action, strong pattern edge, hot strategy,
+  confirming news catalyst, clean R:R, regime alignment, volume expansion.
+Step 2 — BEAR CASE: Identify 2-3 concrete reasons this trade could fail.
   Consider: adverse symbol-specific history, conflicting price structure, weak or absent catalyst,
   wrong regime for this pattern type, upcoming risk events, thin volume, wide stop.
-Step 2 — BULL CASE: Identify 3 concrete reasons this trade succeeds.
-  Consider: positive symbol stats, confirming price action, news catalyst, hot strategy, clean R:R.
-Step 3 — VERDICT: Bull case clearly dominates bear case → CONFIRMED.
-  Cases roughly balanced → CAUTION. Bear case dominates → DENIED.
+Step 3 — WEIGH THE EVIDENCE and decide:
+  Bull dominates → CONFIRMED (this should be ~40-50% of setups that reach AI evaluation)
+  Bear dominates → DENIED (this should be ~20-30%)
+  Genuinely balanced, could go either way → CAUTION (only ~20-30%, NOT the default)
 
-CONTEXT WEIGHTING (10-section briefing):
-1. SYMBOL PERFORMANCE  — highest priority when ≥5 signals. Negative symbol-specific expectancy
-   overrides positive aggregate stats. This pattern may fail on THIS stock even if it works overall.
-2. PRICE ACTION        — structure must match bias. Long with LH/LL = red flag. Volume must expand
-   on signal candle for breakout patterns.
-3. PATTERN EDGE        — positive expectancy (>0.05R), sample ≥10. Unproven = reduce conviction.
-4. STRATEGY HOT/COLD   — hot score <30 = halve conviction. >70 = adds confirmation, not free pass.
-5. NEWS ALIGNMENT      — confirming catalyst adds delta; contradicting headline blocks or reduces.
-6. TECHNICAL STRUCTURE — logical entry vs S/R, normal ATR, RVOL expansion.
-7. REGIME FIT          — momentum fails in chop; mean-reversion fails in trend.
-8. RISK/REWARD         — R:R ≥1.5 required; ≥2.0 required if WR <55%.
-9. RISK FLAGS          — earnings proximity, extended ATR, low volume, high SPY correlation.
+IMPORTANT: A setup that reached AI evaluation already passed quantitative scoring filters.
+If the pattern has positive edge, structure confirms, and no major risks exist → CONFIRMED.
+Do NOT default to CAUTION out of conservatism. Reserve CAUTION for genuinely conflicted cases
+where bull and bear factors are roughly equal.
+
+CONTEXT WEIGHTING (sections in the briefing, ordered by importance):
+1. PATTERN EDGE + SYMBOL PERFORMANCE — Does this pattern work? Does it work on THIS stock?
+   Positive expectancy (>0.05R) with sufficient sample (≥10) is a strong CONFIRMED signal.
+2. PRICE ACTION + TECHNICAL STRUCTURE — Does the chart confirm the bias? HH/HL for longs,
+   LH/LL for shorts. Volume expanding on signal = strong confirmation.
+3. NEWS + CATALYSTS — Is there a fundamental driver supporting the direction? Recent headlines
+   with positive sentiment for the bias = adds conviction. Contradicting news = red flag.
+4. REGIME FIT — Does the market environment suit this pattern type?
+5. STRATEGY HOT/COLD — Is this pattern currently performing well in live conditions?
+6. RISK/REWARD — R:R ≥1.5 required; ≥2.0 preferred.
+7. RISK FLAGS — earnings proximity, extended ATR, low volume, correlation risk.
 
 SCORE DELTA:
-  Strong CONFIRMED (+10 to +15): all factors align — symbol, price action, news, hot strategy
-  Moderate CONFIRMED (+5 to +10): majority support, clear edge
-  Weak CONFIRMED (+1 to +5): slight edge, take reduced size
-  CAUTION (+3 to -3): conflicted — individual factors decide
-  Moderate DENIED (-5 to -10): clear reasons against
-  Strong DENIED (-10 to -15): multiple disqualifying factors
+  Strong CONFIRMED (+10 to +15): most factors align — edge, structure, news, regime
+  Moderate CONFIRMED (+5 to +10): majority support, clear edge, minor concerns
+  Weak CONFIRMED (+1 to +5): edge present but some risk flags — reduced size warranted
+  CAUTION (-3 to +3): genuinely mixed — factors conflict in roughly equal measure
+  Moderate DENIED (-5 to -10): clear reasons against — bear case dominates
+  Strong DENIED (-10 to -15): multiple disqualifying factors — do not take this trade
 
 SIZE MODIFIER:
   1.5 — exceptional: all factors align plus hot strategy + confirming news
   1.0 — standard: CONFIRMED with normal confluence
   0.75 — reduced: CONFIRMED but 1-2 risk flags present
-  0.5  — half size: CAUTION verdict or weak CONFIRMED with notable risks
+  0.5  — half size: weak CONFIRMED or genuinely mixed CAUTION
   0.25 — quarter: DENIED or high-risk with compelling pattern only\
 """
 
@@ -104,10 +112,13 @@ Output ONLY this JSON block — no text before or after, no explanation outside 
   "score_delta": <integer -15 to 15>,
   "size_modifier": <one of: 0.25, 0.5, 0.75, 1.0, 1.5>,
   "news_sentiment": "bullish|bearish|neutral|mixed",
-  "reasoning": "<2 sentences max — cite specific numbers, name the top bull and bear factor>",
-  "risk_flags": ["<flag1>", "<flag2>"],
-  "catalysts": ["<catalyst1>"],
-  "key_factors": ["<bull factor>", "<bear factor>", "<deciding factor>"]
+  "bull_case": "<2-3 sentences: specific reasons supporting the trade — cite exact numbers from the briefing (win rate, expectancy, R:R, RVOL, SMA position, sentiment score). Name the strongest factor.>",
+  "bear_case": "<2-3 sentences: specific reasons against the trade — cite exact numbers. Name the most concerning factor.>",
+  "reasoning": "<3-5 sentences: your synthesis weighing bull vs bear. Explain WHY the verdict tilts the way it does. Reference the specific data that tips the balance. Include what price action, news, or regime factor was most decisive.>",
+  "news_analysis": "<1-2 sentences: what do the headlines say about this stock right now? Is there a catalyst, or is it quiet? How does news sentiment align with the trade bias?>",
+  "risk_flags": ["<specific risk 1>", "<specific risk 2>"],
+  "catalysts": ["<specific catalyst driving this trade>"],
+  "key_factors": ["<strongest bull factor>", "<strongest bear factor>", "<deciding factor that tips the verdict>"]
 }
 ```\
 """
@@ -379,7 +390,7 @@ def _call_ollama(prompt: str) -> str:
         "stream": False,
         "options": {
             "temperature": 0.15,   # Near-deterministic for trading decisions
-            "num_predict": 4096,   # Qwen3 thinking mode: 800-1500 think + 300 JSON
+            "num_predict": 8192,   # Qwen3 thinking mode: 1500-3000 think + 800 JSON
             "top_p": 0.9,
             "repeat_penalty": 1.1,
         },
@@ -470,16 +481,34 @@ def _parse_response(text: str) -> AgentVerdict:
     if sentiment not in ("bullish", "bearish", "neutral", "mixed"):
         sentiment = "neutral"
 
+    # Build comprehensive reasoning from all available fields
+    bull_case = str(d.get("bull_case", "")).strip()
+    bear_case = str(d.get("bear_case", "")).strip()
+    reasoning = str(d.get("reasoning", "No reasoning provided")).strip()
+    news_analysis = str(d.get("news_analysis", "")).strip()
+
+    # Combine into a rich analysis string
+    parts = []
+    if bull_case:
+        parts.append(f"BULL: {bull_case}")
+    if bear_case:
+        parts.append(f"BEAR: {bear_case}")
+    if reasoning:
+        parts.append(reasoning)
+    if news_analysis:
+        parts.append(f"NEWS: {news_analysis}")
+    full_reasoning = " | ".join(parts) if parts else reasoning
+
     return AgentVerdict(
         verdict=verdict,
         confidence=confidence,
         score_delta=score_delta,
         size_modifier=size_modifier,
         news_sentiment=sentiment,
-        reasoning=str(d.get("reasoning", "No reasoning provided"))[:300],
-        risk_flags=[str(f) for f in d.get("risk_flags", [])][:4],
-        catalysts=[str(c) for c in d.get("catalysts", [])][:3],
-        key_factors=[str(f) for f in d.get("key_factors", [])][:3],
+        reasoning=full_reasoning[:1500],
+        risk_flags=[str(f) for f in d.get("risk_flags", [])][:6],
+        catalysts=[str(c) for c in d.get("catalysts", [])][:5],
+        key_factors=[str(f) for f in d.get("key_factors", [])][:5],
         processing_time=0.0,
     )
 
@@ -489,9 +518,17 @@ def _parse_response(text: str) -> AgentVerdict:
 # ==============================================================================
 
 def _cache_path(symbol: str, pattern: str) -> Path:
+    """Cache path with hourly granularity.
+
+    Old key: (symbol, pattern, date)   → same verdict all day
+    New key: (symbol, pattern, date, hour) → re-evaluates each hour
+    so intraday setups get fresh context as price evolves.
+    """
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     safe = pattern.replace(" ", "_").replace("/", "-")
-    return CACHE_DIR / f"{symbol}_{safe}_{date.today()}.json"
+    from datetime import datetime
+    now = datetime.now()
+    return CACHE_DIR / f"{symbol}_{safe}_{now.strftime('%Y-%m-%d_%H')}.json"
 
 
 def _load_cache(symbol: str, pattern: str) -> Optional[AgentVerdict]:

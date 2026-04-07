@@ -170,12 +170,16 @@ def format_news_context(items: list[PolygonNewsItem], symbol: str = "",
         age = _age_string(item.published_utc)
         line = f"- {item.title} ({item.source}, {age})"
 
-        # Add description (truncated to 150 chars)
+        # Add full description — the AI needs this context to understand what's driving the stock
         if item.description:
-            desc = item.description[:150]
-            if len(item.description) > 150:
+            desc = item.description[:400]
+            if len(item.description) > 400:
                 desc += "..."
             line += f"\n  Summary: {desc}"
+
+        # Keywords for topic context
+        if item.keywords:
+            line += f"\n  Topics: {', '.join(item.keywords[:8])}"
 
         # Per-ticker sentiment if we have a target symbol
         if symbol:
@@ -183,10 +187,8 @@ def format_news_context(items: list[PolygonNewsItem], symbol: str = "",
             if insight:
                 line += f"\n  Sentiment for {symbol}: {insight.sentiment.upper()}"
                 if insight.reasoning:
-                    reason = insight.reasoning[:120]
-                    if len(insight.reasoning) > 120:
-                        reason += "..."
-                    line += f" — {reason}"
+                    # Full reasoning — don't truncate, the AI needs this
+                    line += f" — {insight.reasoning[:300]}"
 
         lines.append(line)
 

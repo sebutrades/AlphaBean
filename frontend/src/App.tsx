@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
+import DashboardView from "./DashboardView";
+import AgentTradingView from "./AgentTradingView";
 const API = "http://localhost:8000";
 
 // ═══════════════════════════════════════════════
@@ -472,10 +474,54 @@ function TradeChart({ setup, onClose, t }: { setup: any; onClose: () => void; t:
           <motion.button whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }} onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: t.textDim, fontSize: 18 }}>✕</motion.button>
         </div>
       </div>
-      {setup.ai_verdict?.reasoning && setup.ai_verdict.verdict !== "PENDING" && (
-        <div style={{ fontSize: 13, color: t.textDim, padding: "10px 14px", background: t.bgCard, borderRadius: 10, marginBottom: 10, border: `1px solid ${t.border}` }}>
-          <span style={{ fontWeight: 700, color: t.text }}>AI: </span>{setup.ai_verdict.reasoning}
-        </div>)}
+      {setup.ai_verdict?.verdict && setup.ai_verdict.verdict !== "PENDING" && (() => {
+        const v = setup.ai_verdict;
+        const verdictColors: Record<string, string> = { CONFIRMED: t.long, DENIED: t.short, CAUTION: t.gold };
+        const vc = verdictColors[v.verdict] || t.textDim;
+        // Parse structured reasoning (BULL: ... | BEAR: ... | synthesis | NEWS: ...)
+        const parts = (v.reasoning || "").split(" | ");
+        const bull = parts.find((p: string) => p.startsWith("BULL:"))?.replace("BULL: ", "") || "";
+        const bear = parts.find((p: string) => p.startsWith("BEAR:"))?.replace("BEAR: ", "") || "";
+        const news = parts.find((p: string) => p.startsWith("NEWS:"))?.replace("NEWS: ", "") || "";
+        const synthesis = parts.filter((p: string) => !p.startsWith("BULL:") && !p.startsWith("BEAR:") && !p.startsWith("NEWS:")).join(" ") || v.reasoning;
+        return (
+          <div style={{ fontSize: 13, padding: "12px 14px", background: t.bgCard, borderRadius: 10, marginBottom: 10, border: `1px solid ${vc}30` }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <span style={{ fontWeight: 800, fontSize: 14, color: vc }}>AI Verdict: {v.verdict}</span>
+              <div style={{ display: "flex", gap: 8, fontSize: 11, color: t.textMuted }}>
+                <span>Confidence: <b style={{ color: t.text }}>{v.confidence}%</b></span>
+                <span>Delta: <b style={{ color: v.score_delta >= 0 ? t.long : t.short }}>{v.score_delta >= 0 ? "+" : ""}{v.score_delta}</b></span>
+                <span>Size: <b style={{ color: t.text }}>{v.size_modifier}x</b></span>
+                {v.news_sentiment && <span>News: <b style={{ color: v.news_sentiment === "bullish" ? t.long : v.news_sentiment === "bearish" ? t.short : t.textDim }}>{v.news_sentiment}</b></span>}
+              </div>
+            </div>
+            {bull && <div style={{ color: t.textDim, marginBottom: 4 }}><span style={{ fontWeight: 700, color: t.long, fontSize: 11 }}>BULL </span>{bull}</div>}
+            {bear && <div style={{ color: t.textDim, marginBottom: 4 }}><span style={{ fontWeight: 700, color: t.short, fontSize: 11 }}>BEAR </span>{bear}</div>}
+            {synthesis && <div style={{ color: t.text, marginBottom: 6, lineHeight: 1.4 }}>{synthesis}</div>}
+            {news && <div style={{ color: t.textDim, marginBottom: 6, fontSize: 12 }}><span style={{ fontWeight: 700, color: t.accent, fontSize: 11 }}>NEWS </span>{news}</div>}
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 4 }}>
+              {v.key_factors?.length > 0 && (
+                <div style={{ flex: 1, minWidth: 150 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: t.textMuted, marginBottom: 3 }}>KEY FACTORS</div>
+                  {v.key_factors.map((f: string, i: number) => <div key={i} style={{ fontSize: 12, color: t.textDim, marginBottom: 1 }}>• {f}</div>)}
+                </div>
+              )}
+              {v.risk_flags?.length > 0 && (
+                <div style={{ flex: 1, minWidth: 150 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: t.short, marginBottom: 3 }}>RISK FLAGS</div>
+                  {v.risk_flags.map((f: string, i: number) => <div key={i} style={{ fontSize: 12, color: t.textDim, marginBottom: 1 }}>• {f}</div>)}
+                </div>
+              )}
+              {v.catalysts?.length > 0 && (
+                <div style={{ flex: 1, minWidth: 150 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: t.long, marginBottom: 3 }}>CATALYSTS</div>
+                  {v.catalysts.map((c: string, i: number) => <div key={i} style={{ fontSize: 12, color: t.textDim, marginBottom: 1 }}>• {c}</div>)}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
       {ld && <div style={{ textAlign: "center", padding: 30, color: t.textDim }}>Loading chart...</div>}
       {err && <div style={{ textAlign: "center", padding: 14, color: t.short, fontSize: 13 }}>Chart: {err}</div>}
       <div ref={ref} style={{ width: "100%", minHeight: ld ? 0 : 400, marginTop: 8 }} />
@@ -1201,13 +1247,13 @@ function AnalyzeView({ t, onTrack }: { t: T; onTrack: (s: any) => void }) {
 // ═══════════════════════════════════════════════
 export default function App() {
   const [dark, setDark] = useState(true); const t = dark ? DARK : LIGHT;
-  const [view, setView] = useState<"opp" | "scan" | "tracker" | "analyze">("opp");
+  const [view, setView] = useState<"opp" | "scan" | "tracker" | "analyze" | "dashboard" | "agents">("opp");
   const [symbol, setSymbol] = useState("AAPL"); const [scanSetups, setScanSetups] = useState<any[]>([]);
   const [topSetups, setTopSetups] = useState<any[]>([]); const [inPlay, setInPlay] = useState<any[]>([]);
   const [mktSummary, setMktSummary] = useState("");
   const [loading, setLoading] = useState(false); const [topLoading, setTopLoading] = useState(true);
   const [error, setError] = useState(""); const [chartIdx, setChartIdx] = useState<number | null>(null);
-  const [fBias, setFBias] = useState("ALL"); const [fCat, setFCat] = useState("ALL"); const [sortBy, setSortBy] = useState<"score" | "rr">("score");
+  const [fBias, setFBias] = useState("ALL"); const [sortBy, setSortBy] = useState<"score" | "rr">("score");
   const [mode, setMode] = useState<"today" | "active">("today");
   const [regime, setRegime] = useState<any>(null); const [hotStrats, setHotStrats] = useState<any[]>([]);
   const [pc, setPc] = useState(47); const [mktOpen, setMktOpen] = useState(true);
@@ -1248,7 +1294,7 @@ export default function App() {
     fetch(`${API}/api/tracker/trades`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ symbol: s.symbol, pattern_name: s.pattern_name, bias: s.bias || "long", timeframe: (s.timeframe_detected || "5min").split("&")[0].trim() || "5min", entry_price: s.entry_price, stop_loss: s.stop_loss, target_1: s.target_price, target_2: s.target_2 || 0, confidence: (s.composite_score || 50) / 100, description: s.description || "" }) }).catch(() => {});
   };
   const active = view === "opp" ? topSetups : view === "scan" ? scanSetups : [];
-  const filtered = useMemo(() => { let r = active; r = r.filter((s: any) => (s.composite_score || 0) >= 45); if (fBias !== "ALL") r = r.filter((s: any) => s.bias === fBias.toLowerCase()); if (fCat !== "ALL") r = r.filter((s: any) => s.category === fCat); return [...r].sort((a: any, b: any) => sortBy === "rr" ? b.risk_reward_ratio - a.risk_reward_ratio : (b.composite_score || 0) - (a.composite_score || 0)) }, [active, fBias, fCat, sortBy]);
+  const filtered = useMemo(() => { let r = active; r = r.filter((s: any) => (s.composite_score || 0) >= 45); if (fBias !== "ALL") r = r.filter((s: any) => s.bias === fBias.toLowerCase()); return [...r].sort((a: any, b: any) => sortBy === "rr" ? b.risk_reward_ratio - a.risk_reward_ratio : (b.composite_score || 0) - (a.composite_score || 0)) }, [active, fBias, sortBy]);
 
   return (
     <div style={{ background: t.bg, minHeight: "100vh", fontFamily: "'Outfit',sans-serif", color: t.text, transition: "background .3s" }}>
@@ -1266,6 +1312,8 @@ export default function App() {
             <Pill active={view === "scan"} onClick={() => setView("scan")} t={t}>Scan</Pill>
             <Pill active={view === "tracker"} onClick={() => setView("tracker")} t={t}>Tracker</Pill>
             <Pill active={view === "analyze"} onClick={() => setView("analyze")} t={t}>Analyze</Pill>
+            <Pill active={view === "dashboard"} onClick={() => setView("dashboard")} t={t}>Dashboard</Pill>
+            <Pill active={view === "agents"} onClick={() => setView("agents")} t={t}>Agent Trading</Pill>
           </div>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
@@ -1320,6 +1368,24 @@ export default function App() {
           )}
         </AnimatePresence>
 
+        {/* DASHBOARD */}
+        <AnimatePresence mode="wait">
+          {view === "dashboard" && (
+            <motion.div key="dashboard" initial="hidden" animate="visible" exit="exit" variants={fadeUp}>
+              <DashboardView t={t} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* AGENT TRADING */}
+        <AnimatePresence mode="wait">
+          {view === "agents" && (
+            <motion.div key="agents" initial="hidden" animate="visible" exit="exit" variants={fadeUp}>
+              <AgentTradingView t={t} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* ANALYZE */}
         <AnimatePresence mode="wait">
           {view === "analyze" && (
@@ -1360,7 +1426,6 @@ export default function App() {
           <motion.div initial="hidden" animate="visible" variants={stagger}>
             <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap", alignItems: "center" }}>
               <div style={{ display: "flex", gap: 2, background: t.border, borderRadius: 8, padding: 3 }}>{["ALL", "LONG", "SHORT"].map(b => <Pill key={b} active={fBias === b} onClick={() => setFBias(b)} t={t} s>{b}</Pill>)}</div>
-              <div style={{ display: "flex", gap: 2, background: t.border, borderRadius: 8, padding: 3 }}>{[["ALL", "All"], ["classical", "Classical"], ["candlestick", "Candle"], ["smb_scalp", "SMB"], ["quant", "Quant"]].map(([v, l]) => <Pill key={v} active={fCat === v} onClick={() => setFCat(v)} t={t} s>{l}</Pill>)}</div>
               <div style={{ marginLeft: "auto", display: "flex", gap: 2, background: t.border, borderRadius: 8, padding: 3 }}>{[["score", "Score"], ["rr", "R:R"]].map(([k, l]) => <Pill key={k} active={sortBy === k} onClick={() => setSortBy(k as any)} t={t} s>{l}</Pill>)}</div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 16px", borderBottom: `2px solid ${t.borderLight}`, fontSize: 10, fontWeight: 700, color: t.textMuted, letterSpacing: 0.6, textTransform: "uppercase" }}>

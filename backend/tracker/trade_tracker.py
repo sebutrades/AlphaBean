@@ -86,17 +86,27 @@ class TrackedTrade:
         self.entry_price = data.get("entry_price", 0.0)
         self.stop_loss = data.get("stop_loss", 0.0)
         # initial_risk is fixed at entry — never changes even after breakeven move.
-        # For old AT_T1 trades (stop already moved to entry_price, so abs(e-s)=0),
-        # reconstruct from target_1 assuming the original R:R was ~2:1:
-        #   original_stop ≈ entry - (T1 - entry) / 2
+        # It MUST be saved to JSON at creation time so it survives stop-to-breakeven moves.
+        # We also store original_stop so we never need to guess the original risk.
+        self.original_stop: float = data.get("original_stop", 0.0)
+
         _raw_ir = data.get("initial_risk", 0.0)
         if _raw_ir <= 0:
+            # First time: compute from entry and stop (which hasn't moved yet)
             _raw_ir = abs(self.entry_price - self.stop_loss)
+        if _raw_ir <= 0 and self.original_stop > 0:
+            # Fallback: use saved original stop
+            _raw_ir = abs(self.entry_price - self.original_stop)
         if _raw_ir <= 0:
+            # Last resort for legacy trades: estimate from target_1
             _t1 = data.get("target_1", 0.0)
             if _t1 and self.entry_price:
-                _raw_ir = abs(_t1 - self.entry_price) / 2.0  # assume ~2:1 R:R
+                _raw_ir = abs(_t1 - self.entry_price) / 2.0
         self.initial_risk: float = round(_raw_ir, 4)
+
+        # Persist original stop on first load (before breakeven move)
+        if self.original_stop <= 0 and self.stop_loss > 0:
+            self.original_stop = self.stop_loss
         self.target_1 = data.get("target_1", 0.0)
         self.target_2 = data.get("target_2", 0.0)
         self.trail_type = data.get("trail_type", "atr")
@@ -162,6 +172,7 @@ class TrackedTrade:
             "closed_at": self.closed_at,
             "realized_r": self.realized_r,
             "initial_risk": self.initial_risk,
+            "original_stop": self.original_stop,
             "gap_risk": self.gap_risk,
             "notes": self.notes,
         }
@@ -654,6 +665,12 @@ class TradeTracker:
         )
         setup_dict["source"] = "manual"
         setup_dict["status"] = "PENDING"
+        # Lock in initial_risk and original_stop at creation time
+        entry = float(setup_dict.get("entry_price", 0))
+        stop = float(setup_dict.get("stop_loss", 0))
+        if entry > 0 and stop > 0:
+            setup_dict.setdefault("initial_risk", round(abs(entry - stop), 4))
+            setup_dict.setdefault("original_stop", stop)
         trade = TrackedTrade(setup_dict)
         self.trades.append(trade)
         self.save()
@@ -801,12 +818,18 @@ class TradeTracker:
                     if intra:
                         trade.current_price = round(intra[-1].close, 2)
 
-        # Archive closed trades
+        # Archive closed trades automatically so the dashboard can see them
         newly_closed = [t for t in self.trades if t.is_closed and t.closed_at == t.last_updated]
         if newly_closed:
             print(f"  {len(newly_closed)} trades closed this refresh")
 
         self.save()
+
+        # Auto-archive: move closed trades to archived_trades.json
+        closed_count = sum(1 for t in self.trades if t.is_closed)
+        if closed_count > 0:
+            self.archive_closed()
+
         print(f"  Updated {len(active)} trades")
 
     # ── QUERIES ──
