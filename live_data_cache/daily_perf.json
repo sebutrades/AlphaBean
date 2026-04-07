@@ -162,6 +162,169 @@
         }
       },
       "generated_at": "2026-04-06T15:30:47.951810"
+    },
+    "2026-04-07": {
+      "date": "2026-04-07",
+      "total_setups": 1887,
+      "closed": 1882,
+      "still_open": 5,
+      "overnight_holds": 5,
+      "winners": 300,
+      "losers": 522,
+      "breakevens": 468,
+      "t1_hits": 771,
+      "t2_hits": 303,
+      "total_realized_r": 969.56,
+      "win_rate_pct": 15.9,
+      "avg_winner_r": 4.97,
+      "avg_loser_r": -1.0,
+      "by_pattern": {
+        "Trend Pullback": {
+          "count": 310,
+          "wins": 33,
+          "total_r": 15.77,
+          "win_rate": 10.6
+        },
+        "RSI Divergence Short": {
+          "count": 122,
+          "wins": 13,
+          "total_r": 14.4,
+          "win_rate": 10.7
+        },
+        "Tidal Wave": {
+          "count": 55,
+          "wins": 13,
+          "total_r": 13.67,
+          "win_rate": 23.6
+        },
+        "Mean Reversion": {
+          "count": 224,
+          "wins": 50,
+          "total_r": 24.0,
+          "win_rate": 22.3
+        },
+        "VWAP Trend Short": {
+          "count": 93,
+          "wins": 13,
+          "total_r": 36.64,
+          "win_rate": 14.0
+        },
+        "Opening Drive Short": {
+          "count": 21,
+          "wins": 2,
+          "total_r": -0.34,
+          "win_rate": 9.5
+        },
+        "VWAP Trend Long": {
+          "count": 75,
+          "wins": 9,
+          "total_r": 12.16,
+          "win_rate": 12.0
+        },
+        "Keltner Breakout Long": {
+          "count": 39,
+          "wins": 7,
+          "total_r": -2.91,
+          "win_rate": 17.9
+        },
+        "Gap Reversal Long": {
+          "count": 34,
+          "wins": 13,
+          "total_r": 18.4,
+          "win_rate": 38.2
+        },
+        "MACD Turn Long": {
+          "count": 45,
+          "wins": 11,
+          "total_r": 2.61,
+          "win_rate": 24.4
+        },
+        "VP Divergence Short": {
+          "count": 200,
+          "wins": 39,
+          "total_r": 450.46,
+          "win_rate": 19.5
+        },
+        "VP Divergence Long": {
+          "count": 187,
+          "wins": 25,
+          "total_r": 139.46,
+          "win_rate": 13.4
+        },
+        "VWAP Reversion": {
+          "count": 93,
+          "wins": 13,
+          "total_r": 126.48,
+          "win_rate": 14.0
+        },
+        "Midday Reversal Short": {
+          "count": 45,
+          "wins": 11,
+          "total_r": 5.05,
+          "win_rate": 24.4
+        },
+        "Gap Reversal Short": {
+          "count": 32,
+          "wins": 4,
+          "total_r": 4.76,
+          "win_rate": 12.5
+        },
+        "MACD Turn Short": {
+          "count": 20,
+          "wins": 3,
+          "total_r": 2.6,
+          "win_rate": 15.0
+        },
+        "Power Hour Long": {
+          "count": 12,
+          "wins": 3,
+          "total_r": 11.0,
+          "win_rate": 25.0
+        },
+        "Keltner Breakout Short": {
+          "count": 31,
+          "wins": 4,
+          "total_r": 1.41,
+          "win_rate": 12.9
+        },
+        "Volume Climax Short": {
+          "count": 39,
+          "wins": 5,
+          "total_r": 4.47,
+          "win_rate": 12.8
+        },
+        "Opening Drive Long": {
+          "count": 21,
+          "wins": 5,
+          "total_r": 7.22,
+          "win_rate": 23.8
+        },
+        "RSI Divergence Long": {
+          "count": 123,
+          "wins": 20,
+          "total_r": 88.38,
+          "win_rate": 16.3
+        },
+        "Midday Reversal Long": {
+          "count": 25,
+          "wins": 1,
+          "total_r": -8.92,
+          "win_rate": 4.0
+        },
+        "Power Hour Short": {
+          "count": 14,
+          "wins": 1,
+          "total_r": -0.67,
+          "win_rate": 7.1
+        },
+        "Volume Climax Long": {
+          "count": 27,
+          "wins": 2,
+          "total_r": 3.44,
+          "win_rate": 7.4
+        }
+      },
+      "generated_at": "2026-04-07T15:30:52.245519"
     }
   }
 }

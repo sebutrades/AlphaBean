@@ -1,11 +1,13 @@
 """
 simulation/intraday.py — Intraday bar-by-bar simulation engine.
 
-Walks through a trading day using 5min bars, one at a time:
+Walks through trading days using 5min bars from cache/bar_data/:
+  - 500 symbols x 125 trading days (Sep 2025 - Mar 2026)
   - Detects setups as each bar arrives
-  - Agents evaluate setups before trading
-  - Active position management: re-evaluate on each bar
+  - Full agent pipeline: Analyst -> PM -> Risk Manager (Opus-level)
+  - Active position management: check stops/targets on each bar
   - Rate-limited: max 1 trade per 5 minutes
+  - All positions closed at EOD, equity carries forward
   - Streams all events via callback for WebSocket broadcast
 
 This is the "Agent Trading" visual mode — designed to be watched in real-time.
@@ -27,10 +29,17 @@ from backend.patterns.classifier import classify_all
 from backend.regime.detector import detect_regime
 from backend.scoring.multi_factor import score_setup, ScoredSetup
 from backend.strategies.evaluator import StrategyEvaluator
-from backend.structures.indicators import wilder_atr
 
 import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning, module="numpy")
+
+# Data source paths
+BAR_DATA_DIR = Path("cache/bar_data")       # 500 symbols, 125 days of 5min
+LIVE_DATA_DIR = Path("live_data_cache/data/5min")  # fallback for recent dates
+
+# Market hours filter (Eastern Time)
+MARKET_OPEN = "09:30"
+MARKET_CLOSE = "16:00"
 
 
 # ── Event types for WebSocket streaming ──────────────────────────────────────
@@ -104,6 +113,11 @@ class IntradayPosition:
                 self.unrealized_r = (self.entry_price - price) / risk
         self.high_water = max(self.high_water, self.unrealized_r)
         self.bars_held += 1
+
+    @property
+    def unrealized_pnl(self) -> float:
+        """Dollar P&L for current position state."""
+        return self.unrealized_r * self.dollar_risk
 
     def check_bar(self, bar: Bar) -> Optional[tuple[str, float]]:
         """Check exits against bar. Returns (outcome, r) if closed."""
@@ -197,11 +211,62 @@ class IntradayPosition:
             "bars_held": self.bars_held,
             "current_price": round(self.current_price, 2),
             "unrealized_r": round(self.unrealized_r, 3),
+            "unrealized_pnl": round(self.unrealized_pnl, 2),
             "high_water_r": round(self.high_water, 3),
             "remaining_weight": round(self.remaining_weight, 2),
             "verdict": self.agent_verdict,
             "reasoning": self.agent_reasoning,
         }
+
+
+# ── Data Loading ────────────────────────────────────────────────────────────
+
+def _load_bar_data_for_date(date: str) -> dict[str, list[dict]]:
+    """Load 5min bars for all symbols on a given date from cache/bar_data/.
+
+    Falls back to live_data_cache if bar_data doesn't have the date.
+    Returns {symbol: [bar_dicts]} filtered to market hours only.
+    """
+    symbol_bars: dict[str, list[dict]] = {}
+
+    # Primary: cache/bar_data/*_5min.json
+    if BAR_DATA_DIR.exists():
+        for fpath in BAR_DATA_DIR.glob("*_5min.json"):
+            try:
+                data = json.loads(fpath.read_text())
+                bars = []
+                for b in data.get("bars", []):
+                    if b["t"][:10] != date:
+                        continue
+                    # Filter to market hours
+                    bar_time = b["t"][11:16]
+                    if MARKET_OPEN <= bar_time < MARKET_CLOSE:
+                        bars.append(b)
+                if bars:
+                    sym = data.get("symbol", fpath.stem.split("_")[0]).upper()
+                    symbol_bars[sym] = bars
+            except Exception:
+                continue
+
+    # Fallback: live_data_cache/data/5min/ if nothing found
+    if not symbol_bars and LIVE_DATA_DIR.exists():
+        for fpath in LIVE_DATA_DIR.glob("*.json"):
+            try:
+                data = json.loads(fpath.read_text())
+                bars = []
+                for b in data.get("bars", []):
+                    if b["t"][:10] != date:
+                        continue
+                    bar_time = b["t"][11:16]
+                    if MARKET_OPEN <= bar_time < MARKET_CLOSE:
+                        bars.append(b)
+                if bars:
+                    sym = fpath.stem.upper()
+                    symbol_bars[sym] = bars
+            except Exception:
+                continue
+
+    return symbol_bars
 
 
 # ── Main Intraday Engine ─────────────────────────────────────────────────────
@@ -217,7 +282,7 @@ class IntradaySimulation:
         max_heat_pct: float = 6.0,
         max_positions: int = 10,
         min_score: float = 50.0,
-        playback_speed: float = 1.0,  # 1.0 = ~0.5s per bar, 5.0 = ~0.1s
+        playback_speed: float = 1.0,
         use_agents: bool = False,
     ):
         self.emit = emit
@@ -235,11 +300,19 @@ class IntradaySimulation:
         self.closed_trades: list[dict] = []
         self.pnl_history: list[dict] = []
         self.cumulative_r: float = 0.0
+        self.cumulative_pnl: float = 0.0
         self._trade_counter: int = 0
         self._last_trade_time: str = ""
         self._evaluator = StrategyEvaluator()
         self._running = False
         self._paused = False
+
+        # Multi-day tracking
+        self._day_number: int = 1
+        self._equity_curve: list[dict] = []
+        self._prev_day_r: float = 0.0
+        self._prev_day_pnl: float = 0.0
+        self._prev_trade_count: int = 0
 
     @property
     def total_heat_pct(self) -> float:
@@ -285,34 +358,22 @@ class IntradaySimulation:
             return 0, 0.0
         return shares, round(shares * risk_per_share, 2)
 
-    async def run_day(self, date: str):
-        """Run simulation for one trading day.
-
-        Loads all 5min bars for the date from cache, then walks through
-        bar-by-bar, detecting setups, evaluating, and managing positions.
-        """
+    async def run_day(self, date: str, close_eod: bool = True):
+        """Run simulation for one trading day."""
         self._running = True
-        bar_dir = Path("live_data_cache/data/5min")
 
-        # Load all available symbols' bars for this date
-        symbol_bars: dict[str, list[dict]] = {}
-        all_bar_times: set[str] = set()
-
-        for fpath in bar_dir.glob("*.json"):
-            try:
-                data = json.loads(fpath.read_text())
-                bars = [b for b in data.get("bars", []) if b["t"][:10] == date]
-                if bars:
-                    sym = fpath.stem.upper()
-                    symbol_bars[sym] = bars
-                    for b in bars:
-                        all_bar_times.add(b["t"])
-            except Exception:
-                continue
+        # Load bars from cache/bar_data (market hours only)
+        symbol_bars = _load_bar_data_for_date(date)
 
         if not symbol_bars:
             self.emit(SimEvent("error", "", {"message": f"No 5min data for {date}"}))
             return
+
+        # Collect all unique bar times
+        all_bar_times: set[str] = set()
+        for bars in symbol_bars.values():
+            for b in bars:
+                all_bar_times.add(b["t"])
 
         sorted_times = sorted(all_bar_times)
         total_bars = len(sorted_times)
@@ -321,11 +382,14 @@ class IntradaySimulation:
             "date": date,
             "symbols": len(symbol_bars),
             "total_bars": total_bars,
-            "capital": self.starting_capital,
+            "capital": round(self.cash, 2),
+            "open_positions": len(self.positions),
+            "day_number": self._day_number,
         }))
 
         # Build cumulative bar series per symbol as we walk forward
         seen_bars: dict[str, list[dict]] = {sym: [] for sym in symbol_bars}
+        bars_this_tick: dict[str, dict] = {}
 
         for bar_idx, bar_time in enumerate(sorted_times):
             if not self._running:
@@ -335,7 +399,7 @@ class IntradaySimulation:
                 await asyncio.sleep(0.1)
 
             # Collect this bar for all symbols
-            bars_this_tick: dict[str, dict] = {}
+            bars_this_tick = {}
             for sym, bars in symbol_bars.items():
                 for b in bars:
                     if b["t"] == bar_time:
@@ -355,7 +419,7 @@ class IntradaySimulation:
             # 1. Resolve existing positions
             await self._resolve_positions(bar_time, bars_this_tick)
 
-            # 2. Scan for new setups (every 6 bars = 30 min to avoid noise)
+            # 2. Scan for new setups
             if bar_idx >= 12 and self._can_trade(bar_time):
                 await self._scan_and_trade(bar_time, seen_bars, bars_this_tick)
 
@@ -366,18 +430,124 @@ class IntradaySimulation:
             delay = 0.5 / max(0.1, self.playback_speed)
             await asyncio.sleep(delay)
 
-        # End of day — close all positions
-        await self._close_all_eod(sorted_times[-1] if sorted_times else "", bars_this_tick)
+        # End of day
+        if close_eod:
+            await self._close_all_eod(sorted_times[-1] if sorted_times else "", bars_this_tick)
+
+        equity = round(self.cash + sum(p.shares * p.current_price for p in self.positions), 2)
+        day_pnl = self.cumulative_pnl - self._prev_day_pnl
+
+        # Record daily equity snapshot
+        self._equity_curve.append({
+            "date": date,
+            "equity": equity,
+            "cumulative_r": round(self.cumulative_r, 3),
+            "day_r": round(self.cumulative_r - self._prev_day_r, 3),
+            "day_pnl": round(day_pnl, 2),
+            "cumulative_pnl": round(self.cumulative_pnl, 2),
+            "heat": round(self.total_heat_pct, 1),
+            "open_positions": len(self.positions),
+            "trades_today": len(self.closed_trades) - self._prev_trade_count,
+        })
+        self._prev_day_r = self.cumulative_r
+        self._prev_day_pnl = self.cumulative_pnl
+        self._prev_trade_count = len(self.closed_trades)
+        self._day_number += 1
 
         self.emit(SimEvent("day_end", sorted_times[-1] if sorted_times else "", {
+            "date": date,
+            "day_number": self._day_number,
             "total_trades": len(self.closed_trades),
             "cumulative_r": round(self.cumulative_r, 3),
-            "final_equity": round(self.cash + sum(
-                p.shares * p.current_price for p in self.positions
-            ), 2),
+            "cumulative_pnl": round(self.cumulative_pnl, 2),
+            "day_pnl": round(day_pnl, 2),
+            "final_equity": equity,
             "wins": sum(1 for t in self.closed_trades if t["realized_r"] > 0),
             "losses": sum(1 for t in self.closed_trades if t["realized_r"] <= 0),
+            "open_positions": len(self.positions),
         }))
+
+    async def run_continuous(self, dates: list[str]):
+        """Run simulation across multiple days continuously.
+
+        Each day runs independently (all positions closed at EOD) but
+        equity carries forward. Results are saved at the end.
+        """
+        self._running = True
+        total_days = len(dates)
+
+        self.emit(SimEvent("multi_day_start", "", {
+            "total_days": total_days,
+            "dates": dates,
+            "starting_capital": self.starting_capital,
+        }))
+
+        for i, date in enumerate(dates):
+            if not self._running:
+                break
+            await self.run_day(date, close_eod=True)
+            # Reset last trade time for next day
+            self._last_trade_time = ""
+
+        # Save results
+        self._save_results(dates)
+
+        equity = round(self.cash, 2)
+        self.emit(SimEvent("multi_day_end", "", {
+            "total_days": self._day_number - 1,
+            "total_trades": len(self.closed_trades),
+            "cumulative_r": round(self.cumulative_r, 3),
+            "cumulative_pnl": round(self.cumulative_pnl, 2),
+            "final_equity": equity,
+            "wins": sum(1 for t in self.closed_trades if t["realized_r"] > 0),
+            "losses": sum(1 for t in self.closed_trades if t["realized_r"] <= 0),
+            "equity_curve": self._equity_curve,
+        }))
+
+    def _save_results(self, dates: list[str]):
+        """Save multi-day intraday results to disk."""
+        out_dir = Path("simulation/output")
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+        equity = self.cash + sum(p.shares * p.current_price for p in self.positions)
+        wins = sum(1 for t in self.closed_trades if t["realized_r"] > 0)
+        losses = sum(1 for t in self.closed_trades if t["realized_r"] <= 0)
+        total = len(self.closed_trades)
+
+        results = {
+            "config": {
+                "starting_capital": self.starting_capital,
+                "risk_per_trade_pct": self.risk_pct,
+                "sim_days": len(dates),
+                "universe_size": 0,
+                "use_agents": self.use_agents,
+                "mode": "intraday_5min",
+            },
+            "stats": {
+                "total_trades": total,
+                "wins": wins,
+                "losses": losses,
+                "total_r": round(self.cumulative_r, 3),
+                "total_pnl": round(self.cumulative_pnl, 2),
+                "win_rate": round((wins / total) * 100, 1) if total > 0 else 0,
+                "avg_r": round(self.cumulative_r / total, 3) if total > 0 else 0,
+                "avg_pnl": round(self.cumulative_pnl / total, 2) if total > 0 else 0,
+                "profit_factor": round(
+                    sum(t["realized_r"] for t in self.closed_trades if t["realized_r"] > 0) /
+                    abs(sum(t["realized_r"] for t in self.closed_trades if t["realized_r"] <= 0) or 1),
+                    2),
+                "best_trade_r": round(max((t["realized_r"] for t in self.closed_trades), default=0), 3),
+                "worst_trade_r": round(min((t["realized_r"] for t in self.closed_trades), default=0), 3),
+                "open_positions": len(self.positions),
+                "current_heat": round(self.total_heat_pct, 1),
+            },
+            "equity_curve": self._equity_curve,
+            "closed_trades": self.closed_trades,
+        }
+
+        out_path = out_dir / "simulation_results.json"
+        out_path.write_text(json.dumps(results, indent=2, default=str))
+        print(f"\nResults saved to {out_path}")
 
     async def _resolve_positions(self, bar_time: str, bars_this_tick: dict):
         """Check all positions against current bars."""
@@ -405,14 +575,13 @@ class IntradaySimulation:
 
     async def _scan_and_trade(self, bar_time: str, seen_bars: dict, bars_this_tick: dict):
         """Scan all symbols for setups, evaluate, and potentially trade."""
-        # Only scan symbols with enough bars
         candidates: list[ScoredSetup] = []
 
         for sym, bars_list in seen_bars.items():
             if len(bars_list) < 20:
                 continue
             if sym in {p.symbol for p in self.positions}:
-                continue  # already have position
+                continue
 
             bar_objects = [
                 Bar(symbol=sym,
@@ -427,7 +596,6 @@ class IntradaySimulation:
             if not setups:
                 continue
 
-            # Compute features and score
             closes = np.array([b["c"] for b in bars_list], dtype=np.float64)
             highs = np.array([b["h"] for b in bars_list], dtype=np.float64)
             lows = np.array([b["l"] for b in bars_list], dtype=np.float64)
@@ -443,9 +611,9 @@ class IntradaySimulation:
         if not candidates:
             return
 
-        # Sort by score, emit setup events
+        # Sort by score, emit setup events for top candidates
         candidates.sort(key=lambda x: x.composite_score, reverse=True)
-        best = candidates[:5]  # top 5 for evaluation
+        best = candidates[:5]
 
         for scored in best:
             self.emit(SimEvent("setup_detected", bar_time, {
@@ -461,58 +629,213 @@ class IntradaySimulation:
                 "strategy_type": scored.setup.strategy_type,
             }))
 
-        # Evaluate and trade the best one
-        top = best[0]
-        verdict, reasoning = await self._evaluate_setup(top, bar_time)
+        # Evaluate and trade through agent pipeline or deterministic
+        if self.use_agents:
+            await self._agent_evaluate_and_trade(best, bar_time)
+        else:
+            await self._deterministic_evaluate_and_trade(best, bar_time)
 
-        if verdict == "CONFIRMED" and self._can_trade(bar_time):
-            self._open_trade(top, bar_time, verdict, reasoning)
-        elif verdict == "DENIED":
-            self.emit(SimEvent("agent_verdict", bar_time, {
-                "symbol": top.setup.symbol,
-                "pattern": top.setup.pattern_name,
-                "verdict": "DENIED",
-                "reasoning": reasoning,
-                "action": "SKIP",
+    async def _agent_evaluate_and_trade(self, candidates: list[ScoredSetup], bar_time: str):
+        """Full agent pipeline: Analyst evaluates top setups, PM selects, Risk reviews.
+
+        Uses local Ollama (Qwen3:8b) — free, unlimited, always available.
+        """
+        from simulation.agents.analyst import evaluate_setup_ollama
+        from simulation.agents.base import call_ollama
+
+        model = "qwen3:8b"
+
+        # Step 1: Analyst evaluates each candidate
+        verdicts = []
+        for scored in candidates:
+            self.emit(SimEvent("agent_thinking", bar_time, {
+                "symbol": scored.setup.symbol,
+                "pattern": scored.setup.pattern_name,
+                "score": round(scored.composite_score, 1),
+                "message": f"Analyst evaluating {scored.setup.pattern_name} on {scored.setup.symbol}...",
             }))
 
-    async def _evaluate_setup(self, scored: ScoredSetup, bar_time: str) -> tuple[str, str]:
-        """Evaluate a setup — agent or deterministic."""
-        setup = scored.setup
-        symbol = setup.symbol
-        pattern = setup.pattern_name
+            try:
+                result = await evaluate_setup_ollama(scored, regime="unknown", model=model)
+                verdict = result.get("verdict", "CAUTION")
+                reasoning = result.get("reasoning", "")
+                verdicts.append({
+                    "symbol": scored.setup.symbol,
+                    "pattern": scored.setup.pattern_name,
+                    "verdict": verdict,
+                    "reasoning": reasoning,
+                    "confidence": result.get("confidence", 0.5),
+                    "score": scored.composite_score,
+                    "scored": scored,
+                })
 
+                self.emit(SimEvent("agent_verdict", bar_time, {
+                    "symbol": scored.setup.symbol,
+                    "pattern": scored.setup.pattern_name,
+                    "verdict": verdict,
+                    "reasoning": reasoning[:300],
+                    "action": "ANALYST",
+                }))
+            except Exception as e:
+                verdicts.append({
+                    "symbol": scored.setup.symbol,
+                    "pattern": scored.setup.pattern_name,
+                    "verdict": "CAUTION",
+                    "reasoning": f"Analyst error: {e}",
+                    "confidence": 0.5,
+                    "score": scored.composite_score,
+                    "scored": scored,
+                })
+
+        confirmed = [v for v in verdicts if v["verdict"] == "CONFIRMED"]
+        if not confirmed:
+            return
+
+        # Step 2: PM selects which confirmed trade to take
+        if len(confirmed) == 1:
+            selected = confirmed[0]
+        else:
+            pm_prompt = self._build_pm_prompt(confirmed, bar_time)
+            self.emit(SimEvent("agent_thinking", bar_time, {
+                "symbol": "",
+                "pattern": "",
+                "score": 0,
+                "message": f"Portfolio Manager choosing from {len(confirmed)} confirmed setups...",
+            }))
+
+            try:
+                pm_resp = await call_ollama(
+                    prompt=pm_prompt,
+                    model=model,
+                    system="You are a Portfolio Manager. Select the BEST trade from the confirmed setups. RESPOND IN JSON: {\"selected_symbol\": \"SYM\", \"reasoning\": \"...\", \"size_modifier\": 1.0}",
+                    max_tokens=1024,
+                    temperature=0.2,
+                )
+                if pm_resp.success:
+                    sel_sym = pm_resp.data.get("selected_symbol", "")
+                    selected = next((v for v in confirmed if v["symbol"] == sel_sym), confirmed[0])
+                    pm_reasoning = pm_resp.data.get("reasoning", "")
+                    self.emit(SimEvent("agent_verdict", bar_time, {
+                        "symbol": selected["symbol"],
+                        "pattern": selected["pattern"],
+                        "verdict": "PM_SELECTED",
+                        "reasoning": pm_reasoning[:300],
+                        "action": "PORTFOLIO MANAGER",
+                    }))
+                else:
+                    selected = confirmed[0]
+            except Exception:
+                selected = confirmed[0]
+
+        # Step 3: Risk check
         self.emit(SimEvent("agent_thinking", bar_time, {
-            "symbol": symbol,
-            "pattern": pattern,
-            "score": round(scored.composite_score, 1),
-            "message": f"Evaluating {pattern} on {symbol} (score: {scored.composite_score:.0f})...",
+            "symbol": selected["symbol"],
+            "pattern": selected["pattern"],
+            "score": selected["score"],
+            "message": f"Risk Manager reviewing {selected['symbol']}...",
         }))
 
-        if self.use_agents:
-            try:
-                from simulation.agents.analyst import evaluate_setup_ollama
-                result = await evaluate_setup_ollama(scored, regime="unknown")
-                return result.get("verdict", "CAUTION"), result.get("reasoning", "")
-            except Exception as e:
-                return "CAUTION", f"Agent error: {e}"
+        risk_approved = True
+        risk_reasoning = ""
+        try:
+            risk_prompt = self._build_risk_prompt(selected, bar_time)
+            risk_resp = await call_ollama(
+                prompt=risk_prompt,
+                model=model,
+                system="You are a Risk Manager. Review this trade and decide APPROVE or REJECT. RESPOND IN JSON: {\"action\": \"APPROVE\"|\"REJECT\", \"reasoning\": \"...\", \"size_modifier\": 1.0}",
+                max_tokens=1024,
+                temperature=0.1,
+            )
+            if risk_resp.success:
+                action = risk_resp.data.get("action", "APPROVE").upper()
+                risk_reasoning = risk_resp.data.get("reasoning", "")
+                if action == "REJECT":
+                    risk_approved = False
+                    self.emit(SimEvent("agent_verdict", bar_time, {
+                        "symbol": selected["symbol"],
+                        "pattern": selected["pattern"],
+                        "verdict": "RISK_REJECTED",
+                        "reasoning": risk_reasoning[:300],
+                        "action": "RISK MANAGER",
+                    }))
+        except Exception:
+            pass  # default approve on error
 
-        # Deterministic: CONFIRM if score > 60, DENY if < 40
-        if scored.composite_score >= 60:
+        if risk_approved and self._can_trade(bar_time):
+            scored = selected["scored"]
+            full_reasoning = f"Analyst: {selected['reasoning'][:200]} | Risk: {risk_reasoning[:200]}"
+            self._open_trade(scored, bar_time, "CONFIRMED", full_reasoning)
+
+    def _build_pm_prompt(self, confirmed: list[dict], bar_time: str) -> str:
+        """Build PM decision prompt from confirmed setups."""
+        lines = [
+            f"PORTFOLIO STATE: Cash: ${self.cash:,.0f} | Positions: {len(self.positions)}/{self.max_positions} | "
+            f"Heat: {self.total_heat_pct:.1f}% | Cumulative P&L: ${self.cumulative_pnl:+,.0f}",
+            "",
+            f"CONFIRMED SETUPS ({len(confirmed)}):",
+        ]
+        for v in confirmed:
+            s = v["scored"].setup
+            lines.append(
+                f"  {v['symbol']} - {v['pattern']} | Score: {v['score']:.0f} | "
+                f"R:R {s.risk_reward_ratio:.1f} | {s.bias.value.upper()} | "
+                f"Entry: ${s.entry_price:.2f} Stop: ${s.stop_loss:.2f}"
+            )
+            lines.append(f"    Analyst: {v['reasoning'][:150]}")
+        return "\n".join(lines)
+
+    def _build_risk_prompt(self, selected: dict, bar_time: str) -> str:
+        """Build Risk Manager review prompt."""
+        s = selected["scored"].setup
+        lines = [
+            f"PORTFOLIO: Cash ${self.cash:,.0f} | Heat: {self.total_heat_pct:.1f}%/{self.max_heat_pct}% | "
+            f"Positions: {len(self.positions)}/{self.max_positions} | Cum P&L: ${self.cumulative_pnl:+,.0f}",
+            "",
+            f"PROPOSED TRADE: {selected['symbol']} - {selected['pattern']}",
+            f"  Bias: {s.bias.value.upper()} | Entry: ${s.entry_price:.2f} | Stop: ${s.stop_loss:.2f}",
+            f"  R:R: {s.risk_reward_ratio:.1f} | Score: {selected['score']:.0f}",
+            f"  Risk per share: ${abs(s.entry_price - s.stop_loss):.2f}",
+            f"  Analyst says: {selected['reasoning'][:200]}",
+        ]
+        if self.positions:
+            lines.append(f"\n  Current positions: {', '.join(p.symbol for p in self.positions)}")
+        return "\n".join(lines)
+
+    async def _deterministic_evaluate_and_trade(self, candidates: list[ScoredSetup], bar_time: str):
+        """Deterministic fallback: take the best setup above score 60."""
+        top = candidates[0]
+        setup = top.setup
+
+        self.emit(SimEvent("agent_thinking", bar_time, {
+            "symbol": setup.symbol,
+            "pattern": setup.pattern_name,
+            "score": round(top.composite_score, 1),
+            "message": f"Evaluating {setup.pattern_name} on {setup.symbol} (score: {top.composite_score:.0f})...",
+        }))
+
+        if top.composite_score >= 60:
             reasoning = (
-                f"{pattern} on {symbol}: Strong composite score of {scored.composite_score:.0f}. "
+                f"{setup.pattern_name} on {setup.symbol}: Strong composite score of {top.composite_score:.0f}. "
                 f"R:R = {setup.risk_reward_ratio:.1f}. "
                 f"Strategy: {setup.strategy_type}. Pattern confidence: {setup.confidence:.0%}."
             )
-            return "CONFIRMED", reasoning
-        elif scored.composite_score < 40:
-            return "DENIED", f"Score {scored.composite_score:.0f} below threshold"
-        else:
-            reasoning = (
-                f"{pattern} on {symbol}: Marginal score of {scored.composite_score:.0f}. "
-                f"R:R = {setup.risk_reward_ratio:.1f}. Needs stronger confirmation."
-            )
-            return "CAUTION", reasoning
+            self.emit(SimEvent("agent_verdict", bar_time, {
+                "symbol": setup.symbol,
+                "pattern": setup.pattern_name,
+                "verdict": "CONFIRMED",
+                "reasoning": reasoning,
+                "action": "DETERMINISTIC",
+            }))
+            if self._can_trade(bar_time):
+                self._open_trade(top, bar_time, "CONFIRMED", reasoning)
+        elif top.composite_score < 40:
+            self.emit(SimEvent("agent_verdict", bar_time, {
+                "symbol": setup.symbol,
+                "pattern": setup.pattern_name,
+                "verdict": "DENIED",
+                "reasoning": f"Score {top.composite_score:.0f} below threshold",
+                "action": "SKIP",
+            }))
 
     def _open_trade(self, scored: ScoredSetup, bar_time: str, verdict: str, reasoning: str):
         """Open a new position."""
@@ -570,6 +893,7 @@ class IntradaySimulation:
         pnl = realized_r * pos.dollar_risk
         self.cash += position_cost + pnl
         self.cumulative_r += realized_r
+        self.cumulative_pnl += pnl
 
         trade = {
             "id": pos.id, "symbol": pos.symbol, "pattern": pos.pattern_name,
@@ -589,6 +913,7 @@ class IntradaySimulation:
         self.emit(SimEvent("trade_close", bar_time, {
             **trade,
             "cumulative_r": round(self.cumulative_r, 3),
+            "cumulative_pnl": round(self.cumulative_pnl, 2),
             "cash_after": round(self.cash, 2),
         }))
 
@@ -602,7 +927,7 @@ class IntradaySimulation:
 
     def _emit_pnl(self, bar_time: str, bar_idx: int, total_bars: int):
         """Emit PNL snapshot."""
-        unrealized_r = sum(p.unrealized_r for p in self.positions)
+        unrealized_pnl = sum(p.unrealized_pnl for p in self.positions)
         position_value = sum(p.shares * p.current_price for p in self.positions)
         equity = self.cash + position_value
 
@@ -613,8 +938,11 @@ class IntradaySimulation:
             "equity": round(equity, 2),
             "cash": round(self.cash, 2),
             "cumulative_r": round(self.cumulative_r, 3),
-            "unrealized_r": round(unrealized_r, 3),
-            "total_r": round(self.cumulative_r + unrealized_r, 3),
+            "unrealized_r": round(sum(p.unrealized_r for p in self.positions), 3),
+            "total_r": round(self.cumulative_r + sum(p.unrealized_r for p in self.positions), 3),
+            "cumulative_pnl": round(self.cumulative_pnl, 2),
+            "unrealized_pnl": round(unrealized_pnl, 2),
+            "total_pnl": round(self.cumulative_pnl + unrealized_pnl, 2),
             "positions": len(self.positions),
             "closed_trades": len(self.closed_trades),
             "heat_pct": round(self.total_heat_pct, 1),
@@ -632,24 +960,39 @@ class IntradaySimulation:
         self._running = False
 
     def set_speed(self, speed: float):
-        self.playback_speed = max(0.1, min(50.0, speed))
+        self.playback_speed = max(0.1, min(100.0, speed))
 
 
 def get_available_dates() -> list[str]:
-    """Return dates that have 5min bar data."""
-    bar_dir = Path("live_data_cache/data/5min")
-    if not bar_dir.exists():
-        return []
+    """Return dates that have 5min bar data.
 
+    Primary: cache/bar_data/*_5min.json (500 symbols, 125 days)
+    Fallback: live_data_cache/data/5min/ (recent dates only)
+    """
     dates: set[str] = set()
-    # Just check SPY for available dates
-    spy_path = bar_dir / "SPY.json"
-    if spy_path.exists():
-        try:
-            data = json.loads(spy_path.read_text())
-            for b in data.get("bars", []):
-                dates.add(b["t"][:10])
-        except Exception:
-            pass
+
+    # Primary source: cache/bar_data
+    if BAR_DATA_DIR.exists():
+        # Use SPY as reference for available dates (fastest scan)
+        spy_path = BAR_DATA_DIR / "SPY_5min.json"
+        if spy_path.exists():
+            try:
+                data = json.loads(spy_path.read_text())
+                for b in data.get("bars", []):
+                    bar_time = b["t"][11:16]
+                    if MARKET_OPEN <= bar_time < MARKET_CLOSE:
+                        dates.add(b["t"][:10])
+            except Exception:
+                pass
+
+    # Fallback: live_data_cache
+    if not dates and LIVE_DATA_DIR.exists():
+        for fpath in LIVE_DATA_DIR.glob("*.json"):
+            try:
+                data = json.loads(fpath.read_text())
+                for b in data.get("bars", []):
+                    dates.add(b["t"][:10])
+            except Exception:
+                pass
 
     return sorted(dates)

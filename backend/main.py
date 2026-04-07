@@ -3,6 +3,9 @@ main.py — Juicer API Server v1.0
 
 Start: uvicorn backend.main:app --reload --port 8000
 """
+from dotenv import load_dotenv
+load_dotenv()  # Load .env file (ANTHROPIC_API_KEY, etc.)
+
 import json, os, time
 from collections import defaultdict
 from contextlib import asynccontextmanager
@@ -694,6 +697,38 @@ async def agent_trading_dates():
         return {"error": str(e)}
 
 
+@app.get("/api/agent-trading/results")
+async def agent_trading_results():
+    """Return long-term simulation results (equity curve, trades, stats)."""
+    results_file = Path("simulation/output/simulation_results.json")
+    if not results_file.exists():
+        return {"error": "No simulation results found. Run: python -m simulation.run"}
+    try:
+        data = json.loads(results_file.read_text())
+        # Compute daily P&L from equity curve
+        curve = data.get("equity_curve", [])
+        for i, pt in enumerate(curve):
+            if i == 0:
+                pt["daily_pnl"] = pt["equity"] - data["config"]["starting_capital"]
+            else:
+                pt["daily_pnl"] = pt["equity"] - curve[i - 1]["equity"]
+        # Compute per-trade cumulative P&L for trade timeline
+        trades = data.get("closed_trades", [])
+        cum_pnl = 0
+        cum_r = 0
+        for tr in trades:
+            risk = tr.get("dollar_risk", 0)
+            pnl = tr.get("realized_r", 0) * risk
+            cum_pnl += pnl
+            cum_r += tr.get("realized_r", 0)
+            tr["cum_pnl"] = round(cum_pnl, 2)
+            tr["cum_r"] = round(cum_r, 3)
+            tr["pnl"] = round(pnl, 2)
+        return data
+    except Exception as e:
+        return {"error": str(e)}
+
+
 # Active simulation instance (one at a time)
 _active_sim = {"instance": None, "task": None}
 
@@ -704,6 +739,7 @@ async def agent_trading_ws(websocket: WebSocket):
 
     Client sends JSON commands:
       {"action": "start", "date": "2026-04-01", "speed": 2.0, "use_agents": false}
+      {"action": "start_continuous", "speed": 10.0}  (runs all available dates)
       {"action": "pause"}
       {"action": "resume"}
       {"action": "stop"}
@@ -714,7 +750,7 @@ async def agent_trading_ws(websocket: WebSocket):
     await websocket.accept()
 
     import asyncio
-    from simulation.intraday import IntradaySimulation, SimEvent
+    from simulation.intraday import IntradaySimulation, SimEvent, get_available_dates
 
     sim: IntradaySimulation | None = None
     sim_task: asyncio.Task | None = None
@@ -741,21 +777,24 @@ async def agent_trading_ws(websocket: WebSocket):
 
     sender_task = asyncio.create_task(sender())
 
+    async def _stop_sim():
+        nonlocal sim, sim_task
+        if sim is not None:
+            sim.stop()
+        if sim_task is not None and not sim_task.done():
+            sim_task.cancel()
+            try:
+                await sim_task
+            except (asyncio.CancelledError, Exception):
+                pass
+
     try:
         while True:
             data = await websocket.receive_json()
             action = data.get("action", "")
 
             if action == "start":
-                # Stop any existing simulation
-                if sim is not None:
-                    sim.stop()
-                if sim_task is not None and not sim_task.done():
-                    sim_task.cancel()
-                    try:
-                        await sim_task
-                    except (asyncio.CancelledError, Exception):
-                        pass
+                await _stop_sim()
 
                 date = data.get("date", "")
                 speed = data.get("speed", 2.0)
@@ -772,6 +811,25 @@ async def agent_trading_ws(websocket: WebSocket):
                 )
 
                 sim_task = asyncio.create_task(sim.run_day(date))
+
+            elif action == "start_continuous":
+                await _stop_sim()
+
+                speed = data.get("speed", 10.0)
+                use_agents = data.get("use_agents", False)
+                capital = data.get("capital", 100_000)
+                min_score = data.get("min_score", 50.0)
+                dates = data.get("dates") or get_available_dates()
+
+                sim = IntradaySimulation(
+                    emit=emit,
+                    starting_capital=capital,
+                    playback_speed=speed,
+                    use_agents=use_agents,
+                    min_score=min_score,
+                )
+
+                sim_task = asyncio.create_task(sim.run_continuous(dates))
 
             elif action == "pause" and sim:
                 sim.pause()
@@ -790,4 +848,187 @@ async def agent_trading_ws(websocket: WebSocket):
         if sim:
             sim.stop()
         sender_task.cancel()
+
+
+# ═══ CUSTOM AGENT TRADING ═══
+# Background-persistent runs, strategy filtering, adaptive sizing,
+# agent deliberation, run logging. Navigate away without stopping.
+
+from simulation.custom.manager import RunManager
+from simulation.custom.config import (
+    CustomSimConfig, AgentModelConfig, SizingConfig, DeliberationConfig,
+)
+
+_run_manager = RunManager.instance()
+
+
+@app.get("/api/custom-trading/status")
+async def get_custom_status():
+    """Return system status including API key availability."""
+    import os
+    has_key = bool(os.environ.get("ANTHROPIC_API_KEY", ""))
+    return {
+        "api_key_set": has_key,
+        "active_runs": len(_run_manager.get_active_runs()),
+        "saved_runs": len(_run_manager.get_saved_runs()),
+        "available_dates": len(_run_manager.get_available_dates()),
+    }
+
+
+@app.get("/api/custom-trading/strategies")
+async def get_strategies():
+    """Return all available strategies grouped by category."""
+    return {
+        "strategies": _run_manager.get_strategies(),
+        "groups": _run_manager.get_strategy_groups(),
+    }
+
+
+@app.get("/api/custom-trading/dates")
+async def get_custom_dates():
+    """Return all available dates for simulation."""
+    dates = _run_manager.get_available_dates()
+    return {"dates": dates, "count": len(dates)}
+
+
+@app.get("/api/custom-trading/runs")
+async def get_custom_runs():
+    """List all saved + active runs."""
+    saved = _run_manager.get_saved_runs()
+    active = _run_manager.get_active_runs()
+    return {"saved": saved, "active": active}
+
+
+@app.get("/api/custom-trading/runs/{run_id}")
+async def get_custom_run(run_id: str):
+    """Get a specific run (live status or saved results)."""
+    status = _run_manager.get_run_status(run_id)
+    if status and status.get("live"):
+        return status
+    saved = _run_manager.get_saved_run(run_id)
+    if saved:
+        return saved
+    return {"error": "Run not found"}
+
+
+@app.delete("/api/custom-trading/runs/{run_id}")
+async def delete_custom_run(run_id: str):
+    """Delete a saved run."""
+    ok = _run_manager.delete_saved_run(run_id)
+    return {"deleted": ok}
+
+
+@app.post("/api/custom-trading/compare")
+async def compare_custom_runs(request: Request):
+    """Compare multiple runs side-by-side."""
+    body = await request.json()
+    run_ids = body.get("run_ids", [])
+    return _run_manager.compare_saved_runs(run_ids)
+
+
+@app.post("/api/custom-trading/start")
+async def start_custom_run(request: Request):
+    """Start a new custom trading simulation run.
+
+    The run continues in the background — no WebSocket needed to keep it alive.
+    Connect via /ws/custom-trading/{run_id} to stream live events.
+    """
+    body = await request.json()
+
+    # Build config from request
+    config = CustomSimConfig.from_dict(body)
+
+    run_id = await _run_manager.start_run(config)
+    return {"run_id": run_id, "status": "started"}
+
+
+@app.post("/api/custom-trading/stop/{run_id}")
+async def stop_custom_run(run_id: str):
+    ok = _run_manager.stop_run(run_id)
+    return {"stopped": ok}
+
+
+@app.post("/api/custom-trading/pause/{run_id}")
+async def pause_custom_run(run_id: str):
+    ok = _run_manager.pause_run(run_id)
+    return {"paused": ok}
+
+
+@app.post("/api/custom-trading/resume/{run_id}")
+async def resume_custom_run(run_id: str):
+    ok = _run_manager.resume_run(run_id)
+    return {"resumed": ok}
+
+
+@app.post("/api/custom-trading/speed/{run_id}")
+async def set_custom_speed(run_id: str, request: Request):
+    body = await request.json()
+    ok = _run_manager.set_speed(run_id, body.get("speed", 10.0))
+    return {"ok": ok}
+
+
+@app.websocket("/ws/custom-trading/{run_id}")
+async def custom_trading_ws(websocket: WebSocket, run_id: str):
+    """WebSocket for streaming live events from a custom run.
+
+    This is a VIEW-ONLY connection. The run continues even if this
+    WebSocket disconnects. Reconnecting replays recent events.
+
+    Client can send: {"action": "pause"}, {"action": "resume"},
+                     {"action": "stop"}, {"action": "set_speed", "speed": N}
+    """
+    await websocket.accept()
+    import asyncio
+
+    queue = _run_manager.subscribe(run_id)
+    if queue is None:
+        await websocket.send_json({"type": "error", "message": f"Run {run_id} not found"})
+        await websocket.close()
+        return
+
+    async def sender():
+        try:
+            while True:
+                event = await queue.get()
+                try:
+                    await websocket.send_json(event)
+                except Exception:
+                    break
+        except asyncio.CancelledError:
+            pass
+
+    async def receiver():
+        try:
+            while True:
+                data = await websocket.receive_json()
+                action = data.get("action", "")
+                if action == "pause":
+                    _run_manager.pause_run(run_id)
+                elif action == "resume":
+                    _run_manager.resume_run(run_id)
+                elif action == "stop":
+                    _run_manager.stop_run(run_id)
+                elif action == "set_speed":
+                    _run_manager.set_speed(run_id, data.get("speed", 10.0))
+        except (WebSocketDisconnect, Exception):
+            pass
+
+    sender_task = asyncio.create_task(sender())
+    receiver_task = asyncio.create_task(receiver())
+
+    try:
+        # Wait for either task to complete (usually receiver on disconnect)
+        done, pending = await asyncio.wait(
+            [sender_task, receiver_task],
+            return_when=asyncio.FIRST_COMPLETED,
+        )
+        for task in pending:
+            task.cancel()
+    except Exception:
+        pass
+    finally:
+        # Unsubscribe WITHOUT stopping the run
+        _run_manager.unsubscribe(run_id, queue)
+        sender_task.cancel()
+        receiver_task.cancel()
 

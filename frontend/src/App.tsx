@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import DashboardView from "./DashboardView";
 import AgentTradingView from "./AgentTradingView";
+import CustomAgentTradingView from "./CustomAgentTradingView";
 const API = "http://localhost:8000";
 
 // ═══════════════════════════════════════════════
@@ -1247,7 +1248,7 @@ function AnalyzeView({ t, onTrack }: { t: T; onTrack: (s: any) => void }) {
 // ═══════════════════════════════════════════════
 export default function App() {
   const [dark, setDark] = useState(true); const t = dark ? DARK : LIGHT;
-  const [view, setView] = useState<"opp" | "scan" | "tracker" | "analyze" | "dashboard" | "agents">("opp");
+  const [view, setView] = useState<"opp" | "scan" | "tracker" | "analyze" | "dashboard" | "agents" | "custom_agents">("opp");
   const [symbol, setSymbol] = useState("AAPL"); const [scanSetups, setScanSetups] = useState<any[]>([]);
   const [topSetups, setTopSetups] = useState<any[]>([]); const [inPlay, setInPlay] = useState<any[]>([]);
   const [mktSummary, setMktSummary] = useState("");
@@ -1314,6 +1315,7 @@ export default function App() {
             <Pill active={view === "analyze"} onClick={() => setView("analyze")} t={t}>Analyze</Pill>
             <Pill active={view === "dashboard"} onClick={() => setView("dashboard")} t={t}>Dashboard</Pill>
             <Pill active={view === "agents"} onClick={() => setView("agents")} t={t}>Agent Trading</Pill>
+            <Pill active={view === "custom_agents"} onClick={() => setView("custom_agents")} t={t}>Custom Agents</Pill>
           </div>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
@@ -1382,6 +1384,15 @@ export default function App() {
           {view === "agents" && (
             <motion.div key="agents" initial="hidden" animate="visible" exit="exit" variants={fadeUp}>
               <AgentTradingView t={t} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* CUSTOM AGENT TRADING */}
+        <AnimatePresence mode="wait">
+          {view === "custom_agents" && (
+            <motion.div key="custom_agents" initial="hidden" animate="visible" exit="exit" variants={fadeUp}>
+              <CustomAgentTradingView t={t} />
             </motion.div>
           )}
         </AnimatePresence>
