@@ -729,6 +729,31 @@ async def agent_trading_results():
         return {"error": str(e)}
 
 
+@app.get("/api/agent-trading/results-plus")
+async def agent_trading_results_plus():
+    """Return Deterministic+ simulation results."""
+    results_file = Path("simulation/output/det_plus_results.json")
+    if not results_file.exists():
+        return {"error": "No Deterministic+ results found."}
+    try:
+        data = json.loads(results_file.read_text())
+        # Compute per-trade cumulative P&L
+        trades = data.get("closed_trades", [])
+        cum_pnl = 0
+        cum_r = 0
+        for tr in trades:
+            risk = tr.get("dollar_risk", 0)
+            pnl = tr.get("pnl", tr.get("realized_r", 0) * risk)
+            cum_pnl += pnl
+            cum_r += tr.get("realized_r", 0)
+            tr["cum_pnl"] = round(cum_pnl, 2)
+            tr["cum_r"] = round(cum_r, 3)
+            tr.setdefault("pnl", round(pnl, 2))
+        return data
+    except Exception as e:
+        return {"error": str(e)}
+
+
 # Active simulation instance (one at a time)
 _active_sim = {"instance": None, "task": None}
 
@@ -738,13 +763,14 @@ async def agent_trading_ws(websocket: WebSocket):
     """WebSocket endpoint for live agent trading simulation.
 
     Client sends JSON commands:
-      {"action": "start", "date": "2026-04-01", "speed": 2.0, "use_agents": false}
-      {"action": "start_continuous", "speed": 10.0}  (runs all available dates)
+      {"action": "start", "date": "2026-04-01", "speed": 2.0, "use_agents": false, "engine": "standard"}
+      {"action": "start_continuous", "speed": 10.0, "engine": "det_plus"}
       {"action": "pause"}
       {"action": "resume"}
       {"action": "stop"}
       {"action": "set_speed", "speed": 5.0}
 
+    engine: "standard" (default) or "det_plus" (Deterministic+ with adaptive sizing, multi-TF, learning)
     Server streams SimEvent JSON objects continuously.
     """
     await websocket.accept()
@@ -752,7 +778,7 @@ async def agent_trading_ws(websocket: WebSocket):
     import asyncio
     from simulation.intraday import IntradaySimulation, SimEvent, get_available_dates
 
-    sim: IntradaySimulation | None = None
+    sim = None  # IntradaySimulation or IntradayPlusSimulation
     sim_task: asyncio.Task | None = None
     send_queue: asyncio.Queue = asyncio.Queue()
 
@@ -768,7 +794,7 @@ async def agent_trading_ws(websocket: WebSocket):
         except asyncio.CancelledError:
             pass
 
-    def emit(event: SimEvent):
+    def emit(event):
         """Queue event for sending (sync-safe)."""
         try:
             send_queue.put_nowait(event.to_dict())
@@ -788,6 +814,31 @@ async def agent_trading_ws(websocket: WebSocket):
             except (asyncio.CancelledError, Exception):
                 pass
 
+    def _create_sim(data: dict):
+        """Create the right simulation engine based on 'engine' param."""
+        engine = data.get("engine", "standard")
+        speed = data.get("speed", 2.0)
+        capital = data.get("capital", 100_000)
+        min_score = data.get("min_score", 50.0)
+
+        if engine == "det_plus":
+            from simulation.intraday_plus import IntradayPlusSimulation
+            return IntradayPlusSimulation(
+                emit=emit,
+                starting_capital=capital,
+                playback_speed=speed,
+                min_score=min_score,
+            )
+        else:
+            use_agents = data.get("use_agents", False)
+            return IntradaySimulation(
+                emit=emit,
+                starting_capital=capital,
+                playback_speed=speed,
+                use_agents=use_agents,
+                min_score=min_score,
+            )
+
     try:
         while True:
             data = await websocket.receive_json()
@@ -795,40 +846,14 @@ async def agent_trading_ws(websocket: WebSocket):
 
             if action == "start":
                 await _stop_sim()
-
                 date = data.get("date", "")
-                speed = data.get("speed", 2.0)
-                use_agents = data.get("use_agents", False)
-                capital = data.get("capital", 100_000)
-                min_score = data.get("min_score", 50.0)
-
-                sim = IntradaySimulation(
-                    emit=emit,
-                    starting_capital=capital,
-                    playback_speed=speed,
-                    use_agents=use_agents,
-                    min_score=min_score,
-                )
-
+                sim = _create_sim(data)
                 sim_task = asyncio.create_task(sim.run_day(date))
 
             elif action == "start_continuous":
                 await _stop_sim()
-
-                speed = data.get("speed", 10.0)
-                use_agents = data.get("use_agents", False)
-                capital = data.get("capital", 100_000)
-                min_score = data.get("min_score", 50.0)
                 dates = data.get("dates") or get_available_dates()
-
-                sim = IntradaySimulation(
-                    emit=emit,
-                    starting_capital=capital,
-                    playback_speed=speed,
-                    use_agents=use_agents,
-                    min_score=min_score,
-                )
-
+                sim = _create_sim(data)
                 sim_task = asyncio.create_task(sim.run_continuous(dates))
 
             elif action == "pause" and sim:

@@ -293,7 +293,7 @@ function LongTermView({ t }: { t: Theme }) {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 10, color: t.textMuted }}>
-            ${startCap.toLocaleString()} start | {config.use_agents ? "Agent-driven" : "Deterministic"} | {config.risk_per_trade_pct}% risk
+            ${startCap.toLocaleString()} start | {(config as any).mode === "deterministic_plus" ? "Det+" : config.use_agents ? "Agent-driven" : "Deterministic"} | {config.risk_per_trade_pct}% risk
           </span>
         </div>
       </div>
@@ -653,7 +653,7 @@ export default function AgentTradingView({ t }: { t: Theme }) {
   const [dates, setDates] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState("");
   const [speed, setSpeed] = useState(10);
-  const [useAgents, setUseAgents] = useState(false);
+  const [engine, setEngine] = useState<"standard" | "agents" | "det_plus">("standard");
   const [connected, setConnected] = useState(false);
   const [running, setRunning] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -671,6 +671,7 @@ export default function AgentTradingView({ t }: { t: Theme }) {
   const [positions, setPositions] = useState<Position[]>([]);
   const [closedTrades, setClosedTrades] = useState<ClosedTrade[]>([]);
   const [progress, setProgress] = useState({ bar: 0, total: 1, time: "" });
+  const [dayStats, setDayStats] = useState<{ date: string; equity: number; day_pnl: number; trades_today: number }[]>([]);
 
   // Saved results for display after completion
   const [savedResults, setSavedResults] = useState<SimResults | null>(null);
@@ -689,11 +690,14 @@ export default function AgentTradingView({ t }: { t: Theme }) {
         }
       })
       .catch(() => {});
-    // Load saved results if they exist
-    fetch(`${API}/api/agent-trading/results`)
-      .then(r => r.json())
-      .then(d => { if (!d.error) setSavedResults(d); })
-      .catch(() => {});
+    // Load saved results if they exist (prefer det_plus, fallback to standard)
+    Promise.all([
+      fetch(`${API}/api/agent-trading/results-plus`).then(r => r.json()).catch(() => ({ error: true })),
+      fetch(`${API}/api/agent-trading/results`).then(r => r.json()).catch(() => ({ error: true })),
+    ]).then(([plus, standard]) => {
+      if (!plus.error) setSavedResults(plus);
+      else if (!standard.error) setSavedResults(standard);
+    });
   }, []);
 
   // WebSocket connection
@@ -737,11 +741,14 @@ export default function AgentTradingView({ t }: { t: Theme }) {
         setRunning(false);
         setFinished(true);
         setEvents(prev => [...prev.slice(-1000), event]);
-        // Reload saved results
-        fetch(`${API}/api/agent-trading/results`)
-          .then(r => r.json())
-          .then(data => { if (!data.error) setSavedResults(data); })
-          .catch(() => {});
+        // Reload saved results (try det_plus first, then standard)
+        Promise.all([
+          fetch(`${API}/api/agent-trading/results-plus`).then(r => r.json()).catch(() => ({ error: true })),
+          fetch(`${API}/api/agent-trading/results`).then(r => r.json()).catch(() => ({ error: true })),
+        ]).then(([plus, standard]) => {
+          if (!plus.error) setSavedResults(plus);
+          else if (!standard.error) setSavedResults(standard);
+        });
         break;
 
       case "day_start":
@@ -752,6 +759,12 @@ export default function AgentTradingView({ t }: { t: Theme }) {
 
       case "day_end":
         setEvents(prev => [...prev.slice(-1000), event]);
+        setDayStats(prev => [...prev, {
+          date: d.date || "",
+          equity: d.equity || 0,
+          day_pnl: d.day_pnl || 0,
+          trades_today: d.trades_today || 0,
+        }]);
         // In single-day mode (no multi_day wrapper), stop when day ends
         if (!isContinuousRef.current) {
           setRunning(false);
@@ -797,6 +810,7 @@ export default function AgentTradingView({ t }: { t: Theme }) {
     setPnlHistory([]);
     setPositions([]);
     setClosedTrades([]);
+    setDayStats([]);
     setCurrentDay(0);
     setTotalDays(0);
     setCurrentDate("");
@@ -810,22 +824,26 @@ export default function AgentTradingView({ t }: { t: Theme }) {
     const trySend = () => {
       const ws = wsRef.current;
       if (ws?.readyState === WebSocket.OPEN) {
+        const capital = engine === "det_plus" ? 1_000_000 : 100_000;
+        const minScore = engine === "det_plus" ? 50 : 50;
         if (continuous) {
           ws.send(JSON.stringify({
             action: "start_continuous",
             speed: speed,
-            use_agents: useAgents,
-            capital: 100000,
-            min_score: 50,
+            engine: engine === "agents" ? "standard" : engine === "det_plus" ? "det_plus" : "standard",
+            use_agents: engine === "agents",
+            capital: capital,
+            min_score: minScore,
           }));
         } else {
           ws.send(JSON.stringify({
             action: "start",
             date: selectedDate,
             speed: speed,
-            use_agents: useAgents,
-            capital: 100000,
-            min_score: 50,
+            engine: engine === "agents" ? "standard" : engine === "det_plus" ? "det_plus" : "standard",
+            use_agents: engine === "agents",
+            capital: capital,
+            min_score: minScore,
           }));
         }
         setRunning(true);
@@ -864,6 +882,19 @@ export default function AgentTradingView({ t }: { t: Theme }) {
   const losses = closedTrades.filter(ct => ct.realized_r <= 0).length;
   const progressPct = progress.total > 0 ? (progress.bar / progress.total) * 100 : 0;
 
+  // Max drawdown from daily equity snapshots
+  const maxDrawdownPct = (() => {
+    if (dayStats.length < 2) return 0;
+    let peak = dayStats[0].equity;
+    let worst = 0;
+    for (const ds of dayStats) {
+      if (ds.equity > peak) peak = ds.equity;
+      const dd = peak > 0 ? ((peak - ds.equity) / peak) * 100 : 0;
+      if (dd > worst) worst = dd;
+    }
+    return worst;
+  })();
+
   // Show saved results when not running and results exist
   const showResults = !running && !finished && savedResults && pnlHistory.length === 0;
 
@@ -878,8 +909,8 @@ export default function AgentTradingView({ t }: { t: Theme }) {
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 14, fontWeight: 800, color: t.accent }}>AGENT TRADING</span>
           {running && (
-            <span style={{ fontSize: 10, color: useAgents ? t.gold : t.textMuted, fontWeight: 600, padding: "2px 6px", background: useAgents ? t.goldBg : t.bgHover, borderRadius: 4 }}>
-              {useAgents ? "AI" : "DET"}
+            <span style={{ fontSize: 10, color: engine === "agents" ? t.gold : engine === "det_plus" ? t.accent : t.textMuted, fontWeight: 600, padding: "2px 6px", background: engine === "agents" ? t.goldBg : engine === "det_plus" ? t.accent + "20" : t.bgHover, borderRadius: 4 }}>
+              {engine === "agents" ? "AI" : engine === "det_plus" ? "DET+" : "DET"}
             </span>
           )}
 
@@ -901,16 +932,24 @@ export default function AgentTradingView({ t }: { t: Theme }) {
           )}
 
           {!running && (
-            <button onClick={() => setUseAgents(!useAgents)}
-              style={{
-                background: useAgents ? t.accent + "20" : "transparent",
-                color: useAgents ? t.accent : t.textMuted,
-                border: `1px solid ${useAgents ? t.accent : t.border}`,
-                borderRadius: 4, padding: "3px 8px", fontSize: 10, fontWeight: 600,
-                cursor: "pointer",
-              }}>
-              {useAgents ? "AI Agents ON" : "Deterministic"}
-            </button>
+            <div style={{ display: "flex", gap: 3 }}>
+              {([
+                { key: "standard" as const, label: "Deterministic" },
+                { key: "det_plus" as const, label: "Det+" },
+                { key: "agents" as const, label: "AI Agents" },
+              ]).map(({ key, label }) => (
+                <button key={key} onClick={() => setEngine(key)}
+                  style={{
+                    background: engine === key ? (key === "agents" ? t.gold + "20" : key === "det_plus" ? t.accent + "20" : t.bgHover) : "transparent",
+                    color: engine === key ? (key === "agents" ? t.gold : key === "det_plus" ? t.accent : t.text) : t.textMuted,
+                    border: `1px solid ${engine === key ? (key === "agents" ? t.gold : key === "det_plus" ? t.accent : t.border) : t.border}`,
+                    borderRadius: 4, padding: "3px 8px", fontSize: 10, fontWeight: 600,
+                    cursor: "pointer",
+                  }}>
+                  {label}
+                </button>
+              ))}
+            </div>
           )}
 
           {mode === "single" && !running && (
@@ -926,12 +965,18 @@ export default function AgentTradingView({ t }: { t: Theme }) {
             </select>
           )}
 
+          {!running && engine === "det_plus" && (
+            <span style={{ fontSize: 9, color: t.textMuted, maxWidth: 200 }}>
+              $1M | Adaptive sizing | Multi-TF | Learning
+            </span>
+          )}
+
           {!running ? (
             <button
               onClick={() => startSim(mode === "continuous")}
               disabled={mode === "single" && !selectedDate}
               style={{
-                background: t.accent, color: "#fff", border: "none", borderRadius: 6,
+                background: engine === "det_plus" ? t.accent : t.accent, color: "#fff", border: "none", borderRadius: 6,
                 padding: "5px 16px", fontSize: 12, fontWeight: 700, cursor: "pointer",
               }}
             >
@@ -1022,13 +1067,14 @@ export default function AgentTradingView({ t }: { t: Theme }) {
 
         {/* Stats Row */}
         <div style={{
-          display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 8, marginBottom: 12,
+          display: "grid", gridTemplateColumns: "repeat(8, 1fr)", gap: 8, marginBottom: 12,
         }}>
           {[
             { label: "EQUITY", value: `$${equity.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, color: t.text },
             { label: "TOTAL P&L", value: `${totalPnl >= 0 ? "+" : ""}$${totalPnl.toFixed(0)}`, color: totalPnl >= 0 ? t.long : t.short },
             { label: "TOTAL R", value: `${totalR >= 0 ? "+" : ""}${totalR.toFixed(2)}R`, color: totalR >= 0 ? t.long : t.short },
             { label: "W / L", value: `${wins} / ${losses}`, color: wins > losses ? t.long : wins < losses ? t.short : t.textDim },
+            { label: "MAX DD", value: `${maxDrawdownPct.toFixed(1)}%`, color: maxDrawdownPct > 5 ? t.short : maxDrawdownPct > 2 ? t.gold : t.textDim },
             { label: "OPEN", value: `${positions.length}`, color: t.accent },
             { label: "HEAT", value: `${heat.toFixed(1)}%`, color: heat > 5 ? t.gold : t.textDim },
             { label: "TRADES", value: `${closedTrades.length}`, color: t.textDim },
@@ -1159,6 +1205,132 @@ export default function AgentTradingView({ t }: { t: Theme }) {
             </div>
           </div>
         </div>
+
+        {/* Daily Performance Charts */}
+        {dayStats.length >= 2 && (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 12 }}>
+            {/* Daily P&L Histogram */}
+            <div style={{
+              background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: 12, padding: 12,
+            }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: t.textDim, marginBottom: 8 }}>
+                DAILY P&L HISTOGRAM
+              </div>
+              {(() => {
+                const W = 400, H = 140, PAD = 50, PADR = 10, PADT = 10, PADB = 22;
+                const pnls = dayStats.map(d => d.day_pnl);
+                const maxAbs = Math.max(1, ...pnls.map(Math.abs));
+                const barW = Math.max(1, (W - PAD - PADR) / dayStats.length - 1);
+                const toX = (i: number) => PAD + (i / dayStats.length) * (W - PAD - PADR);
+                const zeroY = PADT + (H - PADT - PADB) / 2;
+                const scale = (H - PADT - PADB) / 2 / maxAbs;
+                const step = Math.max(1, Math.floor(dayStats.length / 6));
+
+                return (
+                  <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: 140 }}>
+                    <line x1={PAD} y1={zeroY} x2={W - PADR} y2={zeroY} stroke={t.textMuted} strokeWidth={0.5} />
+                    {pnls.map((pnl, i) => {
+                      const h = Math.abs(pnl) * scale;
+                      const y = pnl >= 0 ? zeroY - h : zeroY;
+                      return (
+                        <rect key={i} x={toX(i)} y={y} width={barW} height={Math.max(0.5, h)}
+                          fill={pnl >= 0 ? t.long : t.short} opacity={0.75} rx={0.5} />
+                      );
+                    })}
+                    <text x={PAD - 4} y={PADT + 5} textAnchor="end" fill={t.textMuted} fontSize={8}>
+                      +${(maxAbs / 1000).toFixed(1)}k
+                    </text>
+                    <text x={PAD - 4} y={zeroY} textAnchor="end" fill={t.textMuted} fontSize={8} dominantBaseline="middle">$0</text>
+                    <text x={PAD - 4} y={H - PADB - 2} textAnchor="end" fill={t.textMuted} fontSize={8}>
+                      -${(maxAbs / 1000).toFixed(1)}k
+                    </text>
+                    {dayStats.filter((_, i) => i % step === 0 || i === dayStats.length - 1).map((ds, i) => (
+                      <text key={i} x={toX(dayStats.indexOf(ds)) + barW / 2} y={H - 5}
+                        textAnchor="middle" fill={t.textMuted} fontSize={7}>{ds.date.slice(5)}</text>
+                    ))}
+                  </svg>
+                );
+              })()}
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4, fontSize: 9, color: t.textMuted }}>
+                <span>
+                  Green: {dayStats.filter(d => d.day_pnl >= 0).length} |
+                  Red: {dayStats.filter(d => d.day_pnl < 0).length}
+                </span>
+                <span>
+                  Best: ${Math.max(...dayStats.map(d => d.day_pnl)).toLocaleString(undefined, { maximumFractionDigits: 0 })} |
+                  Worst: ${Math.min(...dayStats.map(d => d.day_pnl)).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </span>
+              </div>
+            </div>
+
+            {/* Drawdown Chart */}
+            <div style={{
+              background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: 12, padding: 12,
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: t.textDim }}>DRAWDOWN</span>
+                <span style={{ fontSize: 11, fontWeight: 800, color: t.short, fontFamily: "monospace" }}>
+                  Max: {maxDrawdownPct.toFixed(2)}%
+                </span>
+              </div>
+              {(() => {
+                const W = 400, H = 140, PAD = 50, PADR = 10, PADT = 10, PADB = 22;
+                // Compute drawdown series
+                let peak = dayStats[0].equity;
+                const ddSeries = dayStats.map(ds => {
+                  if (ds.equity > peak) peak = ds.equity;
+                  return peak > 0 ? ((peak - ds.equity) / peak) * 100 : 0;
+                });
+                const maxDD = Math.max(0.1, ...ddSeries);
+
+                const toX = (i: number) => PAD + (i / (dayStats.length - 1)) * (W - PAD - PADR);
+                const toY = (dd: number) => PADT + (dd / maxDD) * (H - PADT - PADB);
+
+                const pathParts = ddSeries.map((dd, i) => `${i === 0 ? "M" : "L"}${toX(i).toFixed(1)},${toY(dd).toFixed(1)}`);
+                const linePath = pathParts.join(" ");
+                const fillPath = linePath + ` L${toX(ddSeries.length - 1).toFixed(1)},${PADT} L${toX(0).toFixed(1)},${PADT} Z`;
+
+                const step = Math.max(1, Math.floor(dayStats.length / 6));
+
+                return (
+                  <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: 140 }}>
+                    {/* 0% line at top */}
+                    <line x1={PAD} y1={PADT} x2={W - PADR} y2={PADT} stroke={t.textMuted} strokeWidth={0.5} strokeDasharray="3,3" />
+                    {/* Grid lines */}
+                    {[0.25, 0.5, 0.75].map((frac, i) => (
+                      <line key={i} x1={PAD} y1={toY(maxDD * frac)} x2={W - PADR} y2={toY(maxDD * frac)}
+                        stroke={t.border} strokeWidth={0.5} />
+                    ))}
+                    {/* Fill */}
+                    <path d={fillPath} fill={t.short} opacity={0.1} />
+                    {/* Line */}
+                    <path d={linePath} fill="none" stroke={t.short} strokeWidth={1.5} />
+                    {/* Max DD marker */}
+                    {(() => {
+                      const maxIdx = ddSeries.indexOf(Math.max(...ddSeries));
+                      return (
+                        <circle cx={toX(maxIdx)} cy={toY(ddSeries[maxIdx])} r={3} fill={t.short} />
+                      );
+                    })()}
+                    {/* Y-axis labels */}
+                    <text x={PAD - 4} y={PADT} textAnchor="end" fill={t.textMuted} fontSize={8} dominantBaseline="middle">0%</text>
+                    <text x={PAD - 4} y={toY(maxDD / 2)} textAnchor="end" fill={t.textMuted} fontSize={8} dominantBaseline="middle">
+                      -{(maxDD / 2).toFixed(1)}%
+                    </text>
+                    <text x={PAD - 4} y={toY(maxDD)} textAnchor="end" fill={t.textMuted} fontSize={8} dominantBaseline="middle">
+                      -{maxDD.toFixed(1)}%
+                    </text>
+                    {/* X-axis labels */}
+                    {dayStats.filter((_, i) => i % step === 0 || i === dayStats.length - 1).map((ds, i) => (
+                      <text key={i} x={toX(dayStats.indexOf(ds))} y={H - 5}
+                        textAnchor="middle" fill={t.textMuted} fontSize={7}>{ds.date.slice(5)}</text>
+                    ))}
+                  </svg>
+                );
+              })()}
+            </div>
+          </div>
+        )}
 
         {/* Analytics Section */}
         {closedTrades.length >= 3 && (() => {

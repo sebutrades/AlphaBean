@@ -1,0 +1,100 @@
+[
+  {
+    "date": "2026-03-27",
+    "day_number": 1,
+    "equity": 997390.51,
+    "day_pnl": -2367.66,
+    "cumulative_pnl": -2367.66,
+    "trades_today": 40,
+    "total_trades": 40,
+    "open_intraday": 0,
+    "open_daily": 1,
+    "heat": 0.5,
+    "strategy_summary": [
+      {
+        "strategy": "Volume Climax Short",
+        "trades": 7,
+        "wins": 4,
+        "losses": 3,
+        "win_rate": 57.1,
+        "total_r": 0.041,
+        "avg_r": 0.006,
+        "recent_avg_r": 0.006,
+        "expectancy": 0.006,
+        "size_mult": 1.0
+      },
+      {
+        "strategy": "VWAP Reversion",
+        "trades": 12,
+        "wins": 3,
+        "losses": 9,
+        "win_rate": 25.0,
+        "total_r": -0.327,
+        "avg_r": -0.027,
+        "recent_avg_r": -0.027,
+        "expectancy": -0.027,
+        "size_mult": 1.0
+      },
+      {
+        "strategy": "Trend Pullback",
+        "trades": 2,
+        "wins": 1,
+        "losses": 1,
+        "win_rate": 50.0,
+        "total_r": -0.74,
+        "avg_r": -0.37,
+        "recent_avg_r": -0.37,
+        "expectancy": -0.37,
+        "size_mult": 1.0
+      },
+      {
+        "strategy": "RSI Divergence Short",
+        "trades": 3,
+        "wins": 0,
+        "losses": 3,
+        "win_rate": 0.0,
+        "total_r": -3.06,
+        "avg_r": -1.02,
+        "recent_avg_r": -1.02,
+        "expectancy": -1.02,
+        "size_mult": 1.0
+      },
+      {
+        "strategy": "Mean Reversion",
+        "trades": 6,
+        "wins": 0,
+        "losses": 6,
+        "win_rate": 0.0,
+        "total_r": -3.654,
+        "avg_r": -0.609,
+        "recent_avg_r": -0.609,
+        "expectancy": -0.609,
+        "size_mult": 1.0
+      },
+      {
+        "strategy": "VWAP Trend Short",
+        "trades": 4,
+        "wins": 0,
+        "losses": 4,
+        "win_rate": 0.0,
+        "total_r": -4.08,
+        "avg_r": -1.02,
+        "recent_avg_r": -1.02,
+        "expectancy": -1.02,
+        "size_mult": 1.0
+      },
+      {
+        "strategy": "Volume Climax Long",
+        "trades": 6,
+        "wins": 1,
+        "losses": 5,
+        "win_rate": 16.7,
+        "total_r": -4.135,
+        "avg_r": -0.689,
+        "recent_avg_r": -0.689,
+        "expectancy": -0.689,
+        "size_mult": 1.0
+      }
+    ]
+  }
+]

@@ -2,9 +2,9 @@
   "config": {
     "starting_capital": 100000,
     "risk_per_trade_pct": 1.0,
-    "sim_days": 125,
+    "sim_days": 210,
     "universe_size": 0,
-    "use_agents": true,
+    "use_agents": false,
     "mode": "intraday_5min"
   },
   "stats": {
@@ -24,7 +24,7 @@
   },
   "equity_curve": [
     {
-      "date": "2025-09-29",
+      "date": "2025-06-02",
       "equity": 100000,
       "cumulative_r": 0.0,
       "day_r": 0.0,
