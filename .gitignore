@@ -1,7 +1,31 @@
+# Environment
 .env
 .venv/
+
+# Python
 __pycache__/
 *.pyc
+*.pyo
+.pytest_cache/
+
+# Node / frontend
 node_modules/
+frontend/dist/
+
+# Historical bar data cache (populated by scripts/download_square_data.py + extend_square_data.py)
 cache/
-live_data_cache/data
+
+# Live data cache — ignore generated data, keep Python modules
+live_data_cache/data/
+live_data_cache/closed_*.json
+live_data_cache/daily_perf.json
+live_data_cache/open_setups.json
+live_data_cache/scan_state.json
+live_data_cache/scan_state.tmp
+
+# Simulation outputs (regenerated every run)
+simulation/output/
+
+# Logs
+*.log
+extend_log.txt
