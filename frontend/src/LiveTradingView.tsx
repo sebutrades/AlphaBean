@@ -80,6 +80,132 @@ type PnlSnapshot = {
   closed: ClosedTrade[];
 };
 
+// ── Live Price Chart (lightweight-charts) ────────────────────────────────────
+
+const API = "http://localhost:8000";
+
+function LivePriceChart({
+  symbol, positions, closedTrades, t,
+}: {
+  symbol: string;
+  positions: Position[];
+  closedTrades: ClosedTrade[];
+  t: T;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<any>(null);
+  const seriesRef = useRef<any>(null);
+  const [error, setError] = useState("");
+
+  // Find active position or most recent closed trade for this symbol
+  const pos = positions.find(p => p.symbol === symbol);
+  const closedPos = closedTrades.filter(tr => tr.symbol === symbol).slice(-1)[0];
+  const activeEntry = pos || closedPos;
+
+  useEffect(() => {
+    if (!containerRef.current || !symbol) return;
+    let chart: any = null;
+
+    (async () => {
+      try {
+        const lc = await import("lightweight-charts");
+        const r = await fetch(`${API}/api/chart/${symbol}?timeframe=5min&days_back=3`);
+        const d = await r.json();
+        if (d.error) throw new Error(d.error);
+        if (!d.bars?.length) throw new Error("No bar data");
+
+        if (containerRef.current) containerRef.current.innerHTML = "";
+
+        chart = lc.createChart(containerRef.current!, {
+          width: containerRef.current!.clientWidth,
+          height: 350,
+          layout: { background: { color: t.chartBg } as any, textColor: t.chartText, fontFamily: "JetBrains Mono,monospace" },
+          grid: { vertLines: { color: t.chartGrid }, horzLines: { color: t.chartGrid } },
+          crosshair: { mode: lc.CrosshairMode.Normal },
+          rightPriceScale: { borderColor: t.border },
+          timeScale: { borderColor: t.border, timeVisible: true },
+        });
+        chartRef.current = chart;
+
+        let series: any;
+        if ((lc as any).CandlestickSeries) {
+          series = chart.addSeries((lc as any).CandlestickSeries, {
+            upColor: t.long, downColor: t.short,
+            borderUpColor: t.long, borderDownColor: t.short,
+            wickUpColor: t.long, wickDownColor: t.short,
+          });
+        } else {
+          series = chart.addCandlestickSeries({
+            upColor: t.long, downColor: t.short,
+            borderUpColor: t.long, borderDownColor: t.short,
+            wickUpColor: t.long, wickDownColor: t.short,
+          });
+        }
+        series.setData(d.bars);
+        seriesRef.current = series;
+
+        // Helper: add price line
+        const addLine = (price: number, color: string, title: string, style: number, width: number) => {
+          try { series.createPriceLine({ price, color, lineWidth: width, lineStyle: style, axisLabelVisible: true, title }); } catch {}
+        };
+
+        // Draw entry/stop/target lines from active position
+        if (pos) {
+          addLine(pos.entry_price, t.accent, `ENTRY $${pos.entry_price.toFixed(2)}`, lc.LineStyle.Dashed, 2);
+          addLine(pos.stop_loss, t.short, "STOP", lc.LineStyle.Dashed, 2);
+          addLine(pos.target_1, t.long, "T1", lc.LineStyle.Dashed, 1);
+          addLine(pos.target_2, t.long, "T2", lc.LineStyle.Dashed, 1);
+
+          // Entry marker
+          if (pos.entered_at && d.bars?.length) {
+            try {
+              const sigTs = Math.floor(new Date(pos.entered_at).getTime() / 1000);
+              const nearest = d.bars.reduce((a: any, b: any) =>
+                Math.abs(b.time - sigTs) < Math.abs(a.time - sigTs) ? b : a
+              );
+              const isLong = pos.bias === "long";
+              const mk = {
+                time: nearest.time,
+                position: isLong ? "belowBar" : "aboveBar",
+                color: isLong ? t.long : t.short,
+                shape: isLong ? "arrowUp" : "arrowDown",
+                text: pos.pattern, size: 2,
+              };
+              if (typeof (lc as any).createSeriesMarkers === "function") (lc as any).createSeriesMarkers(series, [mk]);
+              else series.setMarkers([mk]);
+            } catch {}
+          }
+        } else if (closedPos) {
+          addLine(closedPos.entry_price, t.textMuted, `ENTRY $${closedPos.entry_price.toFixed(2)}`, lc.LineStyle.Dotted, 1);
+          addLine(closedPos.exit_price, closedPos.pnl >= 0 ? t.long : t.short,
+            `EXIT $${closedPos.exit_price.toFixed(2)} (${closedPos.pnl >= 0 ? "+" : ""}$${closedPos.pnl.toFixed(2)})`,
+            lc.LineStyle.Dotted, 1);
+        }
+
+        chart.timeScale().fitContent();
+        setError("");
+
+        const ro = new ResizeObserver(() => {
+          if (containerRef.current && chart) chart.applyOptions({ width: containerRef.current.clientWidth });
+        });
+        ro.observe(containerRef.current!);
+      } catch (e: any) {
+        setError(e.message || "Chart error");
+      }
+    })();
+
+    return () => { if (chart) chart.remove(); chartRef.current = null; seriesRef.current = null; };
+  }, [symbol, pos?.status, pos?.t1_hit, pos?.t2_hit, closedTrades.length, t]);
+
+  if (error) return (
+    <div style={{ color: t.textMuted, fontSize: 11, padding: 20, textAlign: "center" }}>
+      Chart unavailable: {error}
+    </div>
+  );
+
+  return <div ref={containerRef} style={{ width: "100%", minHeight: 350 }} />;
+}
+
 // ── P&L Equity Chart (pure SVG) ─────────────────────────────────────────────
 
 function PnlChart({ history, t }: { history: PnlSnapshot[]; t: T }) {
@@ -287,6 +413,7 @@ export default function LiveTradingView({ t }: { t: T }) {
   const [pnlHistory, setPnlHistory] = useState<PnlSnapshot[]>([]);
   const [setups, setSetups] = useState<Setup[]>([]);
   const [scanNumber, setScanNumber] = useState(0);
+  const [chartSymbol, setChartSymbol] = useState("");
 
   const wsRef = useRef<WebSocket | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
@@ -332,6 +459,7 @@ export default function LiveTradingView({ t }: { t: T }) {
 
       case "trade_open":
         setEvents(prev => [...prev.slice(-500), event]);
+        setChartSymbol(prev => prev || d.symbol);
         break;
 
       case "trade_close":
@@ -381,6 +509,7 @@ export default function LiveTradingView({ t }: { t: T }) {
     setPnlHistory([]);
     setSetups([]);
     setScanNumber(0);
+    setChartSymbol("");
   };
 
   const startScanner = () => {
@@ -569,7 +698,43 @@ export default function LiveTradingView({ t }: { t: T }) {
         ))}
       </div>
 
-      {/* ── Charts ──────────────────────────────────────────────────────── */}
+      {/* ── Price Chart ────────────────────────────────────────────────── */}
+      {running && (positions.length > 0 || closedTrades.length > 0 || setups.length > 0) && (
+        <div style={{ ...cardStyle, marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: t.textMuted }}>PRICE CHART</div>
+            <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+              {/* Symbol pills from positions, then setups */}
+              {[...new Set([
+                ...positions.map(p => p.symbol),
+                ...closedTrades.map(tr => tr.symbol),
+                ...setups.slice(0, 10).map(s => s.symbol),
+              ])].map(sym => (
+                <button key={sym} onClick={() => setChartSymbol(sym)}
+                  style={{
+                    background: chartSymbol === sym ? t.accentLight : "transparent",
+                    color: chartSymbol === sym ? t.accent : t.textMuted,
+                    border: `1px solid ${chartSymbol === sym ? t.accent : t.border}`,
+                    borderRadius: 4, padding: "2px 6px", fontSize: 10, fontWeight: 600,
+                    cursor: "pointer",
+                  }}>
+                  {sym}
+                  {positions.find(p => p.symbol === sym) ? " *" : ""}
+                </button>
+              ))}
+            </div>
+          </div>
+          {chartSymbol ? (
+            <LivePriceChart symbol={chartSymbol} positions={positions} closedTrades={closedTrades} t={t} />
+          ) : (
+            <div style={{ color: t.textMuted, fontSize: 11, textAlign: "center", padding: 40 }}>
+              Select a symbol above to view the chart
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── P&L Charts ─────────────────────────────────────────────────── */}
       {(pnlHistory.length >= 2 || closedTrades.length >= 1) && (
         <div style={{ display: "grid", gridTemplateColumns: closedTrades.length > 0 ? "1fr 1fr" : "1fr", gap: 12, marginBottom: 12 }}>
           {pnlHistory.length >= 2 && (
@@ -651,9 +816,9 @@ export default function LiveTradingView({ t }: { t: T }) {
                       {setups.map((s, i) => {
                         const biasColor = s.bias === "long" ? t.long : t.short;
                         return (
-                          <tr key={i} style={{ borderBottom: `1px solid ${t.border}` }}>
+                          <tr key={i} style={{ borderBottom: `1px solid ${t.border}`, cursor: "pointer" }} onClick={() => setChartSymbol(s.symbol)}>
                             <td style={{ padding: "5px 8px", color: t.textMuted }}>{i + 1}</td>
-                            <td style={{ padding: "5px 8px", fontWeight: 700, color: t.text }}>{s.symbol}</td>
+                            <td style={{ padding: "5px 8px", fontWeight: 700, color: t.accent, textDecoration: "underline" }}>{s.symbol}</td>
                             <td style={{ padding: "5px 8px", color: biasColor, fontWeight: 600, fontSize: 10 }}>{s.bias.toUpperCase()}</td>
                             <td style={{ padding: "5px 8px", color: t.textDim, fontSize: 10 }}>{s.pattern.slice(0, 24)}</td>
                             <td style={{ padding: "5px 8px", fontWeight: 700, color: s.composite_score >= 70 ? t.long : s.composite_score >= 55 ? t.gold : t.textDim }}>
@@ -696,8 +861,8 @@ export default function LiveTradingView({ t }: { t: T }) {
                       {positions.map((p, i) => {
                         const biasColor = p.bias === "long" ? t.long : t.short;
                         return (
-                          <tr key={i} style={{ borderBottom: `1px solid ${t.border}` }}>
-                            <td style={{ padding: "5px 8px", fontWeight: 700, color: biasColor }}>{p.symbol}</td>
+                          <tr key={i} style={{ borderBottom: `1px solid ${t.border}`, cursor: "pointer" }} onClick={() => setChartSymbol(p.symbol)}>
+                            <td style={{ padding: "5px 8px", fontWeight: 700, color: t.accent, textDecoration: "underline" }}>{p.symbol}</td>
                             <td style={{ padding: "5px 8px", color: biasColor, fontSize: 10, fontWeight: 600 }}>{p.bias.toUpperCase()}</td>
                             <td style={{ padding: "5px 8px", color: t.textDim, fontSize: 10 }}>{p.pattern.slice(0, 22)}</td>
                             <td style={{ padding: "5px 8px", fontWeight: 600 }}>{p.score.toFixed(1)}</td>
@@ -739,8 +904,8 @@ export default function LiveTradingView({ t }: { t: T }) {
                         {closedTrades.map((ct, i) => {
                           const color = ct.pnl >= 0 ? t.long : t.short;
                           return (
-                            <tr key={i} style={{ borderBottom: `1px solid ${t.border}` }}>
-                              <td style={{ padding: "5px 8px", fontWeight: 700, color: t.text }}>{ct.symbol}</td>
+                            <tr key={i} style={{ borderBottom: `1px solid ${t.border}`, cursor: "pointer" }} onClick={() => setChartSymbol(ct.symbol)}>
+                              <td style={{ padding: "5px 8px", fontWeight: 700, color: t.accent, textDecoration: "underline" }}>{ct.symbol}</td>
                               <td style={{ padding: "5px 8px", color: ct.bias === "long" ? t.long : t.short, fontSize: 10, fontWeight: 600 }}>{ct.bias.toUpperCase()}</td>
                               <td style={{ padding: "5px 8px", color: t.textDim, fontSize: 10 }}>{ct.pattern.slice(0, 22)}</td>
                               <td style={{ padding: "5px 8px" }}>${ct.entry_price.toFixed(2)}</td>
