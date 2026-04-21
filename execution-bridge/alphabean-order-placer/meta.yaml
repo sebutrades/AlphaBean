@@ -1,0 +1,36 @@
+name: alphabean_order_placer
+description: AlphaBean fire-and-forget order placer. Start with --symbol and --params to place an order.
+language: python
+guid: d0d5cc8a-46c2-4bec-9b72-764820d1b6aa
+options:
+    deploy_time: "09:30:00"
+    pause_time: "16:00:00"
+    low_latency: false
+    unload_on_restart: false
+    account: 203979
+    save_to_cloudquant: true
+parameters:
+    - name: side
+      type: string
+      default: buy
+      description: buy or sell
+    - name: qty
+      type: int
+      default: "10"
+      description: Number of shares
+    - name: intent
+      type: string
+      default: init
+      description: Order intent (init/increase/decrease/exit)
+    - name: algo
+      type: string
+      default: 2b4fdc55-ff01-416e-a5ea-e1f1d4524c7d
+      description: Algo UUID
+    - name: limit_price
+      type: float
+      default: "0.0"
+      description: Limit price (0 for market)
+    - name: signal_id
+      type: string
+      default: none
+      description: Optional signal ID for tracking

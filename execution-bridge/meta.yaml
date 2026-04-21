@@ -1,0 +1,20 @@
+name: execution_bridge
+description: 'Generated strategy: execution_bridge'
+language: python
+guid: 4047a9d0-12ed-496f-91cb-dca3fb184463
+options:
+    deploy_time: "09:30:00"
+    pause_time: "16:00:00"
+    low_latency: false
+    unload_on_restart: false
+    account: 203979
+    save_to_cloudquant: true
+parameters:
+    - name: default_buy_algo
+      type: string
+      default: 2b4fdc55-ff01-416e-a5ea-e1f1d4524c7d
+      description: Default buy-side algo GUID; can be overridden per signal
+    - name: default_sell_algo
+      type: string
+      default: 8fdee8fe-b772-46bd-b411-5544f7a0d917
+      description: Default sell-side algo GUID; can be overridden per signal

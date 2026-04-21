@@ -1057,3 +1057,128 @@ async def custom_trading_ws(websocket: WebSocket, run_id: str):
         sender_task.cancel()
         receiver_task.cancel()
 
+
+# ═══ LIVE TRADING SCANNER ═══
+# Real-time scanning via execution-bridge live_scanner.py
+# WebSocket streams structured events to frontend.
+
+@app.websocket("/ws/live-trading")
+async def live_trading_ws(websocket: WebSocket):
+    """WebSocket for live market scanning + paper trading.
+
+    Client sends:
+      {"action": "start", "symbols": ["AAPL","NVDA"], "dry_run": false, "scan_interval": 300}
+      {"action": "start", "max_symbols": 30}   # uses top_symbols.json
+      {"action": "pause"}
+      {"action": "resume"}
+      {"action": "stop"}
+    Server streams LiveEvent JSON objects.
+    """
+    await websocket.accept()
+
+    import asyncio
+    import sys as _sys
+    from pathlib import Path as _Path
+
+    # Add execution-bridge to path
+    eb_path = _Path(__file__).resolve().parent.parent / "execution-bridge"
+    if str(eb_path) not in _sys.path:
+        _sys.path.insert(0, str(eb_path))
+
+    scanner = None
+    scanner_task: asyncio.Task | None = None
+    send_queue: asyncio.Queue = asyncio.Queue()
+
+    async def sender():
+        try:
+            while True:
+                event_dict = await send_queue.get()
+                try:
+                    await websocket.send_json(event_dict)
+                except Exception:
+                    break
+        except asyncio.CancelledError:
+            pass
+
+    def emit(event):
+        try:
+            send_queue.put_nowait(event.to_dict())
+        except Exception:
+            pass
+
+    sender_task = asyncio.create_task(sender())
+
+    async def _stop_scanner():
+        nonlocal scanner, scanner_task
+        if scanner is not None:
+            scanner.stop()
+        if scanner_task is not None and not scanner_task.done():
+            scanner_task.cancel()
+            try:
+                await scanner_task
+            except (asyncio.CancelledError, Exception):
+                pass
+
+    def _resolve_symbols(data: dict) -> list[str]:
+        symbols = data.get("symbols")
+        if symbols and isinstance(symbols, list):
+            return symbols
+        max_syms = data.get("max_symbols", 30)
+        top_file = _Path(__file__).resolve().parent.parent / "cache" / "top_symbols.json"
+        if top_file.exists():
+            try:
+                return json.loads(top_file.read_text())["symbols"][:max_syms]
+            except Exception:
+                pass
+        return ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META",
+                "TSLA", "JPM", "V", "MA", "AMD", "AVGO", "CRM",
+                "NFLX", "COST", "UNH", "LLY", "ABBV", "PEP", "KO"]
+
+    try:
+        while True:
+            data = await websocket.receive_json()
+            action = data.get("action", "")
+
+            if action == "start":
+                await _stop_scanner()
+                from live_scanner import LiveScanner
+
+                symbols = _resolve_symbols(data)
+                dry_run = data.get("dry_run", True)
+                interval = data.get("scan_interval", 300)
+                live_mode = data.get("live_mode", False)
+
+                scanner = LiveScanner(
+                    symbols=symbols,
+                    dry_run=dry_run,
+                    scan_interval=interval,
+                    emit=emit,
+                    live_mode=live_mode,
+                )
+                scanner_task = asyncio.create_task(scanner.run_async())
+
+            elif action == "pause" and scanner:
+                scanner.pause()
+            elif action == "resume" and scanner:
+                scanner.resume()
+            elif action == "stop" and scanner:
+                scanner.stop()
+
+    except WebSocketDisconnect:
+        pass
+    except Exception:
+        pass
+    finally:
+        if scanner:
+            scanner.stop()
+        sender_task.cancel()
+
+
+@app.get("/api/live-trading/session")
+async def live_trading_session():
+    """Return the most recent session log if one exists."""
+    log_path = Path(__file__).resolve().parent.parent / "execution-bridge" / "cache" / "session_log.json"
+    if log_path.exists():
+        return json.loads(log_path.read_text())
+    return {"error": "No session log found"}
+

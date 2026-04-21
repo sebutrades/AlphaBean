@@ -3,6 +3,7 @@ import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import DashboardView from "./DashboardView";
 import AgentTradingView from "./AgentTradingView";
 import CustomAgentTradingView from "./CustomAgentTradingView";
+import LiveTradingView from "./LiveTradingView";
 const API = "http://localhost:8000";
 
 // ═══════════════════════════════════════════════
@@ -1248,7 +1249,7 @@ function AnalyzeView({ t, onTrack }: { t: T; onTrack: (s: any) => void }) {
 // ═══════════════════════════════════════════════
 export default function App() {
   const [dark, setDark] = useState(true); const t = dark ? DARK : LIGHT;
-  const [view, setView] = useState<"opp" | "scan" | "tracker" | "analyze" | "dashboard" | "agents" | "custom_agents">("opp");
+  const [view, setView] = useState<"opp" | "scan" | "tracker" | "analyze" | "dashboard" | "agents" | "custom_agents" | "live">("opp");
   const [symbol, setSymbol] = useState("AAPL"); const [scanSetups, setScanSetups] = useState<any[]>([]);
   const [topSetups, setTopSetups] = useState<any[]>([]); const [inPlay, setInPlay] = useState<any[]>([]);
   const [mktSummary, setMktSummary] = useState("");
@@ -1314,6 +1315,7 @@ export default function App() {
             <Pill active={view === "tracker"} onClick={() => setView("tracker")} t={t}>Tracker</Pill>
             <Pill active={view === "analyze"} onClick={() => setView("analyze")} t={t}>Analyze</Pill>
             <Pill active={view === "dashboard"} onClick={() => setView("dashboard")} t={t}>Dashboard</Pill>
+            <Pill active={view === "live"} onClick={() => setView("live")} t={t}>Live Trading</Pill>
             <Pill active={view === "agents"} onClick={() => setView("agents")} t={t}>Agent Trading</Pill>
             <Pill active={view === "custom_agents"} onClick={() => setView("custom_agents")} t={t}>Custom Agents</Pill>
           </div>
@@ -1375,6 +1377,15 @@ export default function App() {
           {view === "dashboard" && (
             <motion.div key="dashboard" initial="hidden" animate="visible" exit="exit" variants={fadeUp}>
               <DashboardView t={t} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* LIVE TRADING */}
+        <AnimatePresence mode="wait">
+          {view === "live" && (
+            <motion.div key="live" initial="hidden" animate="visible" exit="exit" variants={fadeUp}>
+              <LiveTradingView t={t} />
             </motion.div>
           )}
         </AnimatePresence>

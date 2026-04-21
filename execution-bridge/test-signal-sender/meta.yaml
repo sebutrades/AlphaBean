@@ -1,0 +1,28 @@
+name: test_signal_sender
+description: 'Generated strategy: test_signal_sender'
+language: python
+guid: 92303d78-74dc-4077-a147-722dd20423ce
+options:
+    deploy_time: "09:30:00"
+    pause_time: "16:00:00"
+    low_latency: false
+    unload_on_restart: false
+    account: 203979
+    save_to_cloudquant: true
+parameters:
+    - name: test_qty
+      type: int
+      default: "10"
+      description: Shares per test order
+    - name: stop_pct
+      type: float
+      default: "0.5"
+      description: Stop loss percentage below entry
+    - name: buy_algo
+      type: voodoo_buy
+      default: '{2b4fdc55-ff01-416e-a5ea-e1f1d4524c7d}'
+      description: Buy Market ARCA
+    - name: sell_algo
+      type: voodoo_sell
+      default: '{8fdee8fe-b772-46bd-b411-5544f7a0d917}'
+      description: Sell Market ARCA

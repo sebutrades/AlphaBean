@@ -9,7 +9,28 @@
       "Bash(python -m py_compile run_backtest.py)",
       "Bash(python -m py_compile run_weekend_optimization.py)",
       "Bash(python -m py_compile backend/optimization/param_optimizer.py)",
-      "Bash(python -c \"from backend.main import app; print\\(''main OK''\\)\")"
+      "Bash(python -c \"from backend.main import app; print\\(''main OK''\\)\")",
+      "Skill(liberator-ping)",
+      "Skill(liberator-ping:*)",
+      "Skill(strategy-expert)",
+      "Skill(strategy-expert:*)",
+      "Skill(kore-servers)",
+      "Skill(kore-servers:*)",
+      "Skill(strategy-algos)",
+      "Skill(strategy-algos:*)",
+      "Skill(price-daily)",
+      "Skill(price-daily:*)",
+      "Bash(python test_data_fetch.py)",
+      "Skill(strategy-upload)",
+      "Skill(strategy-upload:*)",
+      "Skill(strategy-start)",
+      "Skill(strategy-start:*)",
+      "Bash(python test_order_execution.py --upload-only)",
+      "Bash(kti strategy:*)",
+      "Bash(kti --help)",
+      "Bash(kti einstein:*)",
+      "Bash(kti forward:*)",
+      "Bash(kti admin:*)"
     ]
   }
 }
