@@ -295,6 +295,10 @@ class AdaptiveSizer:
         else:
             s["losses"] += 1
         self._strategy_history[pattern].append(realized_r)
+        # Cap history to avoid unbounded memory growth — keep enough for
+        # recency weighting (RECENT_WINDOW=20) plus a generous old bucket.
+        if len(self._strategy_history[pattern]) > 200:
+            self._strategy_history[pattern] = self._strategy_history[pattern][-200:]
 
     def _recency_weighted_avg_r(self, pattern: str) -> float:
         """Compute expectancy giving recent trades more influence.
@@ -990,6 +994,10 @@ class IntradayPlusSimulation:
             "day_number": self._day_number,
         }
         self.pnl_history.append(snap)
+        # Keep only last ~2 days of bar-level PnL to avoid unbounded growth
+        # (~78 bars/day × 2 = ~156 entries). Final results use equity_curve.
+        if len(self.pnl_history) > 200:
+            self.pnl_history = self.pnl_history[-200:]
         self.emit(SimEvent("pnl", bar_time, snap))
 
     # ── Results & Logging ────────────────────────────────────────────────────

@@ -242,8 +242,7 @@ class SimulationEngine:
                 self._coordinator = AgentCoordinator(self.config)
 
             import asyncio
-            loop = asyncio.new_event_loop()
-            selected = loop.run_until_complete(
+            selected = asyncio.run(
                 self._coordinator.select_trades(
                     setups=setups,
                     portfolio=self.portfolio,
@@ -251,7 +250,6 @@ class SimulationEngine:
                     date=date,
                 )
             )
-            loop.close()
             return selected
 
         except Exception as e:

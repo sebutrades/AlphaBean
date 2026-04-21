@@ -118,3 +118,6 @@ class AgentCoordinator:
             "pm_selected": len(pm_selections),
             "risk_approved": len(approved),
         })
+        # Prevent unbounded growth — keep last 60 days of logs
+        if len(self.day_logs) > 60:
+            self.day_logs = self.day_logs[-60:]

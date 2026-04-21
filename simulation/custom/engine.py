@@ -359,6 +359,9 @@ class CustomSimEngine:
         """Callback for deliberation engine to emit agent events."""
         self._emit(data)
         self._agent_logs.append(data)
+        # Prevent unbounded growth
+        if len(self._agent_logs) > 200:
+            self._agent_logs = self._agent_logs[-200:]
 
     # ── Portfolio Helpers ────────────────────────────────────────────────────
 
